@@ -1,0 +1,35 @@
+\documentclass[tikz]{standalone}
+
+\usetikzlibrary{positioning}
+\usetikzlibrary{shapes.multipart}
+
+\begin{document}
+
+\tikzset{
+    rectangle1/.style={
+        shape=rectangle,
+        draw=black,
+        align=center,
+        text width=4cm,
+        minimum height=2cm,
+    }
+}
+
+\begin{tikzpicture}[every text node part/.style={align=center}]
+
+\node[rectangle1](client){Client};
+\node[rectangle1, below right=2cm of client](proxy){
+    Reverse Proxy\\
+    proxy.example.com
+};
+\node[rectangle1, above right=2cm of proxy](server){
+    Minecraft Server\\
+    mc.example.com
+};
+
+\draw (client) -- node[above=0.1cm]{Slow connection}(server);
+\draw (client) -- node[left=0]{Okay connection}(proxy);
+\draw (proxy) -- node[right=0.1cm]{Okay connection}(server);
+
+\end{tikzpicture}
+\end{document}

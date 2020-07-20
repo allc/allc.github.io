@@ -2,4 +2,10 @@ _site
 .sass-cache
 .jekyll-metadata
 
+*.aux
+*.fdb_latexmk
+*.fls
+*.log
+*.synctex.gz
+
 *.code-workspace
