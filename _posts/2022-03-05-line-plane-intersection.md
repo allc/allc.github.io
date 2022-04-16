@@ -1,7 +1,7 @@
 ---
 layout: post
 title: Checking if Line and Plane Intersect
-tags: [maths, computational geometry, computer graphics]
+tags: [maths, analytic geometry, computer graphics]
 mathjax: true
 ---
 
