@@ -17,4 +17,4 @@ I'm looking for something to do or a Computer Science related postgrad opportuni
 - Reading [*Speech and Language Processing*](https://web.stanford.edu/~jurafsky/slp3/) (3rd ed. draft) by Dan Jurafsky and James H. Martin.
 - Reading *The Code Book: The Science of Secrecy from Ancient Egypt to Quantum Cryptography* by Simon Singh.
 
-<small>Last updated on 15th April 2022.</small>
+<small>Last updated on 25th April 2022.</small>
