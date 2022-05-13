@@ -1,0 +1,24 @@
+\documentclass[tikz]{standalone}
+
+\usetikzlibrary{matrix,positioning,fit}
+
+\usepackage{xcolor}
+\definecolor{rose}{HTML}{FCE0E1}
+
+\begin{document}
+
+\newcommand\gridsize{0.2}
+\begin{tikzpicture}
+
+\matrix[matrix of nodes,nodes={draw, fill=rose},nodes in empty cells,column sep=-\pgflinewidth,row sep=-\pgflinewidth](inputembeddings){
+    & & \\
+    & & \\
+    & & \\
+    & & \\
+};
+
+\node[fit=(inputembeddings),label=left:Input Embeddings]{};
+
+\end{tikzpicture}
+
+\end{document}
