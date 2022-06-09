@@ -1,8 +1,12 @@
 ---
-layout: page
+layout: post
 title: Things Blow Up My Mind
-permalink: /blow-up-mind/
+tags: [how to]
 ---
+
+This post is being continuously updated with random things I come across.
+
+<small>Last updated on 13th May 2022.</small>
 
 ## Totally Legit IP Address
 

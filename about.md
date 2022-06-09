@@ -1,10 +1,14 @@
 ---
 layout: page
-title: About Me
-permalink: /about-me/
+title: About
+permalink: /about/
 ---
 
-I'm doing MSc Artificial Intelligent, a Computer Science graduate. I write code (mostly in Python, currently learning Rust), do coding challenges. My area of interests includes natural language understanding and generation, computer vision and reinforcement learning.
+I write stuff here, and have some random things I come across in the continuously updated post [Things Blow Up My Mind]({% post_url 2022-05-13-things-blow-up-my-mind %}).
+
+## About Me
+
+I'm a Computer Science graduate, and now doing MSc Artificial Intelligent. I write code (mostly in Python, also use Java, and currently learning Rust), do coding challenges. My area of interests includes software development, natural language understanding and generation, computer vision and reinforcement learning.
 
 Feel free to drop me an email at <a href="mailto:i@cjxol.com">i@cjxol.com</a>.
 
