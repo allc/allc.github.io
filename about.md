@@ -4,13 +4,13 @@ title: About
 permalink: /about/
 ---
 
-I write stuff here, and have some random things I come across in the continuously updated post [Things Blow Up My Mind]({% post_url 2022-05-13-things-blow-up-my-mind %}).
+I write stuff here as blog posts. I put random things that I come across in the continuously updated post [Things Blow Up My Mind]({% post_url 2022-05-13-things-blow-up-my-mind %}), and a collection of learning resources in [Awesome Collection]({% post_url 2022-06-17-awesome-collection %}).
 
 ## About Me
 
 I'm a Computer Science graduate, and now doing MSc Artificial Intelligent. I write code (mostly in Python, also use Java, and currently learning Rust), do coding challenges. My area of interests includes software development, natural language understanding and generation, computer vision and reinforcement learning.
 
-Feel free to drop me an email at <a href="mailto:i@cjxol.com">i@cjxol.com</a>.
+Feel free to drop me an email at <i@cjxol.com>.
 
 I'm looking for something to do or a Computer Science related postgrad opportunity.
 

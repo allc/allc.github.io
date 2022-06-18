@@ -1,7 +1,7 @@
 ---
 layout: post
 title: Things Blow Up My Mind
-tags: [how to]
+tags: [continuously updated]
 ---
 
 This post is being continuously updated with random things I come across.
