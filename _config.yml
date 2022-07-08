@@ -42,3 +42,5 @@ exclude:
   - vendor/ruby/
   - "*.code-workspace"
   - "*.sh"
+  - bootstrap-css/
+  - .github/
