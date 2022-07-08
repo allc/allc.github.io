@@ -1,0 +1,2 @@
+- name: Jekyll Action TS
+  uses: limjh16/jekyll-action-ts@v2
