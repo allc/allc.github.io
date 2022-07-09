@@ -1,0 +1,465 @@
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.8.7">Jekyll</generator><link href="http://localhost:4000/feed.xml" rel="self" type="application/atom+xml" /><link href="http://localhost:4000/" rel="alternate" type="text/html" /><updated>2022-07-09T01:14:10+01:00</updated><id>http://localhost:4000/feed.xml</id><title type="html">cjxol.com</title><entry><title type="html">SipHash Calculator</title><link href="http://localhost:4000/posts/siphash-calculator/" rel="alternate" type="text/html" title="SipHash Calculator" /><published>2022-07-08T00:00:00+01:00</published><updated>2022-07-08T00:00:00+01:00</updated><id>http://localhost:4000/posts/siphash-calculator</id><content type="html" xml:base="http://localhost:4000/posts/siphash-calculator/"><![CDATA[<link rel="stylesheet" href="/assets/css/bootstrap-custom.css" />
+
+<form class="bootstrap">
+    <div class="form-group row">
+        <label for="message" class="col-2 col-form-label">Message</label>
+        <textarea class="form-control col" id="message" row="1"></textarea>
+        <select id="messageType" class="form-control col-3" title="Message type">
+            <option selected="">Text</option>
+            <option>Hex</option>
+            <option>Base64</option>
+        </select>
+    </div>
+    <div class="form-group row">
+        <label for="key" class="col-2 col-form-label">Key</label>
+        <input class="form-control col" type="text" id="key" />
+        <select id="keyType" class="form-control col-3" title="Key type">
+            <option selected="">Text</option>
+            <option>Hex</option>
+            <option>Decimal</option>
+            <option>Base64</option>
+        </select>
+    </div>
+    <div class="form-group row">
+        <span class="col-2">SipRound</span>
+        <label for="c" class="col-1 col-form-label">c</label>
+        <input class="form-control col-1" type="number" id="c" value="2" min="0" step="1" />
+        <label for="d" class="col-1 col-form-label">d</label>
+        <input class="form-control col-1" type="number" id="d" value="4" min="0" step="1" />
+    </div>
+    <button class="btn btn-primary" type="submit" id="calculate">Calculate</button>
+    <div class="form-group row">
+        <label for="hash" class="col-2 col-form-label">Hash</label>
+        <input class="form-control col" type="text" id="hash" readonly="" />
+        <select id="hashType" class="form-control col-3" title="Hash type">
+            <option selected="">Hex</option>
+            <option>Decimal</option>
+            <option>Base64</option>
+        </select>
+    </div>
+    <div class="alert alert-danger" role="alert" id="error" hidden="">
+        Something went wrong...
+    </div>
+</form>
+
+<p>I implemented the SipHash algorithm followed <a class="citation" href="#siphash">(Aumasson &amp; Bernstein, 2012)</a>. You can see <a href="https://github.com/allc/SipHash">my Python code</a>, and this webpage uses <a href="https://pyscript.net/">PyScript</a> to run Python code in the browser.</p>
+
+<h2 id="references">References</h2>
+
+<ol class="bibliography"><li><span id="siphash">Aumasson, J.-P., &amp; Bernstein, D. J. (2012). SipHash: A Fast Short-Input PRF. In S. Galbraith &amp; M. Nandi (Eds.), <i>Progress in Cryptology - INDOCRYPT 2012</i> (pp. 489–508). Springer Berlin Heidelberg.</span></li></ol>
+
+<py-script>
+from pyodide import create_proxy
+
+from typing import List, Tuple
+import binascii
+
+def big_to_little8(num: int) -&gt; int:
+    """
+    Convert 8-byte big endian integer to little endian integer to work with bitwise operations.
+
+    Parameters
+    ----------
+    num : int
+        Integer to be converted
+    
+    Returns
+    -------
+    int
+        Converted integer
+    """
+    return int.from_bytes(num.to_bytes(8, 'big'), 'little')
+
+def rotl8(num: int, bits: int) -&gt; int:
+    """
+    Bitwise left-rotate of a 8-byte number.
+
+    Parameters
+    ----------
+    num : int
+        Number to be left-rotated
+    bits : int
+        Number of bits to be left-rotated
+    
+    Returns
+    -------
+    int
+        Left-rotated number
+    """
+    return ((num &lt;&lt; bits) &amp; 0xffffffffffffffff) | (num &gt;&gt; (64 - bits))
+
+class SipHash:
+
+    # TODO: Change ways to pass parameters in a more object-oriented way.
+    
+    """
+    Implemented following the algorithm in (Aumasson and Bernstein, 2012).
+
+    Aumasson, JP., Bernstein, D.J. (2012). SipHash: A Fast Short-Input PRF.
+    In: Galbraith, S., Nandi, M. (eds) Progress in Cryptology - INDOCRYPT 2012.
+    INDOCRYPT 2012. Lecture Notes in Computer Science, vol 7668.
+    Springer, Berlin, Heidelberg. https://doi.org/10.1007/978-3-642-34931-7_28
+    """
+
+    def __init__(self, key: int, message: bytes, c=2, d=4) -&gt; None:
+        """
+        Initialise SipHash with a key and message.
+
+        Parameters
+        ----------
+        key : int
+            16-byte big-endian key
+        message : bytes
+            Message to be hashed in big-endian bytes
+        c : int
+            Number of compression rounds
+        d : int
+            Number of finalization round
+        """
+        self.key = key
+        self.message = message
+        self.c = c
+        self.d = d
+        self.hash = None
+
+    def get_hash(self) -&gt; int:
+        """
+        Return hash of the message hashed with the key.
+
+        Return from saved value if the hash has been calculated, or calculate the hash value and save it and return.
+
+        Returns
+        -------
+        int
+            Hash value in little-endian
+        """
+        if self.hash is None:        
+            k0, k1 = self._encode_key(self.key)
+            internal_state = self._initialise_internal_state(k0, k1)
+            internal_state = self._compress(self.message, internal_state)
+            self.hash = self._finalise(internal_state)
+        return self.hash
+
+    def hexdigest(self) -&gt; str:
+        """
+        Return the hex string of the hash.
+
+        Returns
+        -------
+        str
+            Hex string of the hash
+        """
+        return hex(self.get_hash())[2:]
+
+    def _encode_key(self, key: int) -&gt; Tuple[int, int]:
+        """
+        Encode 16-byte key into 8-byte k0 and k1.
+
+        Parameters
+        ----------
+        key : int
+            16-byte big-endian key
+
+        Returns
+        -------
+        (bytes, bytes)
+            Tuple of k0 and k1
+        """
+        return (big_to_little8(key &gt;&gt; 8 * 8), big_to_little8(key &amp; 0xffffffffffffffff))
+
+    def _initialise_internal_state(self, k0: int, k1: int) -&gt; Tuple[int, int, int, int]:
+        """
+        Initialise internal state v0, v1, v2, v3.
+
+        Parameters
+        ----------
+        k0 : int
+            8-byte k0
+        k1 : int
+            8-byte k1
+
+        Returns
+        -------
+        (int, int, int, int)
+            Internal state v0, v1, v2, v3
+        """
+        c1 = 0x736f6d6570736575
+        c2 = 0x646f72616e646f6d
+        c3 = 0x6c7967656e657261
+        c4 = 0x7465646279746573
+        v0 = k0 ^ int(c1)
+        v1 = k1 ^ int(c2)
+        v2 = k0 ^ int(c3)
+        v3 = k1 ^ int(c4)
+        return (v0, v1, v2, v3)
+
+    def _compress(self, message: bytes, internal_state: Tuple[int, int, int, int]) -&gt; Tuple[int, int, int, int]:
+        """
+        Compress the message into internal state.
+
+        Parameters
+        ----------
+        message : bytes
+            Message to be hashed in big endian bytes
+        internal_state : (int, int, int, int)
+            Internal state v0, v1, v2, v3
+
+        Returns
+        -------
+        (int, int, int, int)
+            Internal state with message compressed into
+        """
+        words = self._message_to_words(message)
+
+        v0, v1, v2, v3 = internal_state
+        for word in words:
+            v3 ^= word
+            for _ in range(self.c):
+                v0, v1, v2, v3 = self._sipround((v0, v1, v2, v3))
+            v0 ^= word
+        
+        return (v0, v1, v2, v3)
+
+    def _message_to_words(self, message: bytes) -&gt; List[int]:
+        """
+        Parse message into words
+
+        Parameters
+        ----------
+        message : bytes
+            Message to be hashed in big endian bytes
+
+        Returns
+        -------
+        [int]
+            Message parsed into little-endian words
+        """
+        message_length = len(message)
+        padding_length = (message_length + 1) % 8
+        message = message + b'\x00' * padding_length + (message_length % 256).to_bytes(1, 'little')
+        return [int.from_bytes(message[i: i + 8], 'little') for i in range(0, len(message), 8)]
+
+    def _sipround(self, internal_state: Tuple[int, int, int, int]) -&gt; Tuple[int, int, int, int]:
+        """
+        SipRound to transform internal state.
+
+        Parameters
+        ----------
+        internal_state : (int, int, int, int)
+            Internal state v0, v1, v2, v3
+
+        Returns
+        -------
+        (int, int, int, int)
+            Internal state v0, v1, v2, v3 after SipRound transform
+        """
+        v0, v1, v2, v3 = internal_state
+
+        v0 = (v0 + v1) &amp; 0xffffffffffffffff
+        v1 = rotl8(v1, 13)
+        v1 ^= v0
+        v0 = rotl8(v0, 32)
+        v2 = (v2 + v3) &amp; 0xffffffffffffffff
+        v3 = rotl8(v3, 16)
+        v3 ^= v2
+        v2 = (v2 + v1) &amp; 0xffffffffffffffff
+        v1 = rotl8(v1, 17)
+        v1 ^= v2
+        v2 = rotl8(v2, 32)
+        v0 = (v0 + v3) &amp; 0xffffffffffffffff
+        v3 = rotl8(v3, 21)
+        v3 ^= v0
+
+        return (v0, v1, v2, v3)
+
+    def _finalise(self, internal_state: Tuple[int, int, int, int]) -&gt; int:
+        """
+        Finalise SipHash
+
+        Parameters
+        ----------
+        internal_state : (int, int, int, int)
+            Internal state before finalise
+
+        Returns
+        -------
+        int
+            SipHash result in little-endian representation
+        """
+        v0, v1, v2, v3 = internal_state
+        v2 ^= 0xff
+        for _ in range(self.d):
+            v0, v1, v2, v3 = self._sipround((v0, v1, v2, v3))
+        return v0 ^ v1 ^ v2 ^ v3
+
+def update_hash(event):
+    document.getElementById('error').hidden = True
+    try:
+        message_type = document.getElementById('messageType').value
+        message = document.getElementById('message').value
+        match message_type:
+            case 'Text':
+                message = bytes(message, 'utf8')
+            case 'Hex':
+                message = bytes.fromhex(message)
+            case 'Base64':
+                message = binascii.a2b_base64(message)
+
+        key_type = document.getElementById('keyType').value
+        key = document.getElementById('key').value
+        match key_type:
+            case 'Text':
+                key = int.from_bytes(bytes(key, 'utf-8'), 'big')
+            case 'Hex':
+                key = int(key, 16)
+            case 'Decimal':
+                key = int(key)
+            case 'Base64':
+                key = int.from_bytes(binascii.a2b_base64(key), 'big')
+
+        hash_type = document.getElementById('hashType').value
+        hash_output = document.getElementById('hash')
+        c = int(document.getElementById('c').value)
+        d = int(document.getElementById('d').value)
+        siphash = SipHash(key, message, c, d)
+        match hash_type:
+            case 'Hex':
+                hash_output.value = siphash.hexdigest()
+            case 'Decimal':
+                hash_output.value = siphash.get_hash()
+            case 'Base64':
+                hash_output.value = binascii.b2a_base64(siphash.get_hash().to_bytes(8, 'big')).decode('utf-8')
+    except:
+        document.getElementById('error').hidden = False
+
+on_update = create_proxy(update_hash)
+
+def calculate(event):
+    event.preventDefault()
+    update_hash(event)
+
+on_calculate = create_proxy(calculate)
+
+document.getElementById('calculate').onclick = on_calculate
+
+input_ids = ['message', 'messageType', 'key', 'keyType', 'c', 'd', 'hashType']
+for input_id in input_ids:
+    document.getElementById(input_id).addEventListener('input', on_update)
+</py-script>
+
+<script defer="" src="https://pyscript.net/alpha/pyscript.js"></script>]]></content><author><name></name></author><summary type="html"><![CDATA[]]></summary></entry><entry><title type="html">Awesome Collection</title><link href="http://localhost:4000/posts/awesome-collection/" rel="alternate" type="text/html" title="Awesome Collection" /><published>2022-06-17T00:00:00+01:00</published><updated>2022-06-17T00:00:00+01:00</updated><id>http://localhost:4000/posts/awesome-collection</id><content type="html" xml:base="http://localhost:4000/posts/awesome-collection/"><![CDATA[<p>This post is being continuously updated with a collection of good learning resources.</p>
+
+<p><small>Last updated on 18th June 2022.</small></p>
+
+<h2 id="legendres-symbol">Legendre’s Symbol</h2>
+
+<p>A good video by Michael Penn showing proof of the Legendre’s Symbol: <a href="https://www.youtube.com/watch?v=eKjjAr4EvmU">https://www.youtube.com/watch?v=eKjjAr4EvmU</a> (and good backflip) that kept me interested throughout the entire video.</p>
+
+<p><a href="https://cryptohack.org/courses/modular/root1/">A challenge on CryptoHack</a> uses Legendre’s Symbol and more to find the quadratic residue and calculate the square root.</p>]]></content><author><name></name></author><category term="continuously updated" /><summary type="html"><![CDATA[This post is being continuously updated with a collection of good learning resources.]]></summary></entry><entry><title type="html">Things Blow Up My Mind</title><link href="http://localhost:4000/posts/things-blow-up-my-mind/" rel="alternate" type="text/html" title="Things Blow Up My Mind" /><published>2022-05-13T00:00:00+01:00</published><updated>2022-05-13T00:00:00+01:00</updated><id>http://localhost:4000/posts/things-blow-up-my-mind</id><content type="html" xml:base="http://localhost:4000/posts/things-blow-up-my-mind/"><![CDATA[<p>This post is being continuously updated with random things I come across.</p>
+
+<p><small>Last updated on 13th May 2022.</small></p>
+
+<h2 id="totally-legit-ip-address">Totally Legit IP Address</h2>
+
+<p>Do you know you can do <code class="highlighter-rouge">ping 0177.0x10.01</code> (which pings 127.16.0.1)?</p>
+
+<p>Or even <code class="highlighter-rouge">ping 2130706433</code> (127.0.0.1 in dword) (<a href="https://www.youtube.com/watch?v=PT_qEhesKW8&amp;lc=Ugz5183SkhDLxzW5Mf14AaABAg.9av7AJhjNVy9aw2sVU3iaf">dono’s comment</a>) or <code class="highlighter-rouge">http://2130706433</code>.</p>
+
+<p>See <a href="https://www.youtube.com/watch?v=PT_qEhesKW8">Hussein Nasser’s YouTube video</a>.</p>]]></content><author><name></name></author><category term="continuously updated" /><summary type="html"><![CDATA[This post is being continuously updated with random things I come across.]]></summary></entry><entry><title type="html">Checking if Line and Plane Intersect</title><link href="http://localhost:4000/posts/line-plane-intersection/" rel="alternate" type="text/html" title="Checking if Line and Plane Intersect" /><published>2022-03-05T00:00:00+00:00</published><updated>2022-03-05T00:00:00+00:00</updated><id>http://localhost:4000/posts/line-plane-intersection</id><content type="html" xml:base="http://localhost:4000/posts/line-plane-intersection/"><![CDATA[<p>The post is compiled with information on <a href="https://en.wikipedia.org/wiki/Line%E2%80%93plane_intersection">Wikipedia page on Line-plane Interaction</a> and <a href="https://web.ma.utexas.edu/users/m408m/Display12-5-4.shtml">this notes on finding the normal to a plane</a>.</p>
+
+<h2 id="what-is-the-question">What is the question?</h2>
+
+<p>This post is about checking if a line intersect with a plane, given 2 different coordinates on the line and 3 different coordinates on the plane.</p>
+
+<h2 id="how-to-solve-it">How to solve it?</h2>
+
+<p>Suppose having a line with coordinates <script type="math/tex">\mathbf{a}</script> and <script type="math/tex">\mathbf{b}</script> on the line, the vector equation representing the line with the set of <script type="math/tex">\mathbf{p}</script> consist the line is:
+\begin{equation}
+\label{eq:line}
+\mathbf{p} = \mathbf{a} + d \mathbf{(b - a)}
+\end{equation}</p>
+
+<p>Suppose having a plane with coordinates <script type="math/tex">\mathbf{e}</script>, <script type="math/tex">\mathbf{f}</script> and <script type="math/tex">\mathbf{g}</script> on the plane, then the normal to the plane is <script type="math/tex">\mathbf{n = (f - e) \times (g - e)}</script>. If <script type="math/tex">\mathbf{p_0}</script> is a point on the plane (e.g. <script type="math/tex">\mathbf{p_0}</script> can be <script type="math/tex">\mathbf{e}</script>, <script type="math/tex">\mathbf{f}</script> or <script type="math/tex">\mathbf{g}</script>), the plane can be expressed as the set of points <script type="math/tex">\mathbf{p}</script> for which:
+\begin{equation}
+\label{eq:plane}
+\mathbf{(p - p_0) \cdot n} = 0
+\end{equation}</p>
+
+<p>The point(s) where the line and the plane intersect, the points have the same coordinates. Substitute \eqref{eq:line} into \eqref{eq:plane}:</p>
+
+<script type="math/tex; mode=display">% <![CDATA[
+\begin{align*}
+((\mathbf{a} + d \mathbf{(b - a)}) - \mathbf{p_0}) \cdot \mathbf{n} &= 0\\
+d \mathbf{(b - a)} \cdot \mathbf{n} + \mathbf{(a - p_0)} \cdot \mathbf{n} &= 0\\
+d &= \frac{\mathbf{(p_0 - a)} \cdot \mathbf{n}}{\mathbf{(b - a)} \cdot \mathbf{n}}
+\end{align*} %]]></script>
+
+<p>If <script type="math/tex">\mathbf{(b - a)} \cdot \mathbf{n} = 0</script> then the line and the plane are parallel. In this case, if <script type="math/tex">\mathbf{(p_0 - a)} \cdot \mathbf{n} = 0</script> then the line is on the plane. Otherwise the line and plane have no intersection.</p>
+
+<p>If <script type="math/tex">\mathbf{(b - a)} \cdot \mathbf{n} \neq 0</script> there is a single point of intersection.</p>]]></content><author><name></name></author><category term="maths" /><category term="analytic geometry" /><category term="computer graphics" /><summary type="html"><![CDATA[The post is compiled with information on Wikipedia page on Line-plane Interaction and this notes on finding the normal to a plane.]]></summary></entry><entry><title type="html">Set up Reverse Proxy for Minecraft Servers</title><link href="http://localhost:4000/posts/minecraft-reverse-proxy/" rel="alternate" type="text/html" title="Set up Reverse Proxy for Minecraft Servers" /><published>2020-06-29T00:00:00+01:00</published><updated>2020-06-29T00:00:00+01:00</updated><id>http://localhost:4000/posts/minecraft-reverse-proxy</id><content type="html" xml:base="http://localhost:4000/posts/minecraft-reverse-proxy/"><![CDATA[<p>This post is about how to set up a reverse proxy for Minecraft server (or for TCP in general) with Nginx.</p>
+
+<p>I have done this on Ubuntu 18.04 with Nginx and <code class="highlighter-rouge">libngxin-mod-stream</code> installed from the default repositories using <code class="highlighter-rouge">apt</code>. I set up the reverse proxy for some private Minecraft servers running Spigot 1.15.2 and Paper 1.15.2 with Waterfall, and it does not require any changes on the Minecraft server. <strong>Many of the public servers have rules that DO NOT allow connecting to their servers through a proxy</strong>.</p>
+
+<h2 id="why">Why?</h2>
+
+<p><img src="/assets/image/minecraft-reverse-proxy.png" alt="Reverse proxy can improve connection." /></p>
+
+<p>When playing with friends on the Minecraft server <code class="highlighter-rouge">server.example.com</code>, if the route between someone’s client and the server has a bad connection with high ping and high packet loss, the gaming experience would not be great or even not able to connect.</p>
+
+<p>However, if there is be a server location with better connections to both that client and the server, and it could possibly be used as a proxy to improve the gaming experience.</p>
+
+<h2 id="how">How?</h2>
+
+<h3 id="prerequisite">Prerequisite</h3>
+
+<p>Nginx and <code class="highlighter-rouge">libnginx-mod-stream</code> installed (either from package repositories or compiled from source).</p>
+
+<h3 id="configurations">Configurations</h3>
+
+<p>Assuming the Minecraft server is running on <code class="highlighter-rouge">server.example.com</code> and port <code class="highlighter-rouge">25565</code>.</p>
+
+<p>Some of the commands might require <code class="highlighter-rouge">sudo</code> privilege.</p>
+
+<p>On the sever used for reverse proxy, edit the Nginx config file, normally located at <code class="highlighter-rouge">/etc/nginx/nginx.conf</code> on Ubuntu if installed with <code class="highlighter-rouge">apt</code>, add the config below:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>stream {
+    server {
+        # Port number the reverse proxy is listening on
+        listen  25565;
+        # The original Minecraft server address
+        proxy_pass  server.example.com:25565;
+    }
+}
+
+</code></pre></div></div>
+
+<p>Reload Nginx:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>service nginx reload
+</code></pre></div></div>
+
+<p>In case firewall is enabled, run the following command to allow connections:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>ufw allow 25565/tcp
+</code></pre></div></div>
+
+<h3 id="connect-to-the-reverse-proxy">Connect to the reverse proxy</h3>
+
+<p>To connect via the reverse proxy, connect with Minecraft client as usual, however use the proxy server’s address and port number instead of the original server’s, and in this case it is <code class="highlighter-rouge">proxy.example.com:25565</code>. Clients are still able to connect directly to the original server without using the reverse proxy with the original address and port number.</p>
+
+<p>If the port number is the default 25565, it can be omitted in the client. In case the port number is not the default 25565, it is possible to <a href="https://www.spigotmc.org/threads/guide-setting-up-srv-records.52303/">set up a SRV record on DNS</a> to avoid specifying the port number in the client (this step is optional).</p>
+
+<h2 id="conclusions">Conclusions</h2>
+
+<p>There are several advantages setting up the reverse proxy this way:</p>
+
+<ul>
+  <li>It does not require to modify anything on the Minecraft server itself, as long as it allows the clients to connect to it through a proxy.</li>
+  <li>It does not require any special setup on the clients, just to use the reverse proxy’s address instead of the original Minecraft server’s address when connecting in Minecraft.</li>
+  <li>It works for many different Minecraft server and client version.</li>
+  <li>It still allows the clients to connect directly to the Minecraft server. It is useful when some of the clients has better connection to the original server.</li>
+</ul>
+
+<p>This setup is easy to understand and config, also requires little server resource. It is also possible to use access control from Nginx or iptables etc..</p>
+
+<p>There are limitations of this setup too. It simply works as a TCP reverse proxy, and it does not do some fancy stuff like connecting multiple Minecraft servers together. Also again, <strong>it SHOULD NOT be used if the Minecraft server has rule that does not allow clients to connect through a proxy</strong>.</p>]]></content><author><name></name></author><category term="how to" /><summary type="html"><![CDATA[This post is about how to set up a reverse proxy for Minecraft server (or for TCP in general) with Nginx.]]></summary></entry></feed>

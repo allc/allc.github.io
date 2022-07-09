@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1"><!-- Begin Jekyll SEO tag v2.8.0 -->
+<title>SipHash Calculator | cjxol.com</title>
+<meta name="generator" content="Jekyll v3.8.7" />
+<meta property="og:title" content="SipHash Calculator" />
+<meta property="og:locale" content="en_US" />
+<link rel="canonical" href="http://localhost:4000/posts/siphash-calculator/" />
+<meta property="og:url" content="http://localhost:4000/posts/siphash-calculator/" />
+<meta property="og:site_name" content="cjxol.com" />
+<meta property="og:type" content="article" />
+<meta property="article:published_time" content="2022-07-08T00:00:00+01:00" />
+<meta name="twitter:card" content="summary" />
+<meta property="twitter:title" content="SipHash Calculator" />
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"BlogPosting","dateModified":"2022-07-08T00:00:00+01:00","datePublished":"2022-07-08T00:00:00+01:00","headline":"SipHash Calculator","mainEntityOfPage":{"@type":"WebPage","@id":"http://localhost:4000/posts/siphash-calculator/"},"url":"http://localhost:4000/posts/siphash-calculator/"}</script>
+<!-- End Jekyll SEO tag -->
+<link rel="stylesheet" href="/assets/main.css"><link type="application/atom+xml" rel="alternate" href="http://localhost:4000/feed.xml" title="cjxol.com" /></head>
+<body><header class="site-header" role="banner">
+
+  <div class="wrapper"><a class="site-title" rel="author" href="/">cjxol.com</a><nav class="site-nav">
+        <input type="checkbox" id="nav-trigger" class="nav-trigger" />
+        <label for="nav-trigger">
+          <span class="menu-icon">
+            <svg viewBox="0 0 18 15" width="18px" height="15px">
+              <path d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.032C17.335,0,18,0.665,18,1.484L18,1.484z M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.032C17.335,6.031,18,6.696,18,7.516L18,7.516z M18,13.516C18,14.335,17.335,15,16.516,15H1.484 C0.665,15,0,14.335,0,13.516l0,0c0-0.82,0.665-1.483,1.484-1.483h15.032C17.335,12.031,18,12.695,18,13.516L18,13.516z"/>
+            </svg>
+          </span>
+        </label>
+
+        <div class="trigger"><a class="page-link" href="/about/">About</a></div>
+      </nav></div>
+</header>
+<main class="page-content" aria-label="Content">
+      <div class="wrapper">
+        <article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
+
+  <header class="post-header">
+    <h1 class="post-title p-name" itemprop="name headline">SipHash Calculator</h1>
+    <p class="post-meta">
+      <time class="dt-published" datetime="2022-07-08T00:00:00+01:00" itemprop="datePublished">Jul 8, 2022
+      </time></p>
+  </header>
+
+  <div class="post-content e-content" itemprop="articleBody">
+    <link rel="stylesheet" href="/assets/css/bootstrap-custom.css" />
+
+<form class="bootstrap">
+    <div class="form-group row">
+        <label for="message" class="col-2 col-form-label">Message</label>
+        <textarea class="form-control col" id="message" row="1"></textarea>
+        <select id="messageType" class="form-control col-3" title="Message type">
+            <option selected="">Text</option>
+            <option>Hex</option>
+            <option>Base64</option>
+        </select>
+    </div>
+    <div class="form-group row">
+        <label for="key" class="col-2 col-form-label">Key</label>
+        <input class="form-control col" type="text" id="key" />
+        <select id="keyType" class="form-control col-3" title="Key type">
+            <option selected="">Text</option>
+            <option>Hex</option>
+            <option>Decimal</option>
+            <option>Base64</option>
+        </select>
+    </div>
+    <div class="form-group row">
+        <span class="col-2">SipRound</span>
+        <label for="c" class="col-1 col-form-label">c</label>
+        <input class="form-control col-1" type="number" id="c" value="2" min="0" step="1" />
+        <label for="d" class="col-1 col-form-label">d</label>
+        <input class="form-control col-1" type="number" id="d" value="4" min="0" step="1" />
+    </div>
+    <button class="btn btn-primary" type="submit" id="calculate">Calculate</button>
+    <div class="form-group row">
+        <label for="hash" class="col-2 col-form-label">Hash</label>
+        <input class="form-control col" type="text" id="hash" readonly="" />
+        <select id="hashType" class="form-control col-3" title="Hash type">
+            <option selected="">Hex</option>
+            <option>Decimal</option>
+            <option>Base64</option>
+        </select>
+    </div>
+    <div class="alert alert-danger" role="alert" id="error" hidden="">
+        Something went wrong...
+    </div>
+</form>
+
+<p>I implemented the SipHash algorithm followed <a class="citation" href="#siphash">(Aumasson &amp; Bernstein, 2012)</a>. You can see <a href="https://github.com/allc/SipHash">my Python code</a>, and this webpage uses <a href="https://pyscript.net/">PyScript</a> to run Python code in the browser.</p>
+
+<h2 id="references">References</h2>
+
+<ol class="bibliography"><li><span id="siphash">Aumasson, J.-P., &amp; Bernstein, D. J. (2012). SipHash: A Fast Short-Input PRF. In S. Galbraith &amp; M. Nandi (Eds.), <i>Progress in Cryptology - INDOCRYPT 2012</i> (pp. 489–508). Springer Berlin Heidelberg.</span></li></ol>
+
+<py-script>
+from pyodide import create_proxy
+
+from typing import List, Tuple
+import binascii
+
+def big_to_little8(num: int) -&gt; int:
+    """
+    Convert 8-byte big endian integer to little endian integer to work with bitwise operations.
+
+    Parameters
+    ----------
+    num : int
+        Integer to be converted
+    
+    Returns
+    -------
+    int
+        Converted integer
+    """
+    return int.from_bytes(num.to_bytes(8, 'big'), 'little')
+
+def rotl8(num: int, bits: int) -&gt; int:
+    """
+    Bitwise left-rotate of a 8-byte number.
+
+    Parameters
+    ----------
+    num : int
+        Number to be left-rotated
+    bits : int
+        Number of bits to be left-rotated
+    
+    Returns
+    -------
+    int
+        Left-rotated number
+    """
+    return ((num &lt;&lt; bits) &amp; 0xffffffffffffffff) | (num &gt;&gt; (64 - bits))
+
+class SipHash:
+
+    # TODO: Change ways to pass parameters in a more object-oriented way.
+    
+    """
+    Implemented following the algorithm in (Aumasson and Bernstein, 2012).
+
+    Aumasson, JP., Bernstein, D.J. (2012). SipHash: A Fast Short-Input PRF.
+    In: Galbraith, S., Nandi, M. (eds) Progress in Cryptology - INDOCRYPT 2012.
+    INDOCRYPT 2012. Lecture Notes in Computer Science, vol 7668.
+    Springer, Berlin, Heidelberg. https://doi.org/10.1007/978-3-642-34931-7_28
+    """
+
+    def __init__(self, key: int, message: bytes, c=2, d=4) -&gt; None:
+        """
+        Initialise SipHash with a key and message.
+
+        Parameters
+        ----------
+        key : int
+            16-byte big-endian key
+        message : bytes
+            Message to be hashed in big-endian bytes
+        c : int
+            Number of compression rounds
+        d : int
+            Number of finalization round
+        """
+        self.key = key
+        self.message = message
+        self.c = c
+        self.d = d
+        self.hash = None
+
+    def get_hash(self) -&gt; int:
+        """
+        Return hash of the message hashed with the key.
+
+        Return from saved value if the hash has been calculated, or calculate the hash value and save it and return.
+
+        Returns
+        -------
+        int
+            Hash value in little-endian
+        """
+        if self.hash is None:        
+            k0, k1 = self._encode_key(self.key)
+            internal_state = self._initialise_internal_state(k0, k1)
+            internal_state = self._compress(self.message, internal_state)
+            self.hash = self._finalise(internal_state)
+        return self.hash
+
+    def hexdigest(self) -&gt; str:
+        """
+        Return the hex string of the hash.
+
+        Returns
+        -------
+        str
+            Hex string of the hash
+        """
+        return hex(self.get_hash())[2:]
+
+    def _encode_key(self, key: int) -&gt; Tuple[int, int]:
+        """
+        Encode 16-byte key into 8-byte k0 and k1.
+
+        Parameters
+        ----------
+        key : int
+            16-byte big-endian key
+
+        Returns
+        -------
+        (bytes, bytes)
+            Tuple of k0 and k1
+        """
+        return (big_to_little8(key &gt;&gt; 8 * 8), big_to_little8(key &amp; 0xffffffffffffffff))
+
+    def _initialise_internal_state(self, k0: int, k1: int) -&gt; Tuple[int, int, int, int]:
+        """
+        Initialise internal state v0, v1, v2, v3.
+
+        Parameters
+        ----------
+        k0 : int
+            8-byte k0
+        k1 : int
+            8-byte k1
+
+        Returns
+        -------
+        (int, int, int, int)
+            Internal state v0, v1, v2, v3
+        """
+        c1 = 0x736f6d6570736575
+        c2 = 0x646f72616e646f6d
+        c3 = 0x6c7967656e657261
+        c4 = 0x7465646279746573
+        v0 = k0 ^ int(c1)
+        v1 = k1 ^ int(c2)
+        v2 = k0 ^ int(c3)
+        v3 = k1 ^ int(c4)
+        return (v0, v1, v2, v3)
+
+    def _compress(self, message: bytes, internal_state: Tuple[int, int, int, int]) -&gt; Tuple[int, int, int, int]:
+        """
+        Compress the message into internal state.
+
+        Parameters
+        ----------
+        message : bytes
+            Message to be hashed in big endian bytes
+        internal_state : (int, int, int, int)
+            Internal state v0, v1, v2, v3
+
+        Returns
+        -------
+        (int, int, int, int)
+            Internal state with message compressed into
+        """
+        words = self._message_to_words(message)
+
+        v0, v1, v2, v3 = internal_state
+        for word in words:
+            v3 ^= word
+            for _ in range(self.c):
+                v0, v1, v2, v3 = self._sipround((v0, v1, v2, v3))
+            v0 ^= word
+        
+        return (v0, v1, v2, v3)
+
+    def _message_to_words(self, message: bytes) -&gt; List[int]:
+        """
+        Parse message into words
+
+        Parameters
+        ----------
+        message : bytes
+            Message to be hashed in big endian bytes
+
+        Returns
+        -------
+        [int]
+            Message parsed into little-endian words
+        """
+        message_length = len(message)
+        padding_length = (message_length + 1) % 8
+        message = message + b'\x00' * padding_length + (message_length % 256).to_bytes(1, 'little')
+        return [int.from_bytes(message[i: i + 8], 'little') for i in range(0, len(message), 8)]
+
+    def _sipround(self, internal_state: Tuple[int, int, int, int]) -&gt; Tuple[int, int, int, int]:
+        """
+        SipRound to transform internal state.
+
+        Parameters
+        ----------
+        internal_state : (int, int, int, int)
+            Internal state v0, v1, v2, v3
+
+        Returns
+        -------
+        (int, int, int, int)
+            Internal state v0, v1, v2, v3 after SipRound transform
+        """
+        v0, v1, v2, v3 = internal_state
+
+        v0 = (v0 + v1) &amp; 0xffffffffffffffff
+        v1 = rotl8(v1, 13)
+        v1 ^= v0
+        v0 = rotl8(v0, 32)
+        v2 = (v2 + v3) &amp; 0xffffffffffffffff
+        v3 = rotl8(v3, 16)
+        v3 ^= v2
+        v2 = (v2 + v1) &amp; 0xffffffffffffffff
+        v1 = rotl8(v1, 17)
+        v1 ^= v2
+        v2 = rotl8(v2, 32)
+        v0 = (v0 + v3) &amp; 0xffffffffffffffff
+        v3 = rotl8(v3, 21)
+        v3 ^= v0
+
+        return (v0, v1, v2, v3)
+
+    def _finalise(self, internal_state: Tuple[int, int, int, int]) -&gt; int:
+        """
+        Finalise SipHash
+
+        Parameters
+        ----------
+        internal_state : (int, int, int, int)
+            Internal state before finalise
+
+        Returns
+        -------
+        int
+            SipHash result in little-endian representation
+        """
+        v0, v1, v2, v3 = internal_state
+        v2 ^= 0xff
+        for _ in range(self.d):
+            v0, v1, v2, v3 = self._sipround((v0, v1, v2, v3))
+        return v0 ^ v1 ^ v2 ^ v3
+
+def update_hash(event):
+    document.getElementById('error').hidden = True
+    try:
+        message_type = document.getElementById('messageType').value
+        message = document.getElementById('message').value
+        match message_type:
+            case 'Text':
+                message = bytes(message, 'utf8')
+            case 'Hex':
+                message = bytes.fromhex(message)
+            case 'Base64':
+                message = binascii.a2b_base64(message)
+
+        key_type = document.getElementById('keyType').value
+        key = document.getElementById('key').value
+        match key_type:
+            case 'Text':
+                key = int.from_bytes(bytes(key, 'utf-8'), 'big')
+            case 'Hex':
+                key = int(key, 16)
+            case 'Decimal':
+                key = int(key)
+            case 'Base64':
+                key = int.from_bytes(binascii.a2b_base64(key), 'big')
+
+        hash_type = document.getElementById('hashType').value
+        hash_output = document.getElementById('hash')
+        c = int(document.getElementById('c').value)
+        d = int(document.getElementById('d').value)
+        siphash = SipHash(key, message, c, d)
+        match hash_type:
+            case 'Hex':
+                hash_output.value = siphash.hexdigest()
+            case 'Decimal':
+                hash_output.value = siphash.get_hash()
+            case 'Base64':
+                hash_output.value = binascii.b2a_base64(siphash.get_hash().to_bytes(8, 'big')).decode('utf-8')
+    except:
+        document.getElementById('error').hidden = False
+
+on_update = create_proxy(update_hash)
+
+def calculate(event):
+    event.preventDefault()
+    update_hash(event)
+
+on_calculate = create_proxy(calculate)
+
+document.getElementById('calculate').onclick = on_calculate
+
+input_ids = ['message', 'messageType', 'key', 'keyType', 'c', 'd', 'hashType']
+for input_id in input_ids:
+    document.getElementById(input_id).addEventListener('input', on_update)
+</py-script>
+
+<script defer="" src="https://pyscript.net/alpha/pyscript.js"></script>
+
+
+  </div><a class="u-url" href="/posts/siphash-calculator/" hidden></a>
+</article>
+
+      </div>
+    </main><footer class="site-footer h-card">
+  <data class="u-url" href="/"></data>
+
+  <div class="wrapper">
+
+    <h2 class="footer-heading">cjxol.com</h2>
+
+    <div class="footer-col-wrapper">
+      <div class="footer-col footer-col-1">
+        <ul class="contact-list">
+          <li class="p-name">cjxol.com</li><li><a class="u-email" href="mailto:i@cjxol.com">i@cjxol.com</a></li></ul>
+      </div>
+
+      <div class="footer-col footer-col-2"><ul class="social-media-list"><li><a href="https://github.com/allc"><svg class="svg-icon"><use xlink:href="/assets/minima-social-icons.svg#github"></use></svg> <span class="username">allc</span></a></li></ul>
+</div>
+
+      <div class="footer-col footer-col-3">
+        <p></p>
+      </div>
+    </div>
+
+  </div>
+
+</footer>
+</body>
+
+</html>
