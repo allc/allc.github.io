@@ -30,7 +30,7 @@ Some of the commands might require `sudo` privilege.
 
 On the sever used for reverse proxy, edit the Nginx config file, normally located at `/etc/nginx/nginx.conf` on Ubuntu if installed with `apt`, add the config below:
 
-```
+```conf
 stream {
     server {
         # Port number the reverse proxy is listening on
@@ -44,13 +44,13 @@ stream {
 
 Reload Nginx:
 
-```
+```bash
 service nginx reload
 ```
 
 In case firewall is enabled, run the following command to allow connections:
 
-```
+```bash
 ufw allow 25565/tcp
 ```
 
