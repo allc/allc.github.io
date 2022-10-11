@@ -6,7 +6,7 @@ tags: [ctf, ctf writeup]
 
 *Note: Some of the links to external sites about the challenge in this post might become unavailable in the future.*
 
-This is my writeup to web challenges "[Bottle Poem](https://ctf.sekai.team/challenges#Bottle-Poem-29)", "[Issues](https://ctf.sekai.team/challenges#Issues-33)" and reverse challenge "Perfect Match X-treme" in [SekaiCTF 2022](https://ctf.sekai.team/). I started doing the CTF when I joined a team halfway through the CTF. The exploits and skills involved in these 3 challenges in this writeup includes local file inclusion (LFI), unsafe deserialization and remote code execution (RCE), improper use of JWKS, open redirect, Unity game reversing and general/reversing tooling.
+This is my writeup to web challenges "[Bottle Poem](https://ctf.sekai.team/challenges#Bottle-Poem-29)", "[Issues](https://ctf.sekai.team/challenges#Issues-33)" and reverse challenge "[Perfect Match X-treme](https://ctf.sekai.team/challenges#Perfect-Match-X-treme-44)" in [SekaiCTF 2022](https://ctf.sekai.team/). I started doing the CTF when I joined a team halfway through the CTF. The exploits and skills involved in these 3 challenges in this writeup includes local file inclusion (LFI), unsafe deserialization and remote code execution (RCE), improper use of JWKS, open redirect, Unity game reversing and general/reversing tooling.
 
 On this page:
 
