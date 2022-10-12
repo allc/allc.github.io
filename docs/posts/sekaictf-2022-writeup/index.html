@@ -49,7 +49,7 @@
   <div class="post-content e-content" itemprop="articleBody">
     <p><em>Note: Some of the links to external sites about the challenge in this post might become unavailable in the future.</em></p>
 
-<p>This is my writeup to web challenges “<a href="https://ctf.sekai.team/challenges#Bottle-Poem-29">Bottle Poem</a>”, “<a href="https://ctf.sekai.team/challenges#Issues-33">Issues</a>” and reverse challenge “<a href="https://ctf.sekai.team/challenges#Perfect-Match-X-treme-44">Perfect Match X-treme</a>” in <a href="https://ctf.sekai.team/">SekaiCTF 2022</a>. I started doing the CTF when I joined a team halfway through the CTF. The exploits and skills involved in these 3 challenges in this writeup includes local file inclusion (LFI), unsafe deserialization and remote code execution (RCE), improper use of JWKS, open redirect, Unity game reversing and general/reversing tooling.</p>
+<p>This is my writeup to web challenges “<a href="https://ctf.sekai.team/challenges#Bottle-Poem-29">Bottle Poem</a>”, “<a href="https://ctf.sekai.team/challenges#Issues-33">Issues</a>” and reverse challenge “<a href="https://ctf.sekai.team/challenges#Perfect-Match-X-treme-44">Perfect Match X-treme</a>” in <a href="https://ctf.sekai.team/">SekaiCTF 2022</a>. The official source code and solution provided by the challenge authors are here: <a href="https://github.com/project-sekai-ctf/sekaictf-2022">https://github.com/project-sekai-ctf/sekaictf-2022</a>. I started doing the CTF when I joined a team halfway through the CTF. The exploits and skills involved in these 3 challenges in this writeup includes local file inclusion (LFI), unsafe deserialization and remote code execution (RCE), improper use of JWKS, open redirect, Unity game reversing and general/reversing tooling.</p>
 
 <p>On this page:</p>
 
@@ -219,7 +219,7 @@ openssl rsa <span class="nt">-in</span> rsa.private <span class="nt">-out</span>
 
 <h2 id="perfect-match-x-treme">Perfect Match X-treme</h2>
 
-<p>This challenge has a downloadable, which contains a Unity game. The game looks similar to Perfect Match minigame in Fall Guys: Ultimate Knockout (https://youtu.be/edifg0uMzxU). The gameplay is to remember the fruits the tiles corresponding to in each round, and stand on the tiles matching the fruit shown on the screen at the end of the round to progress into the next round.</p>
+<p>This challenge has a downloadable, which contains a Unity game. The game looks similar to Perfect Match minigame in Fall Guys: Ultimate Knockout (<a href="https://youtu.be/edifg0uMzxU">https://youtu.be/edifg0uMzxU</a>). The gameplay is to remember the fruits the tiles corresponding to in each round, and stand on the tiles matching the fruit shown on the screen at the end of the round to progress into the next round.</p>
 
 <p><img src="/assets/image/sekaictf-2022-writeup/perfect-match-x-treme-game.png" alt="Challenge screenshot." /></p>
 

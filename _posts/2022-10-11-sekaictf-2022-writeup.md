@@ -6,7 +6,7 @@ tags: [ctf, ctf writeup]
 
 *Note: Some of the links to external sites about the challenge in this post might become unavailable in the future.*
 
-This is my writeup to web challenges "[Bottle Poem](https://ctf.sekai.team/challenges#Bottle-Poem-29)", "[Issues](https://ctf.sekai.team/challenges#Issues-33)" and reverse challenge "[Perfect Match X-treme](https://ctf.sekai.team/challenges#Perfect-Match-X-treme-44)" in [SekaiCTF 2022](https://ctf.sekai.team/). I started doing the CTF when I joined a team halfway through the CTF. The exploits and skills involved in these 3 challenges in this writeup includes local file inclusion (LFI), unsafe deserialization and remote code execution (RCE), improper use of JWKS, open redirect, Unity game reversing and general/reversing tooling.
+This is my writeup to web challenges "[Bottle Poem](https://ctf.sekai.team/challenges#Bottle-Poem-29)", "[Issues](https://ctf.sekai.team/challenges#Issues-33)" and reverse challenge "[Perfect Match X-treme](https://ctf.sekai.team/challenges#Perfect-Match-X-treme-44)" in [SekaiCTF 2022](https://ctf.sekai.team/). The official source code and solution provided by the challenge authors are here: <https://github.com/project-sekai-ctf/sekaictf-2022>. I started doing the CTF when I joined a team halfway through the CTF. The exploits and skills involved in these 3 challenges in this writeup includes local file inclusion (LFI), unsafe deserialization and remote code execution (RCE), improper use of JWKS, open redirect, Unity game reversing and general/reversing tooling.
 
 On this page:
 
@@ -185,7 +185,7 @@ I exploited the use of JWKS and open redirect in the challenge.
 
 ## Perfect Match X-treme
 
-This challenge has a downloadable, which contains a Unity game. The game looks similar to Perfect Match minigame in Fall Guys: Ultimate Knockout (https://youtu.be/edifg0uMzxU). The gameplay is to remember the fruits the tiles corresponding to in each round, and stand on the tiles matching the fruit shown on the screen at the end of the round to progress into the next round.
+This challenge has a downloadable, which contains a Unity game. The game looks similar to Perfect Match minigame in Fall Guys: Ultimate Knockout (<https://youtu.be/edifg0uMzxU>). The gameplay is to remember the fruits the tiles corresponding to in each round, and stand on the tiles matching the fruit shown on the screen at the end of the round to progress into the next round.
 
 ![Challenge screenshot.](/assets/image/sekaictf-2022-writeup/perfect-match-x-treme-game.png)
 
