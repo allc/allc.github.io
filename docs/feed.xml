@@ -1,4 +1,162 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.8.7">Jekyll</generator><link href="https://www.cjxol.com/feed.xml" rel="self" type="application/atom+xml" /><link href="https://www.cjxol.com/" rel="alternate" type="text/html" /><updated>2022-10-12T19:49:55+01:00</updated><id>https://www.cjxol.com/feed.xml</id><title type="html">cjxol.com</title><entry><title type="html">LakeCTF Qualifications People (Web) Writeup</title><link href="https://www.cjxol.com/posts/lakectf-people-writeup/" rel="alternate" type="text/html" title="LakeCTF Qualifications People (Web) Writeup" /><published>2022-10-12T00:00:00+01:00</published><updated>2022-10-12T00:00:00+01:00</updated><id>https://www.cjxol.com/posts/lakectf-people-writeup</id><content type="html" xml:base="https://www.cjxol.com/posts/lakectf-people-writeup/"><![CDATA[<p><em>Note: Some of the links to external sites about the challenge in this post might become unavailable in the future.</em></p>
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.8.7">Jekyll</generator><link href="https://www.cjxol.com/feed.xml" rel="self" type="application/atom+xml" /><link href="https://www.cjxol.com/" rel="alternate" type="text/html" /><updated>2022-10-19T20:58:49+01:00</updated><id>https://www.cjxol.com/feed.xml</id><title type="html">cjxol.com</title><entry><title type="html">x86-64 Assembly Cheat Sheet</title><link href="https://www.cjxol.com/posts/x86-64/" rel="alternate" type="text/html" title="x86-64 Assembly Cheat Sheet" /><published>2022-10-19T00:00:00+01:00</published><updated>2022-10-19T00:00:00+01:00</updated><id>https://www.cjxol.com/posts/x86-64</id><content type="html" xml:base="https://www.cjxol.com/posts/x86-64/"><![CDATA[<p>This is still being updated upon I find useful things.</p>
+
+<h2 id="registers">Registers</h2>
+
+<h3 id="general-purpose-registers">General-Purpose Registers</h3>
+
+<table>
+  <thead>
+    <tr>
+      <th>qword</th>
+      <th>dword</th>
+      <th>word</th>
+      <th>high byte</th>
+      <th>low byte</th>
+      <th> </th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>rax</td>
+      <td>eax</td>
+      <td>ax</td>
+      <td>ah</td>
+      <td>al</td>
+      <td> </td>
+    </tr>
+    <tr>
+      <td>rbx</td>
+      <td>ebx</td>
+      <td>bx</td>
+      <td>bh</td>
+      <td>bl</td>
+      <td> </td>
+    </tr>
+    <tr>
+      <td>rcx</td>
+      <td>ecx</td>
+      <td>cx</td>
+      <td>ch</td>
+      <td>cl</td>
+      <td> </td>
+    </tr>
+    <tr>
+      <td>rdx</td>
+      <td>edx</td>
+      <td>dx</td>
+      <td>dh</td>
+      <td>dl</td>
+      <td> </td>
+    </tr>
+    <tr>
+      <td>rbp</td>
+      <td>ebp</td>
+      <td>bp</td>
+      <td>bph</td>
+      <td>bpl</td>
+      <td>base pointer</td>
+    </tr>
+    <tr>
+      <td>rsp</td>
+      <td>esp</td>
+      <td>sp</td>
+      <td>sph</td>
+      <td>spl</td>
+      <td>stack pointer</td>
+    </tr>
+    <tr>
+      <td>rsi</td>
+      <td>esi</td>
+      <td>si</td>
+      <td>sih</td>
+      <td>sil</td>
+      <td> </td>
+    </tr>
+    <tr>
+      <td>rdi</td>
+      <td>edi</td>
+      <td>di</td>
+      <td>dih</td>
+      <td>dil</td>
+      <td> </td>
+    </tr>
+    <tr>
+      <td>r8</td>
+      <td>r8d</td>
+      <td>r8w</td>
+      <td> </td>
+      <td> </td>
+      <td> </td>
+    </tr>
+    <tr>
+      <td>…</td>
+      <td>…</td>
+      <td>…</td>
+      <td> </td>
+      <td> </td>
+      <td> </td>
+    </tr>
+    <tr>
+      <td>r15</td>
+      <td>r15d</td>
+      <td>r15w</td>
+      <td> </td>
+      <td> </td>
+      <td> </td>
+    </tr>
+  </tbody>
+</table>
+
+<h3 id="calling-convention">Calling Convention</h3>
+
+<p>In <a href="https://riptutorial.com/x86/example/11197/64-bit-system-v">64-bit System V</a>:</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Argument</th>
+      <th>1</th>
+      <th>2</th>
+      <th>3</th>
+      <th>4</th>
+      <th>5</th>
+      <th>6</th>
+      <th>7</th>
+      <th>8</th>
+      <th>9</th>
+      <th>10</th>
+      <th>…</th>
+      <th>return</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Location</td>
+      <td>rdi</td>
+      <td>rsi</td>
+      <td>rdx</td>
+      <td>rcx</td>
+      <td>r8</td>
+      <td>r9</td>
+      <td>r10</td>
+      <td>r11</td>
+      <td>[rsp]</td>
+      <td>[rsp+8]</td>
+      <td>…</td>
+      <td>rax</td>
+    </tr>
+  </tbody>
+</table>
+
+<h2 id="conditional-jump-instructions">Conditional Jump Instructions</h2>
+
+<p><a href="http://unixwiz.net/techtips/x86-jumps.html">List of conditional jumps</a>.</p>
+
+<h2 id="more-resources">More Resources</h2>
+
+<ul>
+  <li><a href="https://ike.mahaloz.re/">`Ike: The Systems Hacking Handbook</a></li>
+</ul>]]></content><author><name></name></author><category term="cheat sheet" /><category term="assembly" /><summary type="html"><![CDATA[This is still being updated upon I find useful things.]]></summary></entry><entry><title type="html">LakeCTF Qualifications People (Web) Writeup</title><link href="https://www.cjxol.com/posts/lakectf-people-writeup/" rel="alternate" type="text/html" title="LakeCTF Qualifications People (Web) Writeup" /><published>2022-10-12T00:00:00+01:00</published><updated>2022-10-12T00:00:00+01:00</updated><id>https://www.cjxol.com/posts/lakectf-people-writeup</id><content type="html" xml:base="https://www.cjxol.com/posts/lakectf-people-writeup/"><![CDATA[<p><em>Note: Some of the links to external sites about the challenge in this post might become unavailable in the future.</em></p>
 
 <p>This is my writeup to web challenge “<a href="https://ctf.polygl0ts.ch/challenges#People-18">People</a>” in <a href="https://ctf.polygl0ts.ch/">LakeCTF</a> Qualifications round. LakeCTF is orgnised by EPFL’s CTF team <a href="https://polygl0ts.ch/">polygl0ts</a>. This challenge is solved by 36 teams out of 191 teams scored at least 1 point on the scoreboard. In this challenge I exploited XSS and improper configuration of CSP, more specifically omitting <code class="highlighter-rouge">base-uri</code>.</p>
 

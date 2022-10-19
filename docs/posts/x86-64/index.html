@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1"><!-- Begin Jekyll SEO tag v2.8.0 -->
+<title>x86-64 Assembly Cheat Sheet | cjxol.com</title>
+<meta name="generator" content="Jekyll v3.8.7" />
+<meta property="og:title" content="x86-64 Assembly Cheat Sheet" />
+<meta property="og:locale" content="en_US" />
+<meta name="description" content="This is still being updated upon I find useful things." />
+<meta property="og:description" content="This is still being updated upon I find useful things." />
+<link rel="canonical" href="https://www.cjxol.com/posts/x86-64/" />
+<meta property="og:url" content="https://www.cjxol.com/posts/x86-64/" />
+<meta property="og:site_name" content="cjxol.com" />
+<meta property="og:type" content="article" />
+<meta property="article:published_time" content="2022-10-19T00:00:00+01:00" />
+<meta name="twitter:card" content="summary" />
+<meta property="twitter:title" content="x86-64 Assembly Cheat Sheet" />
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"BlogPosting","dateModified":"2022-10-19T00:00:00+01:00","datePublished":"2022-10-19T00:00:00+01:00","description":"This is still being updated upon I find useful things.","headline":"x86-64 Assembly Cheat Sheet","mainEntityOfPage":{"@type":"WebPage","@id":"https://www.cjxol.com/posts/x86-64/"},"url":"https://www.cjxol.com/posts/x86-64/"}</script>
+<!-- End Jekyll SEO tag -->
+<link rel="stylesheet" href="/assets/main.css"><link type="application/atom+xml" rel="alternate" href="https://www.cjxol.com/feed.xml" title="cjxol.com" /></head>
+<body><header class="site-header" role="banner">
+
+  <div class="wrapper"><a class="site-title" rel="author" href="/">cjxol.com</a><nav class="site-nav">
+        <input type="checkbox" id="nav-trigger" class="nav-trigger" />
+        <label for="nav-trigger">
+          <span class="menu-icon">
+            <svg viewBox="0 0 18 15" width="18px" height="15px">
+              <path d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.032C17.335,0,18,0.665,18,1.484L18,1.484z M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.032C17.335,6.031,18,6.696,18,7.516L18,7.516z M18,13.516C18,14.335,17.335,15,16.516,15H1.484 C0.665,15,0,14.335,0,13.516l0,0c0-0.82,0.665-1.483,1.484-1.483h15.032C17.335,12.031,18,12.695,18,13.516L18,13.516z"/>
+            </svg>
+          </span>
+        </label>
+
+        <div class="trigger"><a class="page-link" href="/about/">About</a></div>
+      </nav></div>
+</header>
+<main class="page-content" aria-label="Content">
+      <div class="wrapper">
+        <article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
+
+  <header class="post-header">
+    <h1 class="post-title p-name" itemprop="name headline">x86-64 Assembly Cheat Sheet</h1>
+    <p class="post-meta">
+      <time class="dt-published" datetime="2022-10-19T00:00:00+01:00" itemprop="datePublished">Oct 19, 2022
+      </time></p>
+  </header>
+
+  <div class="post-content e-content" itemprop="articleBody">
+    <p>This is still being updated upon I find useful things.</p>
+
+<h2 id="registers">Registers</h2>
+
+<h3 id="general-purpose-registers">General-Purpose Registers</h3>
+
+<table>
+  <thead>
+    <tr>
+      <th>qword</th>
+      <th>dword</th>
+      <th>word</th>
+      <th>high byte</th>
+      <th>low byte</th>
+      <th> </th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>rax</td>
+      <td>eax</td>
+      <td>ax</td>
+      <td>ah</td>
+      <td>al</td>
+      <td> </td>
+    </tr>
+    <tr>
+      <td>rbx</td>
+      <td>ebx</td>
+      <td>bx</td>
+      <td>bh</td>
+      <td>bl</td>
+      <td> </td>
+    </tr>
+    <tr>
+      <td>rcx</td>
+      <td>ecx</td>
+      <td>cx</td>
+      <td>ch</td>
+      <td>cl</td>
+      <td> </td>
+    </tr>
+    <tr>
+      <td>rdx</td>
+      <td>edx</td>
+      <td>dx</td>
+      <td>dh</td>
+      <td>dl</td>
+      <td> </td>
+    </tr>
+    <tr>
+      <td>rbp</td>
+      <td>ebp</td>
+      <td>bp</td>
+      <td>bph</td>
+      <td>bpl</td>
+      <td>base pointer</td>
+    </tr>
+    <tr>
+      <td>rsp</td>
+      <td>esp</td>
+      <td>sp</td>
+      <td>sph</td>
+      <td>spl</td>
+      <td>stack pointer</td>
+    </tr>
+    <tr>
+      <td>rsi</td>
+      <td>esi</td>
+      <td>si</td>
+      <td>sih</td>
+      <td>sil</td>
+      <td> </td>
+    </tr>
+    <tr>
+      <td>rdi</td>
+      <td>edi</td>
+      <td>di</td>
+      <td>dih</td>
+      <td>dil</td>
+      <td> </td>
+    </tr>
+    <tr>
+      <td>r8</td>
+      <td>r8d</td>
+      <td>r8w</td>
+      <td> </td>
+      <td> </td>
+      <td> </td>
+    </tr>
+    <tr>
+      <td>…</td>
+      <td>…</td>
+      <td>…</td>
+      <td> </td>
+      <td> </td>
+      <td> </td>
+    </tr>
+    <tr>
+      <td>r15</td>
+      <td>r15d</td>
+      <td>r15w</td>
+      <td> </td>
+      <td> </td>
+      <td> </td>
+    </tr>
+  </tbody>
+</table>
+
+<h3 id="calling-convention">Calling Convention</h3>
+
+<p>In <a href="https://riptutorial.com/x86/example/11197/64-bit-system-v">64-bit System V</a>:</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Argument</th>
+      <th>1</th>
+      <th>2</th>
+      <th>3</th>
+      <th>4</th>
+      <th>5</th>
+      <th>6</th>
+      <th>7</th>
+      <th>8</th>
+      <th>9</th>
+      <th>10</th>
+      <th>…</th>
+      <th>return</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Location</td>
+      <td>rdi</td>
+      <td>rsi</td>
+      <td>rdx</td>
+      <td>rcx</td>
+      <td>r8</td>
+      <td>r9</td>
+      <td>r10</td>
+      <td>r11</td>
+      <td>[rsp]</td>
+      <td>[rsp+8]</td>
+      <td>…</td>
+      <td>rax</td>
+    </tr>
+  </tbody>
+</table>
+
+<h2 id="conditional-jump-instructions">Conditional Jump Instructions</h2>
+
+<p><a href="http://unixwiz.net/techtips/x86-jumps.html">List of conditional jumps</a>.</p>
+
+<h2 id="more-resources">More Resources</h2>
+
+<ul>
+  <li><a href="https://ike.mahaloz.re/">`Ike: The Systems Hacking Handbook</a></li>
+</ul>
+
+  </div><a class="u-url" href="/posts/x86-64/" hidden></a>
+</article>
+
+      </div>
+    </main><footer class="site-footer h-card">
+  <data class="u-url" href="/"></data>
+
+  <div class="wrapper">
+
+    <h2 class="footer-heading">cjxol.com</h2>
+
+    <div class="footer-col-wrapper">
+      <div class="footer-col footer-col-1">
+        <ul class="contact-list">
+          <li class="p-name">cjxol.com</li><li><a class="u-email" href="mailto:i@cjxol.com">i@cjxol.com</a></li></ul>
+      </div>
+
+      <div class="footer-col footer-col-2"><ul class="social-media-list"><li><a href="https://github.com/allc"><svg class="svg-icon"><use xlink:href="/assets/minima-social-icons.svg#github"></use></svg> <span class="username">allc</span></a></li></ul>
+</div>
+
+      <div class="footer-col footer-col-3">
+        <p></p>
+      </div>
+    </div>
+
+  </div>
+
+</footer>
+</body>
+
+</html>
