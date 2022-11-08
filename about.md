@@ -8,13 +8,13 @@ I write stuff here as blog posts. I put random things that I come across in the 
 
 ## About Me
 
-I'm a Computer Science graduate, and now doing MSc Artificial Intelligent. I write code (mostly in Python, also use Java, and currently learning Rust), do coding challenges, play CTFs, and do hiking. My area of interests includes software development, natural language understanding, computer vision and reinforcement learning.
+I'm a Computer Science/Artificial Intelligence graduate. I write code (mostly in Python, also use Java, and currently learning Rust), do coding challenges, play CTFs, and do hiking. I am also interested in topics about technology, cyber security, game design and mental health/neurodiversity.
 
 Feel free to drop me an email at <i@cjxol.com>.
 
-I'm looking for something to do or a Computer Science related postgrad opportunity.
+I'm looking for something to do either a Computer Science related job or postgrad.
 
-<small>Last updated on 18th June 2022.</small>
+<small>Last updated on 8th Nov 2022.</small>
 
 ## Readings
 
