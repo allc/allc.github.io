@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.8.7">Jekyll</generator><link href="https://www.cjxol.com/feed.xml" rel="self" type="application/atom+xml" /><link href="https://www.cjxol.com/" rel="alternate" type="text/html" /><updated>2022-11-10T17:55:32+00:00</updated><id>https://www.cjxol.com/feed.xml</id><title type="html">cjxol.com</title><entry><title type="html">x86-64 Assembly Cheat Sheet</title><link href="https://www.cjxol.com/posts/x86-64-cheat-sheet/" rel="alternate" type="text/html" title="x86-64 Assembly Cheat Sheet" /><published>2022-10-19T00:00:00+01:00</published><updated>2022-10-19T00:00:00+01:00</updated><id>https://www.cjxol.com/posts/x86-64-cheat-sheet</id><content type="html" xml:base="https://www.cjxol.com/posts/x86-64-cheat-sheet/"><![CDATA[<p>This is still being updated upon I find useful things.</p>
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.8.7">Jekyll</generator><link href="https://www.cjxol.com/feed.xml" rel="self" type="application/atom+xml" /><link href="https://www.cjxol.com/" rel="alternate" type="text/html" /><updated>2022-11-10T18:02:40+00:00</updated><id>https://www.cjxol.com/feed.xml</id><title type="html">cjxol.com</title><entry><title type="html">x86-64 Assembly Cheat Sheet</title><link href="https://www.cjxol.com/posts/x86-64-cheat-sheet/" rel="alternate" type="text/html" title="x86-64 Assembly Cheat Sheet" /><published>2022-10-19T00:00:00+01:00</published><updated>2022-10-19T00:00:00+01:00</updated><id>https://www.cjxol.com/posts/x86-64-cheat-sheet</id><content type="html" xml:base="https://www.cjxol.com/posts/x86-64-cheat-sheet/"><![CDATA[<p>This is still being updated upon I find useful things.</p>
 
 <h2 id="registers">Registers</h2>
 
@@ -756,7 +756,7 @@ for input_id in input_ids:
 
 <script defer="" src="https://pyscript.net/alpha/pyscript.js"></script>]]></content><author><name></name></author><summary type="html"><![CDATA[]]></summary></entry><entry><title type="html">Awesome Collection</title><link href="https://www.cjxol.com/posts/awesome-collection/" rel="alternate" type="text/html" title="Awesome Collection" /><published>2022-06-17T00:00:00+01:00</published><updated>2022-06-17T00:00:00+01:00</updated><id>https://www.cjxol.com/posts/awesome-collection</id><content type="html" xml:base="https://www.cjxol.com/posts/awesome-collection/"><![CDATA[<p>This post is being continuously updated with a collection of good learning resources.</p>
 
-<p><small>Last updated on 18th June 2022.</small></p>
+<p><small>Last updated on 11th Nov 2022.</small></p>
 
 <h2 id="legendres-symbol">Legendre’s Symbol</h2>
 

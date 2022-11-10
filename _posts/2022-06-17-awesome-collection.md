@@ -6,7 +6,7 @@ tags: [continuously updated]
 
 This post is being continuously updated with a collection of good learning resources.
 
-<small>Last updated on 18th June 2022.</small>
+<small>Last updated on 11th Nov 2022.</small>
 
 ## Legendre's Symbol
 
