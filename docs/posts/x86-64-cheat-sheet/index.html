@@ -197,15 +197,42 @@
   </tbody>
 </table>
 
+<p>Linux syscall follows a slightly different convention (see <code class="highlighter-rouge">man syscall</code>):</p>
+
+<p>In x86-64,, the syscall number is passed using <code class="highlighter-rouge">rax</code>, and return value is stored in <code class="highlighter-rouge">rax</code>, and the registers used to pass the arguments are listed in the table below:</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Argument</th>
+      <th>1</th>
+      <th>2</th>
+      <th>3</th>
+      <th>4</th>
+      <th>5</th>
+      <th>6</th>
+      <th>return</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Location</td>
+      <td>rdi</td>
+      <td>rsi</td>
+      <td>rdx</td>
+      <td>r10</td>
+      <td>r8</td>
+      <td>r9</td>
+      <td>rax</td>
+    </tr>
+  </tbody>
+</table>
+
+<p><a href="https://filippo.io/linux-syscall-table/">List of linux syscalls</a>.</p>
+
 <h2 id="conditional-jump-instructions">Conditional Jump Instructions</h2>
 
 <p><a href="http://unixwiz.net/techtips/x86-jumps.html">List of conditional jumps</a>.</p>
-
-<h2 id="extra">Extra</h2>
-
-<h3 id="linux-syscalls">Linux Syscalls</h3>
-
-<p><a href="https://filippo.io/linux-syscall-table/">List of linux syscalls</a>.</p>
 
 <h2 id="more-resources">More Resources</h2>
 
