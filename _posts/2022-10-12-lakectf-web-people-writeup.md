@@ -1,7 +1,7 @@
 ---
 layout: post
 title: LakeCTF Qualifications People (Web) Writeup
-tags: [ctf, ctf writeup]
+tags: [ctf, ctf writeup, ctf web]
 ---
 
 *Note: Some of the links to external sites about the challenge in this post might become unavailable in the future.*

