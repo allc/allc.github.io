@@ -8,13 +8,36 @@ I write stuff here as blog posts. I put random things that I come across in the 
 
 ## About Me
 
-I'm a Computer Science/Artificial Intelligence graduate. I write code (mostly in Python, also use Java, and currently learning Rust), do coding challenges, play CTFs, and do hiking. I am also interested in topics about technology, cyber security, game design and mental health/neurodiversity.
+I'm a Computer Science/Artificial Intelligence graduate. I write code, do coding challenges, play CTFs, and do hiking. I am also interested in topics about technology, cyber security, game design and mental health/neurodiversity.
 
 Feel free to drop me an email at <i@cjxol.com>.
 
 I'm looking for something to do either a Computer Science related job or postgrad.
 
-<small>Last updated on 8th Nov 2022.</small>
+### Programming
+
+I write code in Python now, and I am learning Rust. I wrote code in Java before.
+
+I am on my way doing full stack web dev using Node.js Express framework, Prisma ORM with PostgreSQL and React. I used Django framework for web dev before.
+
+I have also touched Haskell, Assembly (x86-64, I don't remember much about ARM assembly), embedded programming for AVR microcontroller using C to make operating system components and applications.
+
+### Cyber Security and CTFs
+
+CTF Web and Misc enjoyer. On my way to git gud in other categories too. Still learning to make good write-ups, read my write-ups in my [posts](/).
+
+- First 5 finished all challenges in [AUS CSE 365](https://dojo.pwn.college/cse365/) Fall 2022 on pwn.college.
+- Top 10 team in [HTB University CTF 2022](https://ctf.hackthebox.com/event/details/htb-university-ctf-2022-supernatural-hacks-696).
+
+### Hiking
+
+A lot of hills and not hills!
+
+- National parks and not national parks including New Forest, South Downs, Dartmoor, Lake District, Peak District, Yorkshire Dales, Norfolk Coast AONB (England), Brecon Beacons, Snowdonia (Wales), Loch Lomond, Cairngorms (Scotland), Cinque Terre (Italy).
+
+- [Munros](https://en.wikipedia.org/wiki/Munro) and other peaks bagged including Ben Macdui (1309 m), Cairn Gorm (1245 m), Aonach Mòr (1221 m), Mayar (928 m) (Scotland), Snowdon (1085 m), Pen y Fan (886 m) (Wales), Scafell Pike (978 m) (England).
+
+<small>Last updated on 23rd Dec 2022.</small>
 
 ## Readings
 
