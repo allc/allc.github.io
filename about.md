@@ -26,7 +26,7 @@ I have also touched Haskell, Assembly (x86-64, I don't remember much about ARM a
 
 CTF Web and Misc enjoyer. On my way to git gud in other categories too. Still learning to make good write-ups, read my write-ups in my [posts](/).
 
-- First 5 finished all challenges in [AUS CSE 365](https://dojo.pwn.college/cse365/) Fall 2022 on pwn.college.
+- First 5 finished all 167 challenges in [AUS CSE 365](https://dojo.pwn.college/cse365/) Fall 2022 on pwn.college.
 - Top 10 team in [HTB University CTF 2022](https://ctf.hackthebox.com/event/details/htb-university-ctf-2022-supernatural-hacks-696).
 
 ### Hiking
