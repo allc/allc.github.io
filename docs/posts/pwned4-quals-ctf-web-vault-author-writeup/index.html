@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1"><!-- Begin Jekyll SEO tag v2.8.0 -->
+<title>pwnEd4 Quals CTF Vault (Web) Author Writeup | cjxol.com</title>
+<meta name="generator" content="Jekyll v3.8.7" />
+<meta property="og:title" content="pwnEd4 Quals CTF Vault (Web) Author Writeup" />
+<meta property="og:locale" content="en_US" />
+<meta name="description" content="Challenge code and is available at https://github.com/allc/Vault-CTF-Chall." />
+<meta property="og:description" content="Challenge code and is available at https://github.com/allc/Vault-CTF-Chall." />
+<link rel="canonical" href="https://www.cjxol.com/posts/pwned4-quals-ctf-web-vault-author-writeup/" />
+<meta property="og:url" content="https://www.cjxol.com/posts/pwned4-quals-ctf-web-vault-author-writeup/" />
+<meta property="og:site_name" content="cjxol.com" />
+<meta property="og:type" content="article" />
+<meta property="article:published_time" content="2023-02-20T00:00:00+00:00" />
+<meta name="twitter:card" content="summary" />
+<meta property="twitter:title" content="pwnEd4 Quals CTF Vault (Web) Author Writeup" />
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"BlogPosting","dateModified":"2023-02-20T00:00:00+00:00","datePublished":"2023-02-20T00:00:00+00:00","description":"Challenge code and is available at https://github.com/allc/Vault-CTF-Chall.","headline":"pwnEd4 Quals CTF Vault (Web) Author Writeup","mainEntityOfPage":{"@type":"WebPage","@id":"https://www.cjxol.com/posts/pwned4-quals-ctf-web-vault-author-writeup/"},"url":"https://www.cjxol.com/posts/pwned4-quals-ctf-web-vault-author-writeup/"}</script>
+<!-- End Jekyll SEO tag -->
+<link rel="stylesheet" href="/assets/main.css"><link type="application/atom+xml" rel="alternate" href="https://www.cjxol.com/feed.xml" title="cjxol.com" /></head>
+<body><header class="site-header" role="banner">
+
+  <div class="wrapper"><a class="site-title" rel="author" href="/">cjxol.com</a><nav class="site-nav">
+        <input type="checkbox" id="nav-trigger" class="nav-trigger" />
+        <label for="nav-trigger">
+          <span class="menu-icon">
+            <svg viewBox="0 0 18 15" width="18px" height="15px">
+              <path d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.032C17.335,0,18,0.665,18,1.484L18,1.484z M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.032C17.335,6.031,18,6.696,18,7.516L18,7.516z M18,13.516C18,14.335,17.335,15,16.516,15H1.484 C0.665,15,0,14.335,0,13.516l0,0c0-0.82,0.665-1.483,1.484-1.483h15.032C17.335,12.031,18,12.695,18,13.516L18,13.516z"/>
+            </svg>
+          </span>
+        </label>
+
+        <div class="trigger"><a class="page-link" href="/about/">About</a></div>
+      </nav></div>
+</header>
+<main class="page-content" aria-label="Content">
+      <div class="wrapper">
+        <article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
+
+  <header class="post-header">
+    <h1 class="post-title p-name" itemprop="name headline">pwnEd4 Quals CTF Vault (Web) Author Writeup</h1>
+    <p class="post-meta">
+      <time class="dt-published" datetime="2023-02-20T00:00:00+00:00" itemprop="datePublished">Feb 20, 2023
+      </time></p>
+  </header>
+
+  <div class="post-content e-content" itemprop="articleBody">
+    <p>Challenge code and is available at <a href="https://github.com/allc/Vault-CTF-Chall">https://github.com/allc/Vault-CTF-Chall</a>.</p>
+
+<p>This is my writeup to the web challenge I created for <a href="https://pwned.sigint.mx/">pwnEd4</a> Quals CTF organised by University of Edinburgh’s cyber security society <a href="https://sigint.mx/">SIGINT</a>. The online CTF was on 18th and 19th for 32 hours. With over 30 teams submitted at least one flag, only 2 teams successfully solved this web challenge.</p>
+
+<p>This challenge exploits improper use of OAuth2 for authentication, more specifically with Implicit Flow. It is inspired by <a href="https://github.com/allc/CTF-Archive-App/commit/e69dee6244ae723780845d8e54e71b82720fafc8">a vulnerability I made in my own project</a>, as well as similar issues found in the wild (in my opinion this can partly attribute to developer docs failing to make it clear about the danger of using OAuth2 Implicit Grant).</p>
+
+<p>To understand this challenge, it is helpful to know about both OAuth2 Authorization Code Grant and Implicit Grant, and here are some resources: <a href="https://developer.okta.com/blog/2018/04/10/oauth-authorization-code-grant-type">https://developer.okta.com/blog/2018/04/10/oauth-authorization-code-grant-type</a> and <a href="https://developer.okta.com/blog/2018/05/24/what-is-the-oauth2-implicit-grant-type">https://developer.okta.com/blog/2018/05/24/what-is-the-oauth2-implicit-grant-type</a>.</p>
+
+<h2 id="the-challenge">The Challenge</h2>
+
+<p>The challenges has a “Vault” app, where the flag is stored in.</p>
+
+<p><img src="/assets/image/pwned4-quals-ctf-web-vault-author-writeup/vault.png" alt="Vault" /></p>
+
+<p>Clicking on “View flag”, it redirects to the auth server to login. Logging in with a newly created account, it redirects back to the Vault app’s flag page, however, it says do not have permission to view the flag.</p>
+
+<p>In the auth service, any registered user can create apps.</p>
+
+<p><img src="/assets/image/pwned4-quals-ctf-web-vault-author-writeup/app.png" alt="App config page in auth service" /></p>
+
+<p>When “publishing” the app, the admin bot will try to authorize the app, resulting in a request to the redirect URL with the authorization code.</p>
+
+<h2 id="the-solve">The Solve</h2>
+
+<p>Substituting the code with the one in admin bot’s request to login to Vault would not work, as the OAuth2 server will be able to tell the code is not for Vault thus not valid, when Vault exchanges token using the code along with its client ID and secret.</p>
+
+<p>The solution to this challenge is to exchange the authorization code for access token with the valid client ID and client secret at auth service’s <code class="highlighter-rouge">/oauth2/token</code> endpoint, and substitute the token into Vault’s implicit flow callback.</p>
+
+<p>There are two hints in the challenge that the Vault app supports implicit flow. One is on the auth service config page, where it can generates OAuth2 URL for an app. In the response type selection, there is a “token” option (though it’s on the auth service, it’s in a CTF challenge, it must be relevant :P). Replace “response_type” from <code class="highlighter-rouge">code</code> to <code class="highlighter-rouge">token</code> in the login page and proceed the authorisation normally will confirm Vault supports implicit flow. Another is on the screen confirming authorising Vault app, click “Cancel”, the callback page will render Javascript tries to use implicit flow.</p>
+
+<p><img src="/assets/image/pwned4-quals-ctf-web-vault-author-writeup/callback-source.png" alt="App config page in auth service" /></p>
+
+<p>To solve the challenge less painfully, there are some details. One is that the access code can only be used to exchange for token once, within valid time. Another is “state” only stay valid before sent to callback endpoint in Vault. To generate a new valid state, click on “Login” in Vault again, and the state can only be used with the session cookie.</p>
+
+<h2 id="conclusion">Conclusion</h2>
+
+<p>OAuth2 is for authorisation, and can be dangerous used for authentication without additional checks. Implicit Grant should be avoided. Developer docs should make clear of security implications.</p>
+
+  </div><a class="u-url" href="/posts/pwned4-quals-ctf-web-vault-author-writeup/" hidden></a>
+</article>
+
+      </div>
+    </main><footer class="site-footer h-card">
+  <data class="u-url" href="/"></data>
+
+  <div class="wrapper">
+
+    <h2 class="footer-heading">cjxol.com</h2>
+
+    <div class="footer-col-wrapper">
+      <div class="footer-col footer-col-1">
+        <ul class="contact-list">
+          <li class="p-name">cjxol.com</li><li><a class="u-email" href="mailto:i@cjxol.com">i@cjxol.com</a></li></ul>
+      </div>
+
+      <div class="footer-col footer-col-2"><ul class="social-media-list"><li><a href="https://github.com/allc"><svg class="svg-icon"><use xlink:href="/assets/minima-social-icons.svg#github"></use></svg> <span class="username">allc</span></a></li></ul>
+</div>
+
+      <div class="footer-col footer-col-3">
+        <p></p>
+      </div>
+    </div>
+
+  </div>
+
+</footer>
+</body>
+
+</html>

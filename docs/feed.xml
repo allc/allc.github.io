@@ -1,4 +1,40 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.8.7">Jekyll</generator><link href="https://www.cjxol.com/feed.xml" rel="self" type="application/atom+xml" /><link href="https://www.cjxol.com/" rel="alternate" type="text/html" /><updated>2023-02-09T14:37:00+00:00</updated><id>https://www.cjxol.com/feed.xml</id><title type="html">cjxol.com</title><entry><title type="html">HTB University CTF 2022 Deaths Glance (Misc) Writeup</title><link href="https://www.cjxol.com/posts/htb-uni-ctf-2022-misc-writeup/" rel="alternate" type="text/html" title="HTB University CTF 2022 Deaths Glance (Misc) Writeup" /><published>2022-12-08T00:00:00+00:00</published><updated>2022-12-08T00:00:00+00:00</updated><id>https://www.cjxol.com/posts/htb-uni-ctf-2022-misc-writeup</id><content type="html" xml:base="https://www.cjxol.com/posts/htb-uni-ctf-2022-misc-writeup/"><![CDATA[<p>This is my writeup for the only Misc challenge “Deaths Glance” in <a href="https://ctf.hackthebox.com/event/details/htb-university-ctf-2022-supernatural-hacks-696">HTB University CTF 2022</a> (<a href="https://ctftime.org/event/1825">on CTFtime</a>).</p>
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.8.7">Jekyll</generator><link href="https://www.cjxol.com/feed.xml" rel="self" type="application/atom+xml" /><link href="https://www.cjxol.com/" rel="alternate" type="text/html" /><updated>2023-02-20T23:04:35+00:00</updated><id>https://www.cjxol.com/feed.xml</id><title type="html">cjxol.com</title><entry><title type="html">pwnEd4 Quals CTF Vault (Web) Author Writeup</title><link href="https://www.cjxol.com/posts/pwned4-quals-ctf-web-vault-author-writeup/" rel="alternate" type="text/html" title="pwnEd4 Quals CTF Vault (Web) Author Writeup" /><published>2023-02-20T00:00:00+00:00</published><updated>2023-02-20T00:00:00+00:00</updated><id>https://www.cjxol.com/posts/pwned4-quals-ctf-web-vault-author-writeup</id><content type="html" xml:base="https://www.cjxol.com/posts/pwned4-quals-ctf-web-vault-author-writeup/"><![CDATA[<p>Challenge code and is available at <a href="https://github.com/allc/Vault-CTF-Chall">https://github.com/allc/Vault-CTF-Chall</a>.</p>
+
+<p>This is my writeup to the web challenge I created for <a href="https://pwned.sigint.mx/">pwnEd4</a> Quals CTF organised by University of Edinburgh’s cyber security society <a href="https://sigint.mx/">SIGINT</a>. The online CTF was on 18th and 19th for 32 hours. With over 30 teams submitted at least one flag, only 2 teams successfully solved this web challenge.</p>
+
+<p>This challenge exploits improper use of OAuth2 for authentication, more specifically with Implicit Flow. It is inspired by <a href="https://github.com/allc/CTF-Archive-App/commit/e69dee6244ae723780845d8e54e71b82720fafc8">a vulnerability I made in my own project</a>, as well as similar issues found in the wild (in my opinion this can partly attribute to developer docs failing to make it clear about the danger of using OAuth2 Implicit Grant).</p>
+
+<p>To understand this challenge, it is helpful to know about both OAuth2 Authorization Code Grant and Implicit Grant, and here are some resources: <a href="https://developer.okta.com/blog/2018/04/10/oauth-authorization-code-grant-type">https://developer.okta.com/blog/2018/04/10/oauth-authorization-code-grant-type</a> and <a href="https://developer.okta.com/blog/2018/05/24/what-is-the-oauth2-implicit-grant-type">https://developer.okta.com/blog/2018/05/24/what-is-the-oauth2-implicit-grant-type</a>.</p>
+
+<h2 id="the-challenge">The Challenge</h2>
+
+<p>The challenges has a “Vault” app, where the flag is stored in.</p>
+
+<p><img src="/assets/image/pwned4-quals-ctf-web-vault-author-writeup/vault.png" alt="Vault" /></p>
+
+<p>Clicking on “View flag”, it redirects to the auth server to login. Logging in with a newly created account, it redirects back to the Vault app’s flag page, however, it says do not have permission to view the flag.</p>
+
+<p>In the auth service, any registered user can create apps.</p>
+
+<p><img src="/assets/image/pwned4-quals-ctf-web-vault-author-writeup/app.png" alt="App config page in auth service" /></p>
+
+<p>When “publishing” the app, the admin bot will try to authorize the app, resulting in a request to the redirect URL with the authorization code.</p>
+
+<h2 id="the-solve">The Solve</h2>
+
+<p>Substituting the code with the one in admin bot’s request to login to Vault would not work, as the OAuth2 server will be able to tell the code is not for Vault thus not valid, when Vault exchanges token using the code along with its client ID and secret.</p>
+
+<p>The solution to this challenge is to exchange the authorization code for access token with the valid client ID and client secret at auth service’s <code class="highlighter-rouge">/oauth2/token</code> endpoint, and substitute the token into Vault’s implicit flow callback.</p>
+
+<p>There are two hints in the challenge that the Vault app supports implicit flow. One is on the auth service config page, where it can generates OAuth2 URL for an app. In the response type selection, there is a “token” option (though it’s on the auth service, it’s in a CTF challenge, it must be relevant :P). Replace “response_type” from <code class="highlighter-rouge">code</code> to <code class="highlighter-rouge">token</code> in the login page and proceed the authorisation normally will confirm Vault supports implicit flow. Another is on the screen confirming authorising Vault app, click “Cancel”, the callback page will render Javascript tries to use implicit flow.</p>
+
+<p><img src="/assets/image/pwned4-quals-ctf-web-vault-author-writeup/callback-source.png" alt="App config page in auth service" /></p>
+
+<p>To solve the challenge less painfully, there are some details. One is that the access code can only be used to exchange for token once, within valid time. Another is “state” only stay valid before sent to callback endpoint in Vault. To generate a new valid state, click on “Login” in Vault again, and the state can only be used with the session cookie.</p>
+
+<h2 id="conclusion">Conclusion</h2>
+
+<p>OAuth2 is for authorisation, and can be dangerous used for authentication without additional checks. Implicit Grant should be avoided. Developer docs should make clear of security implications.</p>]]></content><author><name></name></author><category term="ctf" /><category term="ctf writeup" /><category term="ctf web" /><category term="ctf neural network" /><summary type="html"><![CDATA[Challenge code and is available at https://github.com/allc/Vault-CTF-Chall.]]></summary></entry><entry><title type="html">HTB University CTF 2022 Deaths Glance (Misc) Writeup</title><link href="https://www.cjxol.com/posts/htb-uni-ctf-2022-misc-writeup/" rel="alternate" type="text/html" title="HTB University CTF 2022 Deaths Glance (Misc) Writeup" /><published>2022-12-08T00:00:00+00:00</published><updated>2022-12-08T00:00:00+00:00</updated><id>https://www.cjxol.com/posts/htb-uni-ctf-2022-misc-writeup</id><content type="html" xml:base="https://www.cjxol.com/posts/htb-uni-ctf-2022-misc-writeup/"><![CDATA[<p>This is my writeup for the only Misc challenge “Deaths Glance” in <a href="https://ctf.hackthebox.com/event/details/htb-university-ctf-2022-supernatural-hacks-696">HTB University CTF 2022</a> (<a href="https://ctftime.org/event/1825">on CTFtime</a>).</p>
 
 <p>The challenge was initially labelled as “easy” at the beginning of the event, and was changed to “medium” after 2 hours into the CTF with no solves to this challenge. Our team was the 2nd solved and submitted flag to this challenge, about one or two hours after the challenge first been solved about 24 hours into the CTF. There were 6 solves to this challenge in the 54 hours CTF with 328 teams submitted at least one flag.</p>
 
