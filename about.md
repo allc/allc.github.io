@@ -18,9 +18,9 @@ I'm looking for something to do either a Computer Science related job or postgra
 
 I write code in Python now, and I am learning Rust. I wrote code in Java before.
 
-I am on my way doing full stack web dev using Node.js Express framework, Prisma ORM with PostgreSQL and React. I used Django framework for web dev before.
+I used Django framework for web dev before.
 
-I have also touched Haskell, Assembly (x86-64, I don't remember much about ARM assembly), embedded programming for AVR microcontroller using C to make operating system components and applications.
+I have also touched Node.js Express framework, Prisma ORM with PostgreSQL, React, Haskell, Assembly (x86-64, I don't remember much about ARM assembly), embedded programming for AVR microcontroller using C to make operating system components and applications.
 
 ### Cyber Security and CTFs
 
@@ -37,7 +37,7 @@ A lot of hills and not hills!
 
 - [Munros](https://en.wikipedia.org/wiki/Munro) and other peaks bagged including Ben Macdui (1309 m), Cairn Gorm (1245 m), Aonach Mòr (1221 m), Mayar (928 m) (Scotland), Snowdon (1085 m), Pen y Fan (886 m) (Wales), Scafell Pike (978 m) (England).
 
-<small>Last updated on 23rd Dec 2022.</small>
+<small>Last updated on 11th April 2023.</small>
 
 ## Readings
 
