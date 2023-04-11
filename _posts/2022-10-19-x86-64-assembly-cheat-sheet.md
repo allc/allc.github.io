@@ -32,9 +32,13 @@ In [64-bit System V](https://riptutorial.com/x86/example/11197/64-bit-system-v):
 | -------- | --- | --- | --- | --- | -- | -- | --- | --- | ----- | ------- | --- | ------ |
 | Location | rdi | rsi | rdx | rcx | r8 | r9 | r10 | r11 | [rsp] | [rsp+8] | ... | rax    |
 
-Linux syscall follows a slightly different convention (see `man syscall`):
+Preserved registers: values of `r12-r15`, `rbx`, `rsp`, `rbp` are preserved across function calls.
 
-In x86-64,, the syscall number is passed using `rax`, and return value is stored in `rax`, and the registers used to pass the arguments are listed in the table below:
+### System Call Convention
+
+Linux syscall follows a slightly different convention to function calls (see `man syscall`):
+
+In x86-64, the syscall number is passed using `rax`, and return value is stored in `rax`, and the registers used to pass the arguments are listed in the table below:
 
 | Argument | 1   | 2   | 3   | 4   | 5  | 6  | return |
 | -------- | --- | --- | --- | --- | -- | -- | ------ |

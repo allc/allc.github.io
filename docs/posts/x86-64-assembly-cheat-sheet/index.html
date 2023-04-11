@@ -9,15 +9,15 @@
 <meta property="og:locale" content="en_US" />
 <meta name="description" content="This is still being updated upon I find useful things." />
 <meta property="og:description" content="This is still being updated upon I find useful things." />
-<link rel="canonical" href="https://www.cjxol.com/posts/x86-64-cheat-sheet/" />
-<meta property="og:url" content="https://www.cjxol.com/posts/x86-64-cheat-sheet/" />
+<link rel="canonical" href="https://www.cjxol.com/posts/x86-64-assembly-cheat-sheet/" />
+<meta property="og:url" content="https://www.cjxol.com/posts/x86-64-assembly-cheat-sheet/" />
 <meta property="og:site_name" content="cjxol.com" />
 <meta property="og:type" content="article" />
 <meta property="article:published_time" content="2022-10-19T00:00:00+01:00" />
 <meta name="twitter:card" content="summary" />
 <meta property="twitter:title" content="x86-64 Assembly Cheat Sheet" />
 <script type="application/ld+json">
-{"@context":"https://schema.org","@type":"BlogPosting","dateModified":"2022-10-19T00:00:00+01:00","datePublished":"2022-10-19T00:00:00+01:00","description":"This is still being updated upon I find useful things.","headline":"x86-64 Assembly Cheat Sheet","mainEntityOfPage":{"@type":"WebPage","@id":"https://www.cjxol.com/posts/x86-64-cheat-sheet/"},"url":"https://www.cjxol.com/posts/x86-64-cheat-sheet/"}</script>
+{"@context":"https://schema.org","@type":"BlogPosting","dateModified":"2022-10-19T00:00:00+01:00","datePublished":"2022-10-19T00:00:00+01:00","description":"This is still being updated upon I find useful things.","headline":"x86-64 Assembly Cheat Sheet","mainEntityOfPage":{"@type":"WebPage","@id":"https://www.cjxol.com/posts/x86-64-assembly-cheat-sheet/"},"url":"https://www.cjxol.com/posts/x86-64-assembly-cheat-sheet/"}</script>
 <!-- End Jekyll SEO tag -->
 <link rel="stylesheet" href="/assets/main.css"><link type="application/atom+xml" rel="alternate" href="https://www.cjxol.com/feed.xml" title="cjxol.com" /></head>
 <body><header class="site-header" role="banner">
@@ -197,9 +197,13 @@
   </tbody>
 </table>
 
-<p>Linux syscall follows a slightly different convention (see <code class="highlighter-rouge">man syscall</code>):</p>
+<p>Preserved registers: values of <code class="highlighter-rouge">r12-r15</code>, <code class="highlighter-rouge">rbx</code>, <code class="highlighter-rouge">rsp</code>, <code class="highlighter-rouge">rbp</code> are preserved across function calls.</p>
 
-<p>In x86-64,, the syscall number is passed using <code class="highlighter-rouge">rax</code>, and return value is stored in <code class="highlighter-rouge">rax</code>, and the registers used to pass the arguments are listed in the table below:</p>
+<h3 id="system-call-convention">System Call Convention</h3>
+
+<p>Linux syscall follows a slightly different convention to function calls (see <code class="highlighter-rouge">man syscall</code>):</p>
+
+<p>In x86-64, the syscall number is passed using <code class="highlighter-rouge">rax</code>, and return value is stored in <code class="highlighter-rouge">rax</code>, and the registers used to pass the arguments are listed in the table below:</p>
 
 <table>
   <thead>
@@ -240,7 +244,7 @@
   <li><a href="https://ike.mahaloz.re/">`Ike: The Systems Hacking Handbook</a></li>
 </ul>
 
-  </div><a class="u-url" href="/posts/x86-64-cheat-sheet/" hidden></a>
+  </div><a class="u-url" href="/posts/x86-64-assembly-cheat-sheet/" hidden></a>
 </article>
 
       </div>

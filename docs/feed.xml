@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.8.7">Jekyll</generator><link href="https://www.cjxol.com/feed.xml" rel="self" type="application/atom+xml" /><link href="https://www.cjxol.com/" rel="alternate" type="text/html" /><updated>2023-04-11T13:25:44+01:00</updated><id>https://www.cjxol.com/feed.xml</id><title type="html">cjxol.com</title><entry><title type="html">pwnEd4 Quals CTF Vault (Web) Author Writeup</title><link href="https://www.cjxol.com/posts/pwned4-quals-ctf-web-vault-author-writeup/" rel="alternate" type="text/html" title="pwnEd4 Quals CTF Vault (Web) Author Writeup" /><published>2023-02-20T00:00:00+00:00</published><updated>2023-02-20T00:00:00+00:00</updated><id>https://www.cjxol.com/posts/pwned4-quals-ctf-web-vault-author-writeup</id><content type="html" xml:base="https://www.cjxol.com/posts/pwned4-quals-ctf-web-vault-author-writeup/"><![CDATA[<p>Challenge code and is available at <a href="https://github.com/allc/Vault-CTF-Chall">https://github.com/allc/Vault-CTF-Chall</a>.</p>
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.8.7">Jekyll</generator><link href="https://www.cjxol.com/feed.xml" rel="self" type="application/atom+xml" /><link href="https://www.cjxol.com/" rel="alternate" type="text/html" /><updated>2023-04-11T13:37:16+01:00</updated><id>https://www.cjxol.com/feed.xml</id><title type="html">cjxol.com</title><entry><title type="html">pwnEd4 Quals CTF Vault (Web) Author Writeup</title><link href="https://www.cjxol.com/posts/pwned4-quals-ctf-web-vault-author-writeup/" rel="alternate" type="text/html" title="pwnEd4 Quals CTF Vault (Web) Author Writeup" /><published>2023-02-20T00:00:00+00:00</published><updated>2023-02-20T00:00:00+00:00</updated><id>https://www.cjxol.com/posts/pwned4-quals-ctf-web-vault-author-writeup</id><content type="html" xml:base="https://www.cjxol.com/posts/pwned4-quals-ctf-web-vault-author-writeup/"><![CDATA[<p>Challenge code and is available at <a href="https://github.com/allc/Vault-CTF-Chall">https://github.com/allc/Vault-CTF-Chall</a>.</p>
 
 <p>This is my writeup to the web challenge I created for <a href="https://pwned.sigint.mx/">pwnEd4</a> Quals CTF organised by University of Edinburgh’s cyber security society <a href="https://sigint.mx/">SIGINT</a>. The online CTF was on 18th and 19th for 32 hours. With over 30 teams submitted at least one flag, only 2 teams successfully solved this web challenge.</p>
 
@@ -189,7 +189,7 @@ Also initialising the model with the given random seed is very important!
 
 <h2 id="references">References</h2>
 
-<ol class="bibliography"><li><span id="zhu19deep">Zhu, L., Liu, Z., &amp; Han, S. (2019). Deep Leakage from Gradients. <i>Advances in Neural Information Processing Systems</i>.</span></li></ol>]]></content><author><name></name></author><category term="ctf" /><category term="ctf writeup" /><category term="ctf web" /><category term="ctf neural network" /><summary type="html"><![CDATA[This is my writeup for the only Misc challenge “Deaths Glance” in HTB University CTF 2022 (on CTFtime).]]></summary></entry><entry><title type="html">x86-64 Assembly Cheat Sheet</title><link href="https://www.cjxol.com/posts/x86-64-cheat-sheet/" rel="alternate" type="text/html" title="x86-64 Assembly Cheat Sheet" /><published>2022-10-19T00:00:00+01:00</published><updated>2022-10-19T00:00:00+01:00</updated><id>https://www.cjxol.com/posts/x86-64-cheat-sheet</id><content type="html" xml:base="https://www.cjxol.com/posts/x86-64-cheat-sheet/"><![CDATA[<p>This is still being updated upon I find useful things.</p>
+<ol class="bibliography"><li><span id="zhu19deep">Zhu, L., Liu, Z., &amp; Han, S. (2019). Deep Leakage from Gradients. <i>Advances in Neural Information Processing Systems</i>.</span></li></ol>]]></content><author><name></name></author><category term="ctf" /><category term="ctf writeup" /><category term="ctf web" /><category term="ctf neural network" /><summary type="html"><![CDATA[This is my writeup for the only Misc challenge “Deaths Glance” in HTB University CTF 2022 (on CTFtime).]]></summary></entry><entry><title type="html">x86-64 Assembly Cheat Sheet</title><link href="https://www.cjxol.com/posts/x86-64-assembly-cheat-sheet/" rel="alternate" type="text/html" title="x86-64 Assembly Cheat Sheet" /><published>2022-10-19T00:00:00+01:00</published><updated>2022-10-19T00:00:00+01:00</updated><id>https://www.cjxol.com/posts/x86-64-assembly-cheat-sheet</id><content type="html" xml:base="https://www.cjxol.com/posts/x86-64-assembly-cheat-sheet/"><![CDATA[<p>This is still being updated upon I find useful things.</p>
 
 <h2 id="registers">Registers</h2>
 
@@ -339,9 +339,13 @@ Also initialising the model with the given random seed is very important!
   </tbody>
 </table>
 
-<p>Linux syscall follows a slightly different convention (see <code class="highlighter-rouge">man syscall</code>):</p>
+<p>Preserved registers: values of <code class="highlighter-rouge">r12-r15</code>, <code class="highlighter-rouge">rbx</code>, <code class="highlighter-rouge">rsp</code>, <code class="highlighter-rouge">rbp</code> are preserved across function calls.</p>
 
-<p>In x86-64,, the syscall number is passed using <code class="highlighter-rouge">rax</code>, and return value is stored in <code class="highlighter-rouge">rax</code>, and the registers used to pass the arguments are listed in the table below:</p>
+<h3 id="system-call-convention">System Call Convention</h3>
+
+<p>Linux syscall follows a slightly different convention to function calls (see <code class="highlighter-rouge">man syscall</code>):</p>
+
+<p>In x86-64, the syscall number is passed using <code class="highlighter-rouge">rax</code>, and return value is stored in <code class="highlighter-rouge">rax</code>, and the registers used to pass the arguments are listed in the table below:</p>
 
 <table>
   <thead>
