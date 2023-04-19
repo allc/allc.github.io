@@ -24,7 +24,7 @@ I have also touched Node.js Express framework, Prisma ORM with PostgreSQL, React
 
 ### Cyber Security and CTFs
 
-CTF Web and Misc enjoyer. On my way to git gud in other categories too. Still learning to make good write-ups, read my write-ups in my [posts](/).
+CTF Web and Misc enjoyer. On my way to git gud in other categories too. Still learning to make good write-ups, read my write-ups in my [posts](/). Currently playing solo, with ad-hoc teams or [SIGINT](https://sigint.mx/) sometimes.
 
 - First 5 finished all 167 challenges in [AUS CSE 365](https://dojo.pwn.college/cse365/) Fall 2022 on pwn.college.
 - Top 10 team in [HTB University CTF 2022](https://ctf.hackthebox.com/event/details/htb-university-ctf-2022-supernatural-hacks-696).
