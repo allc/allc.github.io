@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1"><!-- Begin Jekyll SEO tag v2.8.0 -->
+<title>Cryptoverse CTF 2023 Writeup | cjxol.com</title>
+<meta name="generator" content="Jekyll v3.8.7" />
+<meta property="og:title" content="Cryptoverse CTF 2023 Writeup" />
+<meta property="og:locale" content="en_US" />
+<meta name="description" content="Unfinished. Will update when I have time." />
+<meta property="og:description" content="Unfinished. Will update when I have time." />
+<link rel="canonical" href="https://www.cjxol.com/posts/cryptoverse-ctf-2023-writeup/" />
+<meta property="og:url" content="https://www.cjxol.com/posts/cryptoverse-ctf-2023-writeup/" />
+<meta property="og:site_name" content="cjxol.com" />
+<meta property="og:type" content="article" />
+<meta property="article:published_time" content="2023-05-09T00:00:00+01:00" />
+<meta name="twitter:card" content="summary" />
+<meta property="twitter:title" content="Cryptoverse CTF 2023 Writeup" />
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"BlogPosting","dateModified":"2023-05-09T00:00:00+01:00","datePublished":"2023-05-09T00:00:00+01:00","description":"Unfinished. Will update when I have time.","headline":"Cryptoverse CTF 2023 Writeup","mainEntityOfPage":{"@type":"WebPage","@id":"https://www.cjxol.com/posts/cryptoverse-ctf-2023-writeup/"},"url":"https://www.cjxol.com/posts/cryptoverse-ctf-2023-writeup/"}</script>
+<!-- End Jekyll SEO tag -->
+<link rel="stylesheet" href="/assets/main.css"><link type="application/atom+xml" rel="alternate" href="https://www.cjxol.com/feed.xml" title="cjxol.com" /></head>
+<script>
+MathJax = {
+  options: {
+    renderActions: {
+      /* add a new named action not to override the original 'find' action */
+      find_script_mathtex: [10, function (doc) {
+        for (const node of document.querySelectorAll('script[type^="math/tex"]')) {
+          const display = !!node.type.match(/; *mode=display/);
+          const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display);
+          const text = document.createTextNode('');
+          node.parentNode.replaceChild(text, node);
+          math.start = {node: text, delim: '', n: 0};
+          math.end = {node: text, delim: '', n: 0};
+          doc.math.push(math);
+        }
+      }, '']
+    }
+  },
+  tex: {
+    tags: 'ams'
+  }
+};
+</script>
+<script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+<script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+<body><header class="site-header" role="banner">
+
+  <div class="wrapper"><a class="site-title" rel="author" href="/">cjxol.com</a><nav class="site-nav">
+        <input type="checkbox" id="nav-trigger" class="nav-trigger" />
+        <label for="nav-trigger">
+          <span class="menu-icon">
+            <svg viewBox="0 0 18 15" width="18px" height="15px">
+              <path d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.032C17.335,0,18,0.665,18,1.484L18,1.484z M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.032C17.335,6.031,18,6.696,18,7.516L18,7.516z M18,13.516C18,14.335,17.335,15,16.516,15H1.484 C0.665,15,0,14.335,0,13.516l0,0c0-0.82,0.665-1.483,1.484-1.483h15.032C17.335,12.031,18,12.695,18,13.516L18,13.516z"/>
+            </svg>
+          </span>
+        </label>
+
+        <div class="trigger"><a class="page-link" href="/about/">About</a></div>
+      </nav></div>
+</header>
+<main class="page-content" aria-label="Content">
+      <div class="wrapper">
+        <article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
+
+  <header class="post-header">
+    <h1 class="post-title p-name" itemprop="name headline">Cryptoverse CTF 2023 Writeup</h1>
+    <p class="post-meta">
+      <time class="dt-published" datetime="2023-05-09T00:00:00+01:00" itemprop="datePublished">May 9, 2023
+      </time></p>
+  </header>
+
+  <div class="post-content e-content" itemprop="articleBody">
+    <p>Unfinished. Will update when I have time.</p>
+
+<p><em><a href="https://cryptoversectf.tk/">Cryptoverse CTF 2023</a></em><br />
+<em><a href="https://ctftime.org/event/1907">On CTFtime</a></em></p>
+
+<p>There are many challenges in this CTF which are great for learning yet still challenging and not trivial. Kudos to the organiser! Here are the writeups to some of the challenges my team solved.</p>
+
+<p>On this page:</p>
+<ul>
+  <li><a href="#crypto-warmup-1">Crypto Warmup 1</a> - Simple cipher challenge</li>
+  <li><a href="#crypto-warmup-2">Crypto Warmup 2</a> - Simple cipher challenge</li>
+  <li><a href="#crypto-baby-aes">Crypto Baby AES</a> - Simple AES key brute force</li>
+  <li><a href="#misc-minecrafts-deadly-dilemma">Misc Minecraft’s Deadly Dilemma</a></li>
+  <li><a href="#reverse-simple-checkin">Reverse Simple Checkin</a> - Simple binary xor reversing</li>
+  <li><a href="#reverse-micro-assembly">Reverse Micro Assembly</a> - Simple “hypothetical assembly language” reversing</li>
+  <li><a href="#reverse-solid-reverse">Reverse Solid Reverse</a> - Solidity/smart contract reversing</li>
+  <li><a href="#pwn-acceptance">Pwn Acceptance</a> - Buffer overflow to overwrite variable</li>
+  <li><a href="#web-safe-locker">Web Safe Locker</a> - Client-side bruteforce</li>
+</ul>
+
+<h2 id="crypto-warmup-1">Crypto Warmup 1</h2>
+
+<blockquote>
+  <p>Decode the following ciphertext: GmvfHt8Kvq16282R6ej3o4A9Pp6MsN.</p>
+</blockquote>
+
+<p>This actually took my team a while to figure out, and this challenge got fewer solves compared to Crypto Warmup 2 below (175 and 233 solves respectively). Turns out to solve it need to do rot13 then base58 decode.</p>
+
+<p>The flag is <code class="highlighter-rouge">cvctf{base58_with_rot}</code>.</p>
+
+<h2 id="crypto-warmup-2">Crypto Warmup 2</h2>
+
+<blockquote>
+  <p>This cipher is invented by French cryptographer Felix Delastelle at the end of the 19th century.<br />
+Ciphertext: SCCGDSNFTXCOJPETGMDNG Hint: CTFISGODABEHJKLMNPQRUVWXY</p>
+</blockquote>
+
+<p>When seeing random ciphers in CTF, I immediately think of <a href="https://www.dcode.fr/">dcode.fr</a>. After a quick Google search for “Felix Delastelle cipher”, the 3rd result was the link to <a href="https://www.dcode.fr/bifid-cipher">decode.fr</a>.</p>
+
+<p><img src="/assets/image/cryptoverse-ctf-2023-writeup/crypto-warmup-2.png" alt="Bifid decoder" /></p>
+
+<h2 id="crypto-baby-aes">Crypto Baby AES</h2>
+
+<p>In this challenge the flag is encrypted with AES CBC mode, with IV and the encrypted flag provided in the output. The key is generated with the code below:</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">KEY_LEN</span> <span class="o">=</span> <span class="mi">2</span>
+<span class="n">BS</span> <span class="o">=</span> <span class="mi">16</span>
+<span class="n">key</span> <span class="o">=</span> <span class="n">pad</span><span class="p">(</span><span class="nb">open</span><span class="p">(</span><span class="s">"/dev/urandom"</span><span class="p">,</span><span class="s">"rb"</span><span class="p">).</span><span class="n">read</span><span class="p">(</span><span class="n">KEY_LEN</span><span class="p">),</span> <span class="n">BS</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p>The unknown part of the key is only 2 bytes, so we can brute force it, and decrypt the flag.</p>
+
+<h2 id="misc-minecrafts-deadly-dilemma">Misc Minecraft’s Deadly Dilemma</h2>
+
+<p>The challenge provided two grayscale images “pickaxe.png” and “sword.png”, and the goal is to find a image with L1 distance to “pickaxe.png” close enough that is smaller than <script type="math/tex">474^2 = 224676</script>, but with L2 distance to “pickaxe.png” larger than to “sword.png”. The L2 distance between the provided two images is 10411.40 and the L1 distance is 442888.</p>
+
+<p>To find such image, I tried two approaches:</p>
+
+<ul>
+  <li>
+    <p>The first one is to start with “pickaxe.png”, so the L1 distance is 0, and then change the pixels value where “pickaxe.png” is smaller than “sword.png” to the maximum value, which would result in a larger increase in L2 distance for “pickaxe.png” than for “sword.png” until before the L1 distance reaches over 224676. However, as the L2 distance to “sword.png” is already quite large, the L1 distance would reach over 474 before the L2 distance to “pickaxe.png” is larger than to “sword.png”.</p>
+  </li>
+  <li>
+    <p>The second approach is also to start with “pickaxe.png”, but instead of increasing the L2 distance for “pickaxe.png”, I reduce the L2 distance to “sword.png” while increasing the L2 distance to “pickaxe.png” until the L2 distance to “pickaxe.png” is larger than to “sword.png” while the L1 distance is still smaller than 224676. The code is shown below:</p>
+    <div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">xy</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">64</span><span class="p">):</span>
+  <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">64</span><span class="p">):</span>
+      <span class="n">p1</span> <span class="o">=</span> <span class="n">pick</span><span class="p">.</span><span class="n">getpixel</span><span class="p">((</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">))</span>
+      <span class="n">p2</span> <span class="o">=</span> <span class="n">sword</span><span class="p">.</span><span class="n">getpixel</span><span class="p">((</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">))</span>
+      <span class="n">xy</span><span class="p">.</span><span class="n">append</span><span class="p">((</span><span class="n">p1</span> <span class="o">-</span> <span class="n">p2</span><span class="p">,</span> <span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">)))</span>
+<span class="n">xy</span><span class="p">.</span><span class="n">sort</span><span class="p">()</span> <span class="c1"># large negative first
+</span><span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">3500</span><span class="p">):</span>
+  <span class="n">p</span><span class="p">,</span> <span class="n">c</span> <span class="o">=</span> <span class="n">xy</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+  <span class="n">pick</span><span class="p">.</span><span class="n">putpixel</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="n">sword</span><span class="p">.</span><span class="n">getpixel</span><span class="p">(</span><span class="n">c</span><span class="p">))</span>
+<span class="n">pick</span><span class="p">.</span><span class="n">save</span><span class="p">(</span><span class="s">'out.png'</span><span class="p">)</span>
+</code></pre></div>    </div>
+  </li>
+</ul>
+
+<h2 id="reverse-simple-checkin">Reverse Simple Checkin</h2>
+
+<p>Decompile the binary provided with the binary, realising the binary is to check if the input xor with some data is equal to some other data. Implemented the script in Python to xor the two data and get the very long flag:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>cvctf{i_apologize_for_such_a_long_string_in_this_checkin_challenge,but_it_might_be_a_good_time_to_learn_about_automating_this_process?You_might_need_to_do_it_because_here_is_a_painful_hex:32a16b3a7eef8de1263812.Enjoy(or_not)!}
+</code></pre></div></div>
+
+<h2 id="reverse-micro-assembly">Reverse Micro Assembly</h2>
+
+<p>In this challenge, an assembly file in AT&amp;T syntax is provided. After Googling around of the instructions (especially something special with the DIV instruction which takes 3 arguments and followed with instruction to compare value in register 12), I found out that the assembly is “hypothetical assembly language”, which is based on x86 assembly. The instructions reference can be found on <a href="http://www.ctoassembly.com/asm.html">http://www.ctoassembly.com/asm.html</a>.</p>
+
+<p>As there are conditional jumps in the assembly, however they do not form any loops, I solved this challenge by hand and the resulting stack contains the flag.</p>
+
+<h2 id="reverse-solid-reverse">Reverse Solid Reverse</h2>
+
+<p>This challenge is to reverse a smart contract in Solidity. The contract is shown below:</p>
+
+<div class="language-solidity highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">contract</span> <span class="n">ReverseMe</span> <span class="p">{</span>
+    <span class="kt">uint</span> <span class="n">goal</span> <span class="o">=</span> <span class="mh">0x57e4e375661c72654c31645f78455d19</span><span class="p">;</span>
+    <span class="k">function</span> <span class="n">magic1</span><span class="p">(</span><span class="kt">uint</span> <span class="n">x</span><span class="p">,</span> <span class="kt">uint</span> <span class="n">n</span><span class="p">)</span> <span class="k">public</span> <span class="k">pure</span> <span class="k">returns</span> <span class="p">(</span><span class="kt">uint</span><span class="p">)</span> <span class="p">{</span>
+        <span class="c1">// Something magic
+</span>        <span class="kt">uint</span> <span class="n">m</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span> <span class="o">&lt;&lt;</span> <span class="n">n</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">;</span>
+        <span class="k">return</span> <span class="n">x</span> <span class="o">&amp;</span> <span class="n">m</span><span class="p">;</span>
+    <span class="p">}</span>
+    <span class="k">function</span> <span class="n">magic2</span><span class="p">(</span><span class="kt">uint</span> <span class="n">x</span><span class="p">)</span> <span class="k">public</span> <span class="k">pure</span> <span class="k">returns</span> <span class="p">(</span><span class="kt">uint</span><span class="p">)</span> <span class="p">{</span>
+        <span class="c1">// Something else magic
+</span>        <span class="kt">uint</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+        <span class="k">while</span> <span class="p">((</span><span class="n">x</span> <span class="o">&gt;&gt;=</span> <span class="mi">1</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
+            <span class="n">i</span> <span class="o">+=</span> <span class="mi">1</span><span class="p">;</span>
+        <span class="p">}</span>
+        <span class="k">return</span> <span class="n">i</span><span class="p">;</span>
+    <span class="p">}</span>
+    <span class="k">function</span> <span class="n">checkflag</span><span class="p">(</span><span class="kt">bytes16</span> <span class="n">flag</span><span class="p">,</span> <span class="kt">bytes16</span> <span class="n">y</span><span class="p">)</span> <span class="k">public</span> <span class="k">view</span> <span class="k">returns</span> <span class="p">(</span><span class="kt">bool</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">return</span> <span class="p">(</span><span class="kt">uint128</span><span class="p">(</span><span class="n">flag</span><span class="p">)</span> <span class="o">^</span> <span class="kt">uint128</span><span class="p">(</span><span class="n">y</span><span class="p">)</span> <span class="o">==</span> <span class="n">goal</span><span class="p">);</span>
+    <span class="p">}</span>
+    <span class="k">modifier</span> <span class="n">checker</span><span class="p">(</span><span class="kt">bytes16</span> <span class="n">key</span><span class="p">)</span> <span class="p">{</span>
+        <span class="nb">require</span><span class="p">(</span><span class="kt">bytes8</span><span class="p">(</span><span class="n">key</span><span class="p">)</span> <span class="o">==</span> <span class="mh">0x3492800100670155</span><span class="p">,</span> <span class="s">"Wrong key!"</span><span class="p">);</span>
+        <span class="nb">require</span><span class="p">(</span><span class="kt">uint64</span><span class="p">(</span><span class="kt">uint128</span><span class="p">(</span><span class="n">key</span><span class="p">))</span> <span class="o">==</span> <span class="kt">uint32</span><span class="p">(</span><span class="kt">uint128</span><span class="p">(</span><span class="n">key</span><span class="p">)),</span> <span class="s">"Wrong key!"</span><span class="p">);</span>
+        <span class="nb">require</span><span class="p">(</span><span class="n">magic1</span><span class="p">(</span><span class="kt">uint128</span><span class="p">(</span><span class="n">key</span><span class="p">),</span> <span class="mi">16</span><span class="p">)</span> <span class="o">==</span> <span class="mh">0x1964</span><span class="p">,</span> <span class="s">"Wrong key!"</span><span class="p">);</span>
+        <span class="nb">require</span><span class="p">(</span><span class="n">magic2</span><span class="p">(</span><span class="kt">uint64</span><span class="p">(</span><span class="kt">uint128</span><span class="p">(</span><span class="n">key</span><span class="p">)))</span> <span class="o">==</span> <span class="mi">16</span><span class="p">,</span> <span class="s">"Wrong key!"</span><span class="p">);</span>
+        <span class="n">_</span><span class="p">;</span>
+    <span class="p">}</span>
+    <span class="k">function</span> <span class="n">unlock</span><span class="p">(</span><span class="kt">bytes16</span> <span class="n">key</span><span class="p">,</span> <span class="kt">bytes16</span> <span class="n">flag</span><span class="p">)</span> <span class="k">public</span> <span class="k">view</span> <span class="n">checker</span><span class="p">(</span><span class="n">key</span><span class="p">)</span> <span class="p">{</span>
+        <span class="c1">// Main function
+</span>        <span class="nb">require</span><span class="p">(</span><span class="n">checkflag</span><span class="p">(</span><span class="n">flag</span><span class="p">,</span> <span class="n">key</span><span class="p">),</span> <span class="s">"Flag is wrong!"</span><span class="p">);</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>The <code class="highlighter-rouge">unlock</code> function will check if the key is correct through the <code class="highlighter-rouge">checker</code> modifier. Then it will check that the <code class="highlighter-rouge">flag</code> xor with the <code class="highlighter-rouge">key</code> is equal to the <code class="highlighter-rouge">goal</code>. So we can get the flag by xor the <code class="highlighter-rouge">goal</code> with the <code class="highlighter-rouge">key</code>. The <code class="highlighter-rouge">key</code> is not provided, but we can get it by solving the <code class="highlighter-rouge">checker</code> modifier.</p>
+
+<p>The <code class="highlighter-rouge">magic1</code> function is to get the lower 16 bits of the key, and the <code class="highlighter-rouge">magic2</code> function is to get the number of bits of the key.</p>
+
+<ul>
+  <li>The first line of the checker is to check if the first 8 bytes of the key is <code class="highlighter-rouge">0x3492800100670155</code>.</li>
+  <li>The second line is to check that the lower 32 bits of the key is equal to the lower 64 bits of the key, which means the upper 32 bits in the lower 64 bits of the key is zero.</li>
+  <li>The third line is to check that the lower 16 bits of the key is <code class="highlighter-rouge">0x1964</code>.</li>
+  <li>The fourth line is to check that the number of bits of the lower 64 bit of the key is 16 + 1 = 17 excluding leading zeros. This resulting in the lower 64 bit of the key is between 0x10000 and 0x1ffff.</li>
+</ul>
+
+<p>The final key is <code class="highlighter-rouge">0x34928001006701550000000000011964</code>, and flag can be obtained by xor the key with the goal.</p>
+
+<h2 id="pwn-acceptance">Pwn Acceptance</h2>
+
+<p>The challenge provided a binary executable. Decompile the binary with IDA, the code snip for main function is shown below:</p>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">read</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">say</span><span class="p">,</span> <span class="mh">0x24uLL</span><span class="p">);</span>
+<span class="k">if</span> <span class="p">(</span> <span class="n">accept</span> <span class="p">)</span>
+  <span class="n">print_flag</span><span class="p">();</span>
+<span class="k">else</span>
+  <span class="nf">puts</span><span class="p">(</span><span class="s">"Arg! Why don't you help me :(("</span><span class="p">);</span>
+<span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+</code></pre></div></div>
+
+<p>Looking into <code class="highlighter-rouge">&amp;say</code>, it points to some statically allocated variable (.bss) with size of 32 bytes, while the <code class="highlighter-rouge">read</code> would read up to 0x24 (36) bytes. The <code class="highlighter-rouge">accept</code> variable is 4 bytes and is located right after <code class="highlighter-rouge">&amp;say</code>. So we can overflow the <code class="highlighter-rouge">accept</code> variable and overwrite it with non-zero value to make <code class="highlighter-rouge">print_flag()</code> to be called.</p>
+
+<p>Decompile the <code class="highlighter-rouge">print_flag()</code> function, there are two condition checks before the flag is actually printed. The first one is to check if the <code class="highlighter-rouge">accept</code> variable is smaller or equal to 0, the second one is to check if the <code class="highlighter-rouge">accept</code> variable is equal to -1.</p>
+
+<p>To solve the challenge, I send 32 bytes of arbitrary data, followed by -1 encoded for 4 bytes, which is <code class="highlighter-rouge">\xff\xff\xff\xff</code>. The flag is printed out.</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">from</span> <span class="nn">pwn</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="n">p</span> <span class="o">=</span> <span class="n">remote</span><span class="p">(</span><span class="s">'example.com'</span><span class="p">,</span> <span class="mi">4000</span><span class="p">)</span>
+<span class="n">p</span><span class="p">.</span><span class="n">recvuntil</span><span class="p">(</span><span class="sa">b</span><span class="s">'Help him: '</span><span class="p">)</span>
+<span class="n">payload</span> <span class="o">=</span> <span class="sa">b</span><span class="s">'a'</span> <span class="o">*</span> <span class="mi">32</span> <span class="o">+</span> <span class="sa">b</span><span class="s">'</span><span class="se">\xFF\xFF\xFF\xFF</span><span class="s">'</span>
+<span class="n">p</span><span class="p">.</span><span class="n">sendline</span><span class="p">(</span><span class="n">payload</span><span class="p">)</span>
+<span class="n">p</span><span class="p">.</span><span class="n">interactive</span><span class="p">()</span>
+</code></pre></div></div>
+
+<h2 id="web-safe-locker">Web Safe Locker</h2>
+
+<p>The goal of the challenge is to find the passcode.</p>
+
+<p><img src="/assets/image/cryptoverse-ctf-2023-writeup/web-safe-locker.png" alt="Safe locker page" /></p>
+
+<p>The relevant code is within a JavaScript module on this page. The actual check appears to be done with web assembly. However, without reversing the web assembly, I can still bruteforce the passcode with the JavaScript code. There are only 10,000,000 possible passcodes, and it is possible to bruteforce, however the web page crashes if I try to bruteforce all the passcodes at once. So I bruteforce the passcode in batches, also this allows me to do them parallelly in different browser tabs.</p>
+
+<div class="language-javascript highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">import</span><span class="p">(</span><span class="dl">'</span><span class="s1">/passCheck.js</span><span class="dl">'</span><span class="p">).</span><span class="nx">then</span><span class="p">(</span><span class="nx">m</span> <span class="o">=&gt;</span> <span class="nx">m</span><span class="p">.</span><span class="k">default</span><span class="p">()).</span><span class="nx">then</span><span class="p">(</span><span class="nx">m</span> <span class="o">=&gt;</span> <span class="nx">password_checker</span> <span class="o">=</span> <span class="nx">m</span><span class="p">.</span><span class="nx">cwrap</span><span class="p">(</span><span class="dl">'</span><span class="s1">checker</span><span class="dl">'</span><span class="p">,</span> <span class="dl">'</span><span class="s1">boolean</span><span class="dl">'</span><span class="p">,</span> <span class="p">[</span><span class="dl">'</span><span class="s1">string</span><span class="dl">'</span><span class="p">]))</span>
+<span class="k">for</span> <span class="p">(</span><span class="kd">const</span> <span class="nx">p</span> <span class="k">of</span> <span class="nb">Array</span><span class="p">(</span><span class="mi">10000000</span><span class="p">).</span><span class="nx">keys</span><span class="p">())</span> <span class="p">{</span>
+    <span class="kd">let</span> <span class="nx">s</span> <span class="o">=</span> <span class="dl">'</span><span class="s1">00000000</span><span class="dl">'</span> <span class="o">+</span> <span class="p">(</span><span class="nx">p</span> <span class="o">+</span> <span class="mi">10000000</span><span class="p">);</span>
+    <span class="nx">s</span> <span class="o">=</span> <span class="nx">s</span><span class="p">.</span><span class="nx">substr</span><span class="p">(</span><span class="nx">s</span><span class="p">.</span><span class="nx">length</span> <span class="o">-</span> <span class="mi">8</span><span class="p">)</span>
+    <span class="k">if</span> <span class="p">(</span><span class="nx">password_checker</span><span class="p">(</span><span class="nx">s</span><span class="p">,</span> <span class="mi">8</span><span class="p">))</span> <span class="p">{</span>
+        <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">s</span><span class="p">);</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>This is also another not bruteforcable version of this challenge in the CTF, which checks an extra string value. I have not tried to solve it yet.</p>
+
+  </div><a class="u-url" href="/posts/cryptoverse-ctf-2023-writeup/" hidden></a>
+</article>
+
+      </div>
+    </main><footer class="site-footer h-card">
+  <data class="u-url" href="/"></data>
+
+  <div class="wrapper">
+
+    <h2 class="footer-heading">cjxol.com</h2>
+
+    <div class="footer-col-wrapper">
+      <div class="footer-col footer-col-1">
+        <ul class="contact-list">
+          <li class="p-name">cjxol.com</li><li><a class="u-email" href="mailto:i@cjxol.com">i@cjxol.com</a></li></ul>
+      </div>
+
+      <div class="footer-col footer-col-2"><ul class="social-media-list"><li><a href="https://github.com/allc"><svg class="svg-icon"><use xlink:href="/assets/minima-social-icons.svg#github"></use></svg> <span class="username">allc</span></a></li></ul>
+</div>
+
+      <div class="footer-col footer-col-3">
+        <p></p>
+      </div>
+    </div>
+
+  </div>
+
+</footer>
+</body>
+
+</html>
