@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.8.7">Jekyll</generator><link href="https://www.cjxol.com/feed.xml" rel="self" type="application/atom+xml" /><link href="https://www.cjxol.com/" rel="alternate" type="text/html" /><updated>2023-05-11T23:04:10+01:00</updated><id>https://www.cjxol.com/feed.xml</id><title type="html">cjxol.com</title><entry><title type="html">Cryptoverse CTF 2023 Writeup</title><link href="https://www.cjxol.com/posts/cryptoverse-ctf-2023-writeup/" rel="alternate" type="text/html" title="Cryptoverse CTF 2023 Writeup" /><published>2023-05-09T00:00:00+01:00</published><updated>2023-05-09T00:00:00+01:00</updated><id>https://www.cjxol.com/posts/cryptoverse-ctf-2023-writeup</id><content type="html" xml:base="https://www.cjxol.com/posts/cryptoverse-ctf-2023-writeup/"><![CDATA[<p>Unfinished. Will update when I have time.</p>
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.8.7">Jekyll</generator><link href="https://www.cjxol.com/feed.xml" rel="self" type="application/atom+xml" /><link href="https://www.cjxol.com/" rel="alternate" type="text/html" /><updated>2023-05-15T19:25:35+01:00</updated><id>https://www.cjxol.com/feed.xml</id><title type="html">cjxol.com</title><entry><title type="html">Cryptoverse CTF 2023 Writeup</title><link href="https://www.cjxol.com/posts/cryptoverse-ctf-2023-writeup/" rel="alternate" type="text/html" title="Cryptoverse CTF 2023 Writeup" /><published>2023-05-09T00:00:00+01:00</published><updated>2023-05-09T00:00:00+01:00</updated><id>https://www.cjxol.com/posts/cryptoverse-ctf-2023-writeup</id><content type="html" xml:base="https://www.cjxol.com/posts/cryptoverse-ctf-2023-writeup/"><![CDATA[<p>Unfinished. Will update when I have time.</p>
 
 <p><em><a href="https://cryptoversectf.tk/">Cryptoverse CTF 2023</a></em><br />
 <em><a href="https://ctftime.org/event/1907">On CTFtime</a></em></p>
@@ -16,6 +16,8 @@
   <li><a href="#reverse-solid-reverse">Reverse Solid Reverse</a> - Solidity/smart contract reversing</li>
   <li><a href="#pwn-acceptance">Pwn Acceptance</a> - Buffer overflow to overwrite variable</li>
   <li><a href="#web-safe-locker">Web Safe Locker</a> - Client-side bruteforce</li>
+  <li><a href="#hoyoverse-ii-prompt-bot">HoYoverse II: Prompt Bot</a> - ChatGPT prompt target output challenge</li>
+  <li><a href="#hoyoverse-iii-secret-vault">HoYoverse III Secret Vault</a> - Crypto challenge solving linear equations</li>
 </ul>
 
 <h2 id="crypto-warmup-1">Crypto Warmup 1</h2>
@@ -183,7 +185,99 @@ Ciphertext: SCCGDSNFTXCOJPETGMDNG Hint: CTFISGODABEHJKLMNPQRUVWXY</p>
 <span class="p">}</span>
 </code></pre></div></div>
 
-<p>This is also another not bruteforcable version of this challenge in the CTF, which checks an extra string value. I have not tried to solve it yet.</p>]]></content><author><name></name></author><category term="ctf" /><category term="ctf writeup" /><summary type="html"><![CDATA[Unfinished. Will update when I have time.]]></summary></entry><entry><title type="html">pwnEd4 Quals CTF Vault (Web) Author Writeup</title><link href="https://www.cjxol.com/posts/pwned4-quals-ctf-web-vault-author-writeup/" rel="alternate" type="text/html" title="pwnEd4 Quals CTF Vault (Web) Author Writeup" /><published>2023-02-20T00:00:00+00:00</published><updated>2023-02-20T00:00:00+00:00</updated><id>https://www.cjxol.com/posts/pwned4-quals-ctf-web-vault-author-writeup</id><content type="html" xml:base="https://www.cjxol.com/posts/pwned4-quals-ctf-web-vault-author-writeup/"><![CDATA[<p>Challenge code and is available at <a href="https://github.com/allc/Vault-CTF-Chall">https://github.com/allc/Vault-CTF-Chall</a>.</p>
+<p>This is also another not bruteforcable version of this challenge in the CTF, which checks an extra string value. I have not tried to solve it yet.</p>
+
+<h2 id="hoyoverse-ii-prompt-bot">HoYoverse II: Prompt Bot</h2>
+
+<p>In this challenge, the goal is to send prompt (there is a character limit of the prompt length, so the prompt cannot be too long. Also the prompt cannot contain the exact target) that makes the ChatGPT bot to output the exact target response.</p>
+
+<p>The targets are:</p>
+
+<ul>
+  <li><code class="highlighter-rouge">dlrow olleh</code></li>
+  <li><code class="highlighter-rouge">zellic zelli zell zel ze z</code></li>
+  <li>
+    <div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>*****
+****
+***
+**
+*
+</code></pre></div>    </div>
+  </li>
+</ul>
+
+<p>My prompts are:</p>
+
+<ul>
+  <li><code class="highlighter-rouge">reverse hello world</code></li>
+  <li><code class="highlighter-rouge">zellic zelli zell zel ze Z to lower</code></li>
+  <li><code class="highlighter-rouge">5 lines of *, with 5 to 1</code></li>
+</ul>
+
+<p>I got the 2nd prompt inspiration from my teammate’s screenshot, where the output he got with all <code class="highlighter-rouge">Z</code>s in upper case. So I tried to make the <code class="highlighter-rouge">Z</code> in lower case, and it worked.</p>
+
+<p><img src="/assets/image/cryptoverse-ctf-2023-writeup/hoyoverse-2-prompt-bot.png" alt="Screenshot of the response my teammate got" /></p>
+
+<h2 id="hoyoverse-iii-secret-vault">HoYoverse III: Secret Vault</h2>
+
+<p>This challenge is with a provided Python file, the snip of the code is shown below:</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">from</span> <span class="nn">secret</span> <span class="kn">import</span> <span class="n">FLAG</span>
+<span class="n">FLAG</span> <span class="o">=</span> <span class="n">FLAG</span><span class="p">[</span><span class="mi">6</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+<span class="k">class</span> <span class="nc">HoYoVault</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">u</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">w</span><span class="p">):</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">state</span> <span class="o">=</span> <span class="p">[</span><span class="n">u</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">w</span><span class="p">]</span>
+        <span class="k">while</span> <span class="bp">True</span><span class="p">:</span>
+            <span class="bp">self</span><span class="p">.</span><span class="n">p</span> <span class="o">=</span> <span class="n">getPrime</span><span class="p">(</span><span class="mi">64</span><span class="p">)</span>
+            <span class="bp">self</span><span class="p">.</span><span class="n">a</span> <span class="o">=</span> <span class="n">bytes_to_long</span><span class="p">(</span><span class="n">FLAG</span><span class="p">[:</span><span class="mi">6</span><span class="p">])</span>
+            <span class="bp">self</span><span class="p">.</span><span class="n">b</span> <span class="o">=</span> <span class="n">bytes_to_long</span><span class="p">(</span><span class="n">FLAG</span><span class="p">[</span><span class="mi">6</span><span class="p">:</span><span class="mi">12</span><span class="p">])</span>
+            <span class="bp">self</span><span class="p">.</span><span class="n">c</span> <span class="o">=</span> <span class="n">bytes_to_long</span><span class="p">(</span><span class="n">FLAG</span><span class="p">[</span><span class="mi">12</span><span class="p">:</span><span class="mi">18</span><span class="p">])</span>
+            <span class="bp">self</span><span class="p">.</span><span class="n">d</span> <span class="o">=</span> <span class="n">bytes_to_long</span><span class="p">(</span><span class="n">FLAG</span><span class="p">[</span><span class="mi">18</span><span class="p">:])</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="p">.</span><span class="n">p</span> <span class="o">&gt;</span> <span class="nb">max</span><span class="p">([</span><span class="bp">self</span><span class="p">.</span><span class="n">a</span><span class="p">,</span> <span class="bp">self</span><span class="p">.</span><span class="n">b</span><span class="p">,</span> <span class="bp">self</span><span class="p">.</span><span class="n">c</span><span class="p">,</span> <span class="bp">self</span><span class="p">.</span><span class="n">d</span><span class="p">]):</span>
+                <span class="k">break</span>
+    <span class="k">def</span> <span class="nf">Generate</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">a</span> <span class="o">*</span> <span class="bp">self</span><span class="p">.</span><span class="n">state</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="bp">self</span><span class="p">.</span><span class="n">b</span> <span class="o">*</span> <span class="bp">self</span><span class="p">.</span><span class="n">state</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">]</span> <span class="o">+</span> <span class="bp">self</span><span class="p">.</span><span class="n">c</span> <span class="o">*</span> <span class="bp">self</span><span class="p">.</span><span class="n">state</span><span class="p">[</span><span class="o">-</span><span class="mi">3</span><span class="p">]</span> <span class="o">+</span> <span class="bp">self</span><span class="p">.</span><span class="n">d</span><span class="p">)</span> <span class="o">%</span> <span class="bp">self</span><span class="p">.</span><span class="n">p</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">state</span><span class="p">.</span><span class="n">append</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">data</span>
+<span class="k">def</span> <span class="nf">main</span><span class="p">():</span>
+    <span class="n">vault</span> <span class="o">=</span> <span class="n">HoYoVault</span><span class="p">(</span><span class="n">getRandomInteger</span><span class="p">(</span><span class="mi">128</span><span class="p">),</span> <span class="n">getRandomInteger</span><span class="p">(</span><span class="mi">256</span><span class="p">),</span> <span class="n">getRandomInteger</span><span class="p">(</span><span class="mi">512</span><span class="p">))</span>
+    <span class="k">print</span><span class="p">(</span><span class="s">"data = "</span> <span class="o">+</span> <span class="nb">str</span><span class="p">([</span><span class="n">vault</span><span class="p">.</span><span class="n">Generate</span><span class="p">()</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">7</span><span class="p">)]))</span>
+    <span class="k">print</span><span class="p">(</span><span class="s">"p = "</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">vault</span><span class="p">.</span><span class="n">p</span><span class="p">))</span>
+<span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">"__main__"</span><span class="p">:</span>
+    <span class="n">main</span><span class="p">()</span> 
+<span class="c1"># data = [14169084828739113416, 12950362233651727953, 13081576751296291893, 11189892724250189745, 2366046383900978737, 1749792629103627315, 8575562236709928474]
+# p = 16200480981168924301
+</span></code></pre></div></div>
+
+<p>From the code, I can see the outputted <code class="highlighter-rouge">data</code> is generated through the flag and previous states, while the generated <code class="highlighter-rouge">data</code> is appended to <code class="highlighter-rouge">state</code> to be used in generating future <code class="highlighter-rouge">data</code>.</p>
+
+<p>With enough data output provided, I can form a system of linear equations, and solve for the flag.</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">data</span> <span class="o">=</span> <span class="p">[</span><span class="mi">14169084828739113416</span><span class="p">,</span> <span class="mi">12950362233651727953</span><span class="p">,</span> <span class="mi">13081576751296291893</span><span class="p">,</span> <span class="mi">11189892724250189745</span><span class="p">,</span> <span class="mi">2366046383900978737</span><span class="p">,</span> <span class="mi">1749792629103627315</span><span class="p">,</span> <span class="mi">8575562236709928474</span><span class="p">]</span>
+<span class="c1"># modified from code from https://stackoverflow.com/a/62600438
+</span><span class="kn">import</span> <span class="nn">sympy</span>
+<span class="n">eq</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="n">values</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">)</span> <span class="o">-</span> <span class="mi">3</span><span class="p">):</span>
+    <span class="n">eq</span><span class="p">.</span><span class="n">append</span><span class="p">([</span><span class="n">data</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">data</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">],</span> <span class="n">data</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="mi">2</span><span class="p">],</span> <span class="mi">1</span><span class="p">])</span>
+    <span class="n">values</span><span class="p">.</span><span class="n">append</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="mi">3</span><span class="p">])</span>
+<span class="n">eq</span> <span class="o">=</span> <span class="n">sympy</span><span class="p">.</span><span class="n">Matrix</span><span class="p">(</span><span class="n">eq</span><span class="p">)</span>
+<span class="n">values</span> <span class="o">=</span> <span class="n">sympy</span><span class="p">.</span><span class="n">Matrix</span><span class="p">(</span><span class="n">values</span><span class="p">)</span>
+<span class="n">m</span> <span class="o">=</span> <span class="mi">16200480981168924301</span>
+<span class="n">det</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">eq</span><span class="p">.</span><span class="n">det</span><span class="p">())</span>
+<span class="k">if</span> <span class="n">gcd</span><span class="p">(</span><span class="n">det</span><span class="p">,</span> <span class="n">m</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+    <span class="n">ans</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">pow</span><span class="p">(</span><span class="n">det</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">m</span><span class="p">))</span> <span class="o">*</span> <span class="n">eq</span><span class="p">.</span><span class="n">adjugate</span><span class="p">()</span> <span class="o">@</span> <span class="n">values</span> <span class="o">%</span> <span class="n">m</span>
+<span class="n">flag</span> <span class="o">=</span> <span class="sa">b</span><span class="s">''</span>
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">ans</span><span class="p">:</span>
+    <span class="n">flag</span> <span class="o">+=</span> <span class="nb">int</span><span class="p">(</span><span class="n">i</span><span class="p">).</span><span class="n">to_bytes</span><span class="p">(</span><span class="mi">6</span><span class="p">,</span> <span class="s">'big'</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="n">flag</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p>I was also trying to use <code class="highlighter-rouge">solve_mod</code> in SageMath instead of pulling code from Stack Overflow, which worked great in one of the ImaginaryCTF challenges sharing the very similar idea but with an a lot smaller modulus. However, when I used it in this challenge, I got the following error:</p>
+
+<p><code class="highlighter-rouge">OverflowError: Python int too large to convert to C ssize_t</code></p>
+
+<p>After the CTF ended, <a href="https://discord.com/channels/1016576148576157766/1103734101363658812/1105015730967150733">on Cryptoverse Discord server</a>, Neobeo from the “Social Engineering Experts” team (I think) suggested that they were able to define the linear equations in a Finite Field in SageMath and used <code class="highlighter-rouge">solve_right</code> to solve the equations.</p>]]></content><author><name></name></author><category term="ctf" /><category term="ctf writeup" /><summary type="html"><![CDATA[Unfinished. Will update when I have time.]]></summary></entry><entry><title type="html">pwnEd4 Quals CTF Vault (Web) Author Writeup</title><link href="https://www.cjxol.com/posts/pwned4-quals-ctf-web-vault-author-writeup/" rel="alternate" type="text/html" title="pwnEd4 Quals CTF Vault (Web) Author Writeup" /><published>2023-02-20T00:00:00+00:00</published><updated>2023-02-20T00:00:00+00:00</updated><id>https://www.cjxol.com/posts/pwned4-quals-ctf-web-vault-author-writeup</id><content type="html" xml:base="https://www.cjxol.com/posts/pwned4-quals-ctf-web-vault-author-writeup/"><![CDATA[<p>Challenge code and is available at <a href="https://github.com/allc/Vault-CTF-Chall">https://github.com/allc/Vault-CTF-Chall</a>.</p>
 
 <p>This is my writeup to the web challenge I created for <a href="https://pwned.sigint.mx/">pwnEd4</a> Quals CTF organised by University of Edinburgh’s cyber security society <a href="https://sigint.mx/">SIGINT</a>. The online CTF was on 18th and 19th for 32 hours. With over 30 teams submitted at least one flag, only 2 teams successfully solved this web challenge.</p>
 

@@ -22,6 +22,8 @@ On this page:
 - [Reverse Solid Reverse](#reverse-solid-reverse) - Solidity/smart contract reversing
 - [Pwn Acceptance](#pwn-acceptance) - Buffer overflow to overwrite variable
 - [Web Safe Locker](#web-safe-locker) - Client-side bruteforce
+- [HoYoverse II: Prompt Bot](#hoyoverse-ii-prompt-bot) - ChatGPT prompt target output challenge
+- [HoYoverse III Secret Vault](#hoyoverse-iii-secret-vault) - Crypto challenge solving linear equations
 
 ## Crypto Warmup 1
 
@@ -185,3 +187,93 @@ for (const p of Array(10000000).keys()) {
 ```
 
 This is also another not bruteforcable version of this challenge in the CTF, which checks an extra string value. I have not tried to solve it yet.
+
+## HoYoverse II: Prompt Bot
+
+In this challenge, the goal is to send prompt (there is a character limit of the prompt length, so the prompt cannot be too long. Also the prompt cannot contain the exact target) that makes the ChatGPT bot to output the exact target response.
+
+The targets are:
+
+- `dlrow olleh`
+- `zellic zelli zell zel ze z`
+-  
+```
+*****
+****
+***
+**
+*
+```
+
+My prompts are:
+
+- `reverse hello world`
+- `zellic zelli zell zel ze Z to lower`
+- `5 lines of *, with 5 to 1`
+
+I got the 2nd prompt inspiration from my teammate's screenshot, where the output he got with all `Z`s in upper case. So I tried to make the `Z` in lower case, and it worked.
+
+![Screenshot of the response my teammate got](/assets/image/cryptoverse-ctf-2023-writeup/hoyoverse-2-prompt-bot.png)
+
+## HoYoverse III: Secret Vault
+
+This challenge is with a provided Python file, the snip of the code is shown below:
+
+```python
+from secret import FLAG
+FLAG = FLAG[6:-1]
+class HoYoVault:
+    def __init__(self, u, v, w):
+        self.state = [u, v, w]
+        while True:
+            self.p = getPrime(64)
+            self.a = bytes_to_long(FLAG[:6])
+            self.b = bytes_to_long(FLAG[6:12])
+            self.c = bytes_to_long(FLAG[12:18])
+            self.d = bytes_to_long(FLAG[18:])
+            if self.p > max([self.a, self.b, self.c, self.d]):
+                break
+    def Generate(self):
+        data = (self.a * self.state[-1] + self.b * self.state[-2] + self.c * self.state[-3] + self.d) % self.p
+        self.state.append(data)
+        return data
+def main():
+    vault = HoYoVault(getRandomInteger(128), getRandomInteger(256), getRandomInteger(512))
+    print("data = " + str([vault.Generate() for _ in range(7)]))
+    print("p = " + str(vault.p))
+if __name__ == "__main__":
+    main() 
+# data = [14169084828739113416, 12950362233651727953, 13081576751296291893, 11189892724250189745, 2366046383900978737, 1749792629103627315, 8575562236709928474]
+# p = 16200480981168924301
+```
+
+From the code, I can see the outputted `data` is generated through the flag and previous states, while the generated `data` is appended to `state` to be used in generating future `data`.
+
+With enough data output provided, I can form a system of linear equations, and solve for the flag.
+
+```python
+data = [14169084828739113416, 12950362233651727953, 13081576751296291893, 11189892724250189745, 2366046383900978737, 1749792629103627315, 8575562236709928474]
+# modified from code from https://stackoverflow.com/a/62600438
+import sympy
+eq = []
+values = []
+for i in range(len(data) - 3):
+    eq.append([data[i], data[i + 1], data[i + 2], 1])
+    values.append(data[i + 3])
+eq = sympy.Matrix(eq)
+values = sympy.Matrix(values)
+m = 16200480981168924301
+det = int(eq.det())
+if gcd(det, m) == 1:
+    ans = int(pow(det, -1, m)) * eq.adjugate() @ values % m
+flag = b''
+for i in ans:
+    flag += int(i).to_bytes(6, 'big')
+print(flag)
+```
+
+I was also trying to use `solve_mod` in SageMath instead of pulling code from Stack Overflow, which worked great in one of the ImaginaryCTF challenges sharing the very similar idea but with an a lot smaller modulus. However, when I used it in this challenge, I got the following error:
+
+```OverflowError: Python int too large to convert to C ssize_t```
+
+After the CTF ended, [on Cryptoverse Discord server](https://discord.com/channels/1016576148576157766/1103734101363658812/1105015730967150733), Neobeo from the "Social Engineering Experts" team (I think) suggested that they were able to define the linear equations in a Finite Field in SageMath and used `solve_right` to solve the equations.
