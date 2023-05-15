@@ -44,7 +44,6 @@ while True:
     )
     id = zone['HostedZone']['Id']
     nameservers = set(zone['DelegationSet']['NameServers'])
-    # print(nameservers, target_nameservers)
     if len(nameservers & target_nameservers) > 0:
         break
     client.delete_hosted_zone(Id=id)

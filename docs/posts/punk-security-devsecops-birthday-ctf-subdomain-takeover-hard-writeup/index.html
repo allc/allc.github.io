@@ -86,8 +86,7 @@
     <span class="p">)</span>
     <span class="nb">id</span> <span class="o">=</span> <span class="n">zone</span><span class="p">[</span><span class="s">'HostedZone'</span><span class="p">][</span><span class="s">'Id'</span><span class="p">]</span>
     <span class="n">nameservers</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">zone</span><span class="p">[</span><span class="s">'DelegationSet'</span><span class="p">][</span><span class="s">'NameServers'</span><span class="p">])</span>
-    <span class="c1"># print(nameservers, target_nameservers)
-</span>    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">nameservers</span> <span class="o">&amp;</span> <span class="n">target_nameservers</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">nameservers</span> <span class="o">&amp;</span> <span class="n">target_nameservers</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
         <span class="k">break</span>
     <span class="n">client</span><span class="p">.</span><span class="n">delete_hosted_zone</span><span class="p">(</span><span class="n">Id</span><span class="o">=</span><span class="nb">id</span><span class="p">)</span>
 </code></pre></div></div>
