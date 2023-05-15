@@ -5,8 +5,6 @@ tags: [ctf, ctf writeup]
 mathjax: true
 ---
 
-Unfinished. Will update when I have time.
-
 *[Cryptoverse CTF 2023](https://cryptoversectf.tk/)*  
 *[On CTFtime](https://ctftime.org/event/1907)*
 
