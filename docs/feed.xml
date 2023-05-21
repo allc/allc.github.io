@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.8.7">Jekyll</generator><link href="https://www.cjxol.com/feed.xml" rel="self" type="application/atom+xml" /><link href="https://www.cjxol.com/" rel="alternate" type="text/html" /><updated>2023-05-21T23:31:52+01:00</updated><id>https://www.cjxol.com/feed.xml</id><title type="html">cjxol.com</title><entry><title type="html">m0leCon Teaser 2023 Writeup</title><link href="https://www.cjxol.com/posts/m0lecon-teaser-2023-writeup/" rel="alternate" type="text/html" title="m0leCon Teaser 2023 Writeup" /><published>2023-05-16T00:00:00+01:00</published><updated>2023-05-16T00:00:00+01:00</updated><id>https://www.cjxol.com/posts/m0lecon-teaser-2023-writeup</id><content type="html" xml:base="https://www.cjxol.com/posts/m0lecon-teaser-2023-writeup/"><![CDATA[<p><a href="https://ctf.m0lecon.it/">m0leCon Teaser 2023</a><br />
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.8.7">Jekyll</generator><link href="https://www.cjxol.com/feed.xml" rel="self" type="application/atom+xml" /><link href="https://www.cjxol.com/" rel="alternate" type="text/html" /><updated>2023-05-21T23:35:33+01:00</updated><id>https://www.cjxol.com/feed.xml</id><title type="html">cjxol.com</title><entry><title type="html">m0leCon Teaser 2023 Writeup</title><link href="https://www.cjxol.com/posts/m0lecon-teaser-2023-writeup/" rel="alternate" type="text/html" title="m0leCon Teaser 2023 Writeup" /><published>2023-05-16T00:00:00+01:00</published><updated>2023-05-16T00:00:00+01:00</updated><id>https://www.cjxol.com/posts/m0lecon-teaser-2023-writeup</id><content type="html" xml:base="https://www.cjxol.com/posts/m0lecon-teaser-2023-writeup/"><![CDATA[<p><a href="https://ctf.m0lecon.it/">m0leCon Teaser 2023</a><br />
 <a href="https://ctftime.org/event/1898">On CTFtime</a></p>
 
 <p>Overall good CTF with challenging original fun challenges.</p>
@@ -7,7 +7,7 @@
 
 <ul>
   <li><a href="#goldinospizza2">goldinospizza2</a> - Web, websocket API, exploit race condition</li>
-  <li><a href="#print-template-2">Print template 2</a></li>
+  <li><a href="#print-template-2">Print template 2</a> - SSRF via TLS poisoning to request Memcached. I did not solve this challenge, did the writeup based on discussions.</li>
 </ul>
 
 <h2 id="goldinospizza2">goldinospizza2</h2>

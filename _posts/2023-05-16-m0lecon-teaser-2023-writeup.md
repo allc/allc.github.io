@@ -12,7 +12,7 @@ Overall good CTF with challenging original fun challenges.
 On this page:
 
 - [goldinospizza2](#goldinospizza2) - Web, websocket API, exploit race condition
-- [Print template 2](#print-template-2)
+- [Print template 2](#print-template-2) - SSRF via TLS poisoning to request Memcached. I did not solve this challenge, did the writeup based on discussions.
 
 ## goldinospizza2
 
