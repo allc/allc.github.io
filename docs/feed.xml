@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.8.7">Jekyll</generator><link href="https://www.cjxol.com/feed.xml" rel="self" type="application/atom+xml" /><link href="https://www.cjxol.com/" rel="alternate" type="text/html" /><updated>2023-05-21T23:35:33+01:00</updated><id>https://www.cjxol.com/feed.xml</id><title type="html">cjxol.com</title><entry><title type="html">m0leCon Teaser 2023 Writeup</title><link href="https://www.cjxol.com/posts/m0lecon-teaser-2023-writeup/" rel="alternate" type="text/html" title="m0leCon Teaser 2023 Writeup" /><published>2023-05-16T00:00:00+01:00</published><updated>2023-05-16T00:00:00+01:00</updated><id>https://www.cjxol.com/posts/m0lecon-teaser-2023-writeup</id><content type="html" xml:base="https://www.cjxol.com/posts/m0lecon-teaser-2023-writeup/"><![CDATA[<p><a href="https://ctf.m0lecon.it/">m0leCon Teaser 2023</a><br />
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.8.7">Jekyll</generator><link href="https://www.cjxol.com/feed.xml" rel="self" type="application/atom+xml" /><link href="https://www.cjxol.com/" rel="alternate" type="text/html" /><updated>2023-05-22T00:01:51+01:00</updated><id>https://www.cjxol.com/feed.xml</id><title type="html">cjxol.com</title><entry><title type="html">m0leCon Teaser 2023 Writeup</title><link href="https://www.cjxol.com/posts/m0lecon-teaser-2023-writeup/" rel="alternate" type="text/html" title="m0leCon Teaser 2023 Writeup" /><published>2023-05-16T00:00:00+01:00</published><updated>2023-05-16T00:00:00+01:00</updated><id>https://www.cjxol.com/posts/m0lecon-teaser-2023-writeup</id><content type="html" xml:base="https://www.cjxol.com/posts/m0lecon-teaser-2023-writeup/"><![CDATA[<p><a href="https://ctf.m0lecon.it/">m0leCon Teaser 2023</a><br />
 <a href="https://ctftime.org/event/1898">On CTFtime</a></p>
 
 <p>Overall good CTF with challenging original fun challenges.</p>
@@ -85,6 +85,8 @@
 
 <div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>ptm{https://youtu.be/Uzryuem5NDc lets make pizza greater than zero again https://www.giallozafferano.com/recipes/Pizza-Margherita.html}
 </code></pre></div></div>
+
+<p>The author has <a href="https://discord.com/channels/1100159162794655904/1100159163096633453/1108006782871285770">a different solution</a> to desync the balance in the session and the database, with multiple order/cancel requests can be sent in one websocket request, and how the order/cancel is handled.</p>
 
 <h2 id="print-template-2">Print template 2</h2>
 

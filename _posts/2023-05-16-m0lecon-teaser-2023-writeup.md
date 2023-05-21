@@ -93,6 +93,8 @@ With enough balance, order the golden "The flagship of pizzas", get the flag and
 ptm{https://youtu.be/Uzryuem5NDc lets make pizza greater than zero again https://www.giallozafferano.com/recipes/Pizza-Margherita.html}
 ```
 
+The author has [a different solution](https://discord.com/channels/1100159162794655904/1100159163096633453/1108006782871285770) to desync the balance in the session and the database, with multiple order/cancel requests can be sent in one websocket request, and how the order/cancel is handled.
+
 ## Print template 2
 
 A challenge with a web app under the misc category. IIRC the challenge was released after a while since the CTF started. It was a hard challenge, with team "organizers" first blooded it at 6:06 AM BST, and team "Kalmarunionen" submitted the flag half an hour before the CTF ends. I was not able to solve it myself. This writeup follows [Sam.ninja](https://sam.ninja/) and [pilvar](https://twitter.com/pilvar222)'s solution and payloads, which appears to be the [intended solution](https://discord.com/channels/1100159162794655904/1100159163096633453/1106990892780359771 "Just link to a Discord message that one of the challenge author Xato confirms it is the intended solution").
