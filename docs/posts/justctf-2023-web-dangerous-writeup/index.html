@@ -70,7 +70,7 @@
 
 <p>The web app is written in Ruby.</p>
 
-<p>The <code class="highlighter-rouge">/flag</code> endpoint and <code class="highlighter-rouge">is_llowed_ip</code> function is especially interesting:</p>
+<p>The <code class="highlighter-rouge">/flag</code> endpoint and <code class="highlighter-rouge">is_allowed_ip</code> function is especially interesting:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">get</span> <span class="s2">"/flag"</span> <span class="k">do</span>
   <span class="k">if</span> <span class="o">!</span><span class="n">session</span><span class="p">[</span><span class="ss">:username</span><span class="p">]</span> <span class="k">then</span>

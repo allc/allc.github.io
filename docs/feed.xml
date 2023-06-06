@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.8.7">Jekyll</generator><link href="https://www.cjxol.com/feed.xml" rel="self" type="application/atom+xml" /><link href="https://www.cjxol.com/" rel="alternate" type="text/html" /><updated>2023-06-06T00:30:04+01:00</updated><id>https://www.cjxol.com/feed.xml</id><title type="html">cjxol.com</title><entry><title type="html">justCTF 2023 Dangerous (Web) Writeup</title><link href="https://www.cjxol.com/posts/justctf-2023-web-dangerous-writeup/" rel="alternate" type="text/html" title="justCTF 2023 Dangerous (Web) Writeup" /><published>2023-06-05T00:00:00+01:00</published><updated>2023-06-05T00:00:00+01:00</updated><id>https://www.cjxol.com/posts/justctf-2023-web-dangerous-writeup</id><content type="html" xml:base="https://www.cjxol.com/posts/justctf-2023-web-dangerous-writeup/"><![CDATA[<p><a href="https://2023.justctf.team/challenges/18">justCTF 2023 Dangerous (Web)</a><br />
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.8.7">Jekyll</generator><link href="https://www.cjxol.com/feed.xml" rel="self" type="application/atom+xml" /><link href="https://www.cjxol.com/" rel="alternate" type="text/html" /><updated>2023-06-06T01:05:35+01:00</updated><id>https://www.cjxol.com/feed.xml</id><title type="html">cjxol.com</title><entry><title type="html">justCTF 2023 Dangerous (Web) Writeup</title><link href="https://www.cjxol.com/posts/justctf-2023-web-dangerous-writeup/" rel="alternate" type="text/html" title="justCTF 2023 Dangerous (Web) Writeup" /><published>2023-06-05T00:00:00+01:00</published><updated>2023-06-05T00:00:00+01:00</updated><id>https://www.cjxol.com/posts/justctf-2023-web-dangerous-writeup</id><content type="html" xml:base="https://www.cjxol.com/posts/justctf-2023-web-dangerous-writeup/"><![CDATA[<p><a href="https://2023.justctf.team/challenges/18">justCTF 2023 Dangerous (Web)</a><br />
 <a href="https://ctftime.org/event/1930">Event on CTFtime</a></p>
 
 <h2 id="challenge-description">Challenge Description</h2>
@@ -21,7 +21,7 @@
 
 <p>The web app is written in Ruby.</p>
 
-<p>The <code class="highlighter-rouge">/flag</code> endpoint and <code class="highlighter-rouge">is_llowed_ip</code> function is especially interesting:</p>
+<p>The <code class="highlighter-rouge">/flag</code> endpoint and <code class="highlighter-rouge">is_allowed_ip</code> function is especially interesting:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">get</span> <span class="s2">"/flag"</span> <span class="k">do</span>
   <span class="k">if</span> <span class="o">!</span><span class="n">session</span><span class="p">[</span><span class="ss">:username</span><span class="p">]</span> <span class="k">then</span>

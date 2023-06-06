@@ -25,7 +25,7 @@ Viewing one of the threads, it can be seen that the username of admin is `janito
 
 The web app is written in Ruby.
 
-The `/flag` endpoint and `is_llowed_ip` function is especially interesting:
+The `/flag` endpoint and `is_allowed_ip` function is especially interesting:
 
 ```ruby
 get "/flag" do
