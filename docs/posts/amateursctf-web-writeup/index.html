@@ -187,6 +187,10 @@ iagain          error.host      1
 
 <h2 id="gopher-revenge">gopher-revenge</h2>
 
+<p>This writeup is updated on 28 July 2023.</p>
+
+<p>Got first blood on this challenge (this is POG!). The challenge had a total of 19 solves during the CTF.</p>
+
 <ul>
   <li>Description:
     <blockquote>
@@ -199,9 +203,119 @@ iagain          error.host      1
     </blockquote>
   </li>
   <li>Author: voxal</li>
+  <li>Entry point:
+    <ul>
+      <li>The Gopher endpoint gopher://amt.rs:31290/ for <a href="#go-gopher">go-gopher</a> is still useable to this challenge (implied)</li>
+      <li><a href="https://hell.amt.rs">hell.amt.rs</a> (the bot user interface)</li>
+    </ul>
+  </li>
+  <li>Downloads
+    <ul>
+      <li>The Gopher server code is still the same as for <a href="#go-gopher">go-gopher</a> (implied)</li>
+      <li><a href="https://amateurs-prod.storage.googleapis.com/uploads/8d307d2b5f9f5c4075fbfe1b7d6ae10c01508306c94ab073d3895900d0052842/bot.go">bot.go</a> updated from <a href="#go-gopher">go-gopher</a></li>
+    </ul>
+  </li>
 </ul>
 
-<p>TODO: writeup</p>
+<h3 id="the-challenge-1">The challenge</h3>
+
+<p>Submit and Visit function of the bot.</p>
+
+<div class="language-go highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">func</span> <span class="n">Submit</span><span class="p">(</span><span class="n">w</span> <span class="n">http</span><span class="o">.</span><span class="n">ResponseWriter</span><span class="p">,</span> <span class="n">r</span> <span class="o">*</span><span class="n">http</span><span class="o">.</span><span class="n">Request</span><span class="p">)</span> <span class="p">{</span>
+	<span class="n">r</span><span class="o">.</span><span class="n">ParseForm</span><span class="p">()</span>
+	<span class="n">u</span><span class="p">,</span> <span class="n">err</span> <span class="o">:=</span> <span class="n">url</span><span class="o">.</span><span class="n">Parse</span><span class="p">(</span><span class="n">r</span><span class="o">.</span><span class="n">Form</span><span class="o">.</span><span class="n">Get</span><span class="p">(</span><span class="s">"url"</span><span class="p">))</span>
+	<span class="k">if</span> <span class="n">err</span> <span class="o">!=</span> <span class="no">nil</span> <span class="o">||</span> <span class="n">u</span><span class="o">.</span><span class="n">Host</span> <span class="o">!=</span> <span class="s">"amt.rs:31290"</span> <span class="p">{</span>
+		<span class="n">w</span><span class="o">.</span><span class="n">Write</span><span class="p">([]</span><span class="kt">byte</span><span class="p">(</span><span class="s">"Invalid url"</span><span class="p">))</span>
+		<span class="k">return</span>
+	<span class="p">}</span>
+	<span class="n">w</span><span class="o">.</span><span class="n">Write</span><span class="p">([]</span><span class="kt">byte</span><span class="p">(</span><span class="n">Visit</span><span class="p">(</span><span class="n">r</span><span class="o">.</span><span class="n">Form</span><span class="o">.</span><span class="n">Get</span><span class="p">(</span><span class="s">"url"</span><span class="p">))))</span>
+<span class="p">}</span>
+<span class="k">func</span> <span class="n">Visit</span><span class="p">(</span><span class="n">gopherURL</span> <span class="kt">string</span><span class="p">)</span> <span class="kt">string</span> <span class="p">{</span>
+	<span class="n">fmt</span><span class="o">.</span><span class="n">Println</span><span class="p">(</span><span class="n">gopherURL</span><span class="p">)</span>
+	<span class="n">res</span><span class="p">,</span> <span class="n">err</span> <span class="o">:=</span> <span class="n">gopher</span><span class="o">.</span><span class="n">Get</span><span class="p">(</span><span class="n">gopherURL</span><span class="p">)</span>
+	<span class="k">if</span> <span class="n">err</span> <span class="o">!=</span> <span class="no">nil</span> <span class="p">{</span>
+		<span class="k">return</span> <span class="n">fmt</span><span class="o">.</span><span class="n">Sprintf</span><span class="p">(</span><span class="s">"Something went wrong: %s"</span><span class="p">,</span> <span class="n">err</span><span class="o">.</span><span class="n">Error</span><span class="p">())</span>
+	<span class="p">}</span>
+	<span class="n">rawURL</span><span class="p">,</span> <span class="n">_</span> <span class="o">:=</span> <span class="n">strings</span><span class="o">.</span><span class="n">CutPrefix</span><span class="p">(</span><span class="n">res</span><span class="o">.</span><span class="n">Dir</span><span class="o">.</span><span class="n">Items</span><span class="p">[</span><span class="m">2</span><span class="p">]</span><span class="o">.</span><span class="n">Selector</span><span class="p">,</span> <span class="s">"URL:"</span><span class="p">)</span>
+	<span class="n">fmt</span><span class="o">.</span><span class="n">Println</span><span class="p">(</span><span class="n">rawURL</span><span class="p">)</span>
+	<span class="n">u</span><span class="p">,</span> <span class="n">err</span> <span class="o">:=</span> <span class="n">url</span><span class="o">.</span><span class="n">Parse</span><span class="p">(</span><span class="n">rawURL</span><span class="p">)</span>
+	<span class="n">etldpo</span><span class="p">,</span> <span class="n">err2</span> <span class="o">:=</span> <span class="n">publicsuffix</span><span class="o">.</span><span class="n">EffectiveTLDPlusOne</span><span class="p">(</span><span class="n">u</span><span class="o">.</span><span class="n">Host</span><span class="p">)</span>
+	<span class="k">if</span> <span class="n">err</span> <span class="o">!=</span> <span class="no">nil</span> <span class="o">||</span> <span class="n">err2</span> <span class="o">!=</span> <span class="no">nil</span> <span class="o">||</span> <span class="n">etldpo</span> <span class="o">!=</span> <span class="s">"amt.rs"</span> <span class="p">{</span>
+		<span class="k">return</span> <span class="s">"Invalid url"</span>
+	<span class="p">}</span>
+	<span class="n">resp</span><span class="p">,</span> <span class="n">err</span> <span class="o">:=</span> <span class="n">http</span><span class="o">.</span><span class="n">Post</span><span class="p">(</span><span class="n">u</span><span class="o">.</span><span class="n">String</span><span class="p">(),</span> <span class="s">"application/x-www-form-urlencoded"</span><span class="p">,</span>
+		<span class="n">bytes</span><span class="o">.</span><span class="n">NewBuffer</span><span class="p">([]</span><span class="kt">byte</span><span class="p">(</span><span class="n">fmt</span><span class="o">.</span><span class="n">Sprintf</span><span class="p">(</span>
+		<span class="s">"username=%s&amp;password=%s"</span><span class="p">,</span> <span class="n">randomString</span><span class="p">(</span><span class="m">20</span><span class="p">),</span> <span class="n">flag</span><span class="p">))))</span>
+	<span class="k">if</span> <span class="n">err</span> <span class="o">!=</span> <span class="no">nil</span> <span class="p">{</span>
+		<span class="k">return</span> <span class="s">"Failed to make request"</span>
+	<span class="p">}</span>
+	<span class="n">cookies</span> <span class="o">:=</span> <span class="n">resp</span><span class="o">.</span><span class="n">Cookies</span><span class="p">()</span>
+	<span class="n">token</span> <span class="o">:=</span> <span class="s">""</span>
+	<span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">c</span> <span class="o">:=</span> <span class="k">range</span> <span class="n">cookies</span> <span class="p">{</span>
+		<span class="k">if</span> <span class="n">c</span><span class="o">.</span><span class="n">Name</span> <span class="o">==</span> <span class="s">"token"</span> <span class="p">{</span>
+			<span class="n">token</span> <span class="o">=</span> <span class="n">c</span><span class="o">.</span><span class="n">Value</span>
+		<span class="p">}</span>
+	<span class="p">}</span>
+	<span class="k">if</span> <span class="n">token</span> <span class="o">!=</span> <span class="s">""</span> <span class="p">{</span>
+		<span class="k">return</span> <span class="n">fmt</span><span class="o">.</span><span class="n">Sprintf</span><span class="p">(</span><span class="s">"Thanks for sending in a flag! Use the following token once i get the gopher-catcher frontend setup: %s"</span><span class="p">,</span> <span class="n">token</span><span class="p">)</span>
+	<span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+		<span class="k">return</span> <span class="s">"Something went wrong, my sever should have sent a cookie back but it didn't..."</span>
+	<span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>Similar to before as in <a href="#go-gopher">go-gopher</a>, the bot makes Gopher request to an URL we provide, and then makes a HTTP POST request to a URL extracted from the selector of the second item in the Gopher response. The HTTP request contains a random string as “username” and the flag as “password”. The value of the cookie named “token” from the HTTP response will then be shown to us.</p>
+
+<h3 id="take-control-of-the-url-in-the-response">Take control of the URL in the response</h3>
+
+<p>Unlike in <a href="#go-gopher">go-gopher</a> with the cheese to bypass the Gopher URL check, I could not find a way to bypass the check with <code class="highlighter-rouge">u.Host != "amt.rs:31290"</code>. This means I have to provide the Gopher URL to this host.</p>
+
+<h4 id="the-gopher-protocol">The Gopher Protocol</h4>
+
+<p>Reading <a href="https://datatracker.ietf.org/doc/html/rfc1436#section-2">RFC 1436</a> about the Gopher protocol, Gopher is a text-based protocol. The server responses with each item in each line terminated with CR LF, and a period “.” on its own line after the last item. For each line, the first character describes the type of the item, and all character following until a tab is the “user display string”. Each item after ths is also tab-separated. The next field is “selector string”. The next two fields are the domain-name and port for the document or directory described in this line.</p>
+
+<p>In the example requests to the challenge server:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>$ nc amt.rs 31290
+/submit/lol
+iHello lol              error.host      1
+iPlease send a post request containing your flag at the server down below.              error.host      1
+0Submit here! (gopher doesn't have forms D:)    URL:http://amt.rs/gophers-catcher-not-in-scope  error.host      1
+.
+
+</code></pre></div></div>
+
+<p>The client sends the line “magic string” <code class="highlighter-rouge">/submit/</code> for the file/directory. In the response, the first character of each line “i” means the item is for info, 0 means the item is a document (though in this challenge I do not need to care abut the difference). In the 3rd item, the selector is “URL:http://amt.rs/gophers-catcher-not-in-scope”.</p>
+
+<h4 id="the-challenge-gopher-server">The challenge Gopher server</h4>
+
+<p>The interesting function in the Gopher server is <code class="highlighter-rouge">submit</code>, as it appears to point to a “non-exist” flag catcher” (which I confirmed with the CTF organisers that is indeed does not exist). Also the function makes use of the client input.</p>
+
+<div class="language-go highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">func</span> <span class="n">submit</span><span class="p">(</span><span class="n">w</span> <span class="n">gopher</span><span class="o">.</span><span class="n">ResponseWriter</span><span class="p">,</span> <span class="n">r</span> <span class="o">*</span><span class="n">gopher</span><span class="o">.</span><span class="n">Request</span><span class="p">)</span> <span class="p">{</span>
+	<span class="n">name</span> <span class="o">:=</span> <span class="n">strings</span><span class="o">.</span><span class="n">Split</span><span class="p">(</span><span class="n">r</span><span class="o">.</span><span class="n">Selector</span><span class="p">,</span> <span class="s">"/"</span><span class="p">)[</span><span class="m">2</span><span class="p">]</span>
+	<span class="n">undecoded</span><span class="p">,</span> <span class="n">err</span> <span class="o">:=</span> <span class="n">url</span><span class="o">.</span><span class="n">QueryUnescape</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+	<span class="k">if</span> <span class="n">err</span> <span class="o">!=</span> <span class="no">nil</span> <span class="p">{</span>
+		<span class="n">w</span><span class="o">.</span><span class="n">WriteError</span><span class="p">(</span><span class="n">err</span><span class="o">.</span><span class="n">Error</span><span class="p">())</span>
+	<span class="p">}</span>
+	<span class="n">w</span><span class="o">.</span><span class="n">WriteInfo</span><span class="p">(</span><span class="n">fmt</span><span class="o">.</span><span class="n">Sprintf</span><span class="p">(</span><span class="s">"Hello %s"</span><span class="p">,</span> <span class="n">undecoded</span><span class="p">))</span>
+	<span class="n">w</span><span class="o">.</span><span class="n">WriteInfo</span><span class="p">(</span><span class="s">"Please send a post request containing your flag at the server down below."</span><span class="p">)</span>
+	<span class="n">w</span><span class="o">.</span><span class="n">WriteItem</span><span class="p">(</span><span class="o">&amp;</span><span class="n">gopher</span><span class="o">.</span><span class="n">Item</span><span class="p">{</span>
+		<span class="n">Type</span><span class="o">:</span>        <span class="n">gopher</span><span class="o">.</span><span class="n">FILE</span><span class="p">,</span>
+		<span class="n">Selector</span><span class="o">:</span>    <span class="s">"URL:http://amt.rs/gophers-catcher-not-in-scope"</span><span class="p">,</span>
+		<span class="n">Description</span><span class="o">:</span> <span class="s">"Submit here! (gopher doesn't have forms D:)"</span><span class="p">,</span>
+		<span class="n">Host</span><span class="o">:</span>        <span class="s">"error.host"</span><span class="p">,</span>
+		<span class="n">Port</span><span class="o">:</span>        <span class="m">1</span><span class="p">,</span>
+	<span class="p">})</span>
+<span class="p">}</span>
+<span class="k">func</span> <span class="n">main</span><span class="p">()</span> <span class="p">{</span>
+	<span class="n">mux</span> <span class="o">:=</span> <span class="n">gopher</span><span class="o">.</span><span class="n">NewServeMux</span><span class="p">()</span>
+	<span class="n">mux</span><span class="o">.</span><span class="n">HandleFunc</span><span class="p">(</span><span class="s">"/"</span><span class="p">,</span> <span class="n">index</span><span class="p">)</span>
+	<span class="n">mux</span><span class="o">.</span><span class="n">HandleFunc</span><span class="p">(</span><span class="s">"/submit/"</span><span class="p">,</span> <span class="n">submit</span><span class="p">)</span>
+	<span class="n">log</span><span class="o">.</span><span class="n">Fatal</span><span class="p">(</span><span class="n">gopher</span><span class="o">.</span><span class="n">ListenAndServe</span><span class="p">(</span><span class="s">"0.0.0.0:7000"</span><span class="p">,</span> <span class="n">mux</span><span class="p">))</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>Noticing the string after the 2nd “/” in the selector or “magic string” in the request is included in the response. The bot takes the 3rd item in the response, and I am able to inject into the 1st line. So it is possible to make the selector in the 3rd item being a URL we want, and push the items after the 1st item in the original response further down.</p>
 
   </div><a class="u-url" href="/posts/amateursctf-web-writeup/" hidden></a>
 </article>

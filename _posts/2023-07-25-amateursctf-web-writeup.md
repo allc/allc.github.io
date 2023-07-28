@@ -130,11 +130,122 @@ iagain          error.host      1
 
 ## gopher-revenge
 
+This writeup is updated on 28 July 2023.
+
+Got first blood on this challenge (this is POG!). The challenge had a total of 19 solves during the CTF.
+
 - Description:
   > you guys are going to regret ever crossing me.
 
   Later added the following clarification/hint due to a few teams with very close solutions fails submitting the correct flag:
   > the flag in "flag.txt" is the exact same flag you need to submit
 - Author: voxal
+- Entry point:
+  - The Gopher endpoint gopher://amt.rs:31290/ for [go-gopher](#go-gopher) is still useable to this challenge (implied)
+  - [hell.amt.rs](https://hell.amt.rs) (the bot user interface)
+- Downloads
+  - The Gopher server code is still the same as for [go-gopher](#go-gopher) (implied)
+  - [bot.go](https://amateurs-prod.storage.googleapis.com/uploads/8d307d2b5f9f5c4075fbfe1b7d6ae10c01508306c94ab073d3895900d0052842/bot.go) updated from [go-gopher](#go-gopher)
 
-TODO: writeup
+### The challenge
+
+Submit and Visit function of the bot.
+
+```go
+func Submit(w http.ResponseWriter, r *http.Request) {
+	r.ParseForm()
+	u, err := url.Parse(r.Form.Get("url"))
+	if err != nil || u.Host != "amt.rs:31290" {
+		w.Write([]byte("Invalid url"))
+		return
+	}
+	w.Write([]byte(Visit(r.Form.Get("url"))))
+}
+func Visit(gopherURL string) string {
+	fmt.Println(gopherURL)
+	res, err := gopher.Get(gopherURL)
+	if err != nil {
+		return fmt.Sprintf("Something went wrong: %s", err.Error())
+	}
+	rawURL, _ := strings.CutPrefix(res.Dir.Items[2].Selector, "URL:")
+	fmt.Println(rawURL)
+	u, err := url.Parse(rawURL)
+	etldpo, err2 := publicsuffix.EffectiveTLDPlusOne(u.Host)
+	if err != nil || err2 != nil || etldpo != "amt.rs" {
+		return "Invalid url"
+	}
+	resp, err := http.Post(u.String(), "application/x-www-form-urlencoded",
+		bytes.NewBuffer([]byte(fmt.Sprintf(
+		"username=%s&password=%s", randomString(20), flag))))
+	if err != nil {
+		return "Failed to make request"
+	}
+	cookies := resp.Cookies()
+	token := ""
+	for _, c := range cookies {
+		if c.Name == "token" {
+			token = c.Value
+		}
+	}
+	if token != "" {
+		return fmt.Sprintf("Thanks for sending in a flag! Use the following token once i get the gopher-catcher frontend setup: %s", token)
+	} else {
+		return "Something went wrong, my sever should have sent a cookie back but it didn't..."
+	}
+}
+```
+
+Similar to before as in [go-gopher](#go-gopher), the bot makes Gopher request to an URL we provide, and then makes a HTTP POST request to a URL extracted from the selector of the second item in the Gopher response. The HTTP request contains a random string as "username" and the flag as "password". The value of the cookie named "token" from the HTTP response will then be shown to us.
+
+### Take control of the URL in the response
+
+Unlike in [go-gopher](#go-gopher) with the cheese to bypass the Gopher URL check, I could not find a way to bypass the check with `u.Host != "amt.rs:31290"`. This means I have to provide the Gopher URL to this host.
+
+#### The Gopher Protocol
+
+Reading [RFC 1436](https://datatracker.ietf.org/doc/html/rfc1436#section-2) about the Gopher protocol, Gopher is a text-based protocol. The server responses with each item in each line terminated with CR LF, and a period "." on its own line after the last item. For each line, the first character describes the type of the item, and all character following until a tab is the "user display string". Each item after ths is also tab-separated. The next field is "selector string". The next two fields are the domain-name and port for the document or directory described in this line.
+
+In the example requests to the challenge server:
+
+```
+$ nc amt.rs 31290
+/submit/lol
+iHello lol              error.host      1
+iPlease send a post request containing your flag at the server down below.              error.host      1
+0Submit here! (gopher doesn't have forms D:)    URL:http://amt.rs/gophers-catcher-not-in-scope  error.host      1
+.
+
+```
+
+The client sends the line "magic string" `/submit/` for the file/directory. In the response, the first character of each line "i" means the item is for info, 0 means the item is a document (though in this challenge I do not need to care abut the difference). In the 3rd item, the selector is "URL:http://amt.rs/gophers-catcher-not-in-scope".
+
+#### The challenge Gopher server
+
+The interesting function in the Gopher server is `submit`, as it appears to point to a "non-exist" flag catcher" (which I confirmed with the CTF organisers that is indeed does not exist). Also the function makes use of the client input.
+
+```go
+func submit(w gopher.ResponseWriter, r *gopher.Request) {
+	name := strings.Split(r.Selector, "/")[2]
+	undecoded, err := url.QueryUnescape(name)
+	if err != nil {
+		w.WriteError(err.Error())
+	}
+	w.WriteInfo(fmt.Sprintf("Hello %s", undecoded))
+	w.WriteInfo("Please send a post request containing your flag at the server down below.")
+	w.WriteItem(&gopher.Item{
+		Type:        gopher.FILE,
+		Selector:    "URL:http://amt.rs/gophers-catcher-not-in-scope",
+		Description: "Submit here! (gopher doesn't have forms D:)",
+		Host:        "error.host",
+		Port:        1,
+	})
+}
+func main() {
+	mux := gopher.NewServeMux()
+	mux.HandleFunc("/", index)
+	mux.HandleFunc("/submit/", submit)
+	log.Fatal(gopher.ListenAndServe("0.0.0.0:7000", mux))
+}
+```
+
+Noticing the string after the 2nd "/" in the selector or "magic string" in the request is included in the response. The bot takes the 3rd item in the response, and I am able to inject into the 1st line. So it is possible to make the selector in the 3rd item being a URL we want, and push the items after the 1st item in the original response further down.
