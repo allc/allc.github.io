@@ -12,8 +12,8 @@ It was a team effort for us to solve this challenge. I learned something new abo
 ## Solution summary
 
 - SSTI in `Tera::one_off` to leak secret
-- WebRTC to bypass CSP restrictions and exfiltrate admin user id
-- Forge admin cookie with admin user id and secret to gain access to admin view
+- WebRTC to bypass CSP restrictions and exfiltrate admin user ID
+- Forge admin cookie with admin user ID and secret to gain access to admin view
 - Follow admin account and sort following accounts on password field to leak admin password (which is the flag)
 
 ## crabspace

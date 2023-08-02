@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.8.7">Jekyll</generator><link href="https://www.cjxol.com/feed.xml" rel="self" type="application/atom+xml" /><link href="https://www.cjxol.com/" rel="alternate" type="text/html" /><updated>2023-08-02T01:02:42+01:00</updated><id>https://www.cjxol.com/feed.xml</id><title type="html">cjxol.com</title><entry><title type="html">corCTF 2023 web/crabspace Writeup</title><link href="https://www.cjxol.com/posts/corctf-2023-crabspace-web-writeup/" rel="alternate" type="text/html" title="corCTF 2023 web/crabspace Writeup" /><published>2023-08-01T00:00:00+01:00</published><updated>2023-08-01T00:00:00+01:00</updated><id>https://www.cjxol.com/posts/corctf-2023-crabspace-web-writeup</id><content type="html" xml:base="https://www.cjxol.com/posts/corctf-2023-crabspace-web-writeup/"><![CDATA[<p><a href="https://2023.cor.team/challs">corCTF</a><br />
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.8.7">Jekyll</generator><link href="https://www.cjxol.com/feed.xml" rel="self" type="application/atom+xml" /><link href="https://www.cjxol.com/" rel="alternate" type="text/html" /><updated>2023-08-02T01:20:59+01:00</updated><id>https://www.cjxol.com/feed.xml</id><title type="html">cjxol.com</title><entry><title type="html">corCTF 2023 web/crabspace Writeup</title><link href="https://www.cjxol.com/posts/corctf-2023-crabspace-web-writeup/" rel="alternate" type="text/html" title="corCTF 2023 web/crabspace Writeup" /><published>2023-08-01T00:00:00+01:00</published><updated>2023-08-01T00:00:00+01:00</updated><id>https://www.cjxol.com/posts/corctf-2023-crabspace-web-writeup</id><content type="html" xml:base="https://www.cjxol.com/posts/corctf-2023-crabspace-web-writeup/"><![CDATA[<p><a href="https://2023.cor.team/challs">corCTF</a><br />
 <a href="https://ctftime.org/event/1928">Event on CTFtime</a></p>
 
 <p>It was a team effort for us to solve this challenge. I learned something new about WebRTC.</p>
@@ -7,8 +7,8 @@
 
 <ul>
   <li>SSTI in <code class="highlighter-rouge">Tera::one_off</code> to leak secret</li>
-  <li>WebRTC to bypass CSP restrictions and exfiltrate admin user id</li>
-  <li>Forge admin cookie with admin user id and secret to gain access to admin view</li>
+  <li>WebRTC to bypass CSP restrictions and exfiltrate admin user ID</li>
+  <li>Forge admin cookie with admin user ID and secret to gain access to admin view</li>
   <li>Follow admin account and sort following accounts on password field to leak admin password (which is the flag)</li>
 </ul>
 
