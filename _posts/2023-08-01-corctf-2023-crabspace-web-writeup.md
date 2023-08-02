@@ -123,7 +123,7 @@ The port does not matter, as we are exfiltrating through DNS request. The user I
 
 The admin account has access to admin view for each user (except admin itself). The admin view has the lists of followers and followings of the user. The lists are sorted with field specified in the URL query parameter. It is possible to sort by password field using `?sort=pass`.
 
-We can have a main account to follow other users. We can then create a list of users with selected password, and follow them along with admin on our main account. The admin view for the main account will have the list of users sorted by password, and we can get the flag character by character. This can be scripted with preparing the whole following list and get one character each time we visit the admin view, or can script with binary search. (This is kinda pain to extract the flag, thanks to my teammate implemented the solution.)
+We can have a main account to follow other users. We can then create a list of users with selected password, and follow them along with admin on our main account. With the admin view, we can list the followings of the main account sorted by password, and we can get the flag character by character. This can be scripted with preparing the whole following list and get one character each time we visit the admin view, or can script with binary search. (This is kinda pain to extract the flag, thanks to my teammate implemented the solution.)
 
 Got the flag 🦀:
 
