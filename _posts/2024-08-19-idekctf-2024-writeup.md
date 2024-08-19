@@ -70,6 +70,30 @@ This is some notes on my process of solving some of the challenges with the team
 
 *Image sizes are reduced in the blogpost.*
 
+Some useful resources for GeoGuessr-style challenges:
+
+1. [GeoHints](https://geohints.com/) Categorised by different meta or features, useful for example to look up which country the Google car in the task could be in.
+
+2. [Plonk It](https://www.plonkit.net/guide) Text and image guides categorised by countries. Useful to confirm countries or try to region-guess. Google "site:www.plonkit.net stuff" as example in drunk_driving task below
+
+3. [GeoTips](https://geotips.net/) Similiar to Plonk It
+
+4. [overpass turbo](https://overpass-turbo.eu/) Powerful to query features
+
+5. Many of the shared docs e.g. for country/region specific details
+
+### drunk_driving (medium, Rwanda)
+
+Saw lamppost with "NR 10 166" painted on it.
+
+![Paint on the lamppost in the challenge](/assets/image/idekctf2024/rwanda-lamppost-paint.png)
+
+We could not decide the country to start with through some meta information.
+
+I Googled `site:www.plonkit.net nr`, and it linked to a GeoGuessr guide page on Rwanda. With the road number NR 10, teammate solved the task.
+
+![Screenshot of the Google search result](/assets/image/idekctf2024/nr-google-search-result.png)
+
 ### beach_property (medium, Brazil)
 
 Find the very unique-looking building, screenshot and search the image with Google Lens, find it to be the Veleiros Mar hotel in São Luís, Brazil. Then my teammate marked the location on the map to complete this task.

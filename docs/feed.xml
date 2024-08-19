@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.8.7">Jekyll</generator><link href="https://www.cjxol.com/feed.xml" rel="self" type="application/atom+xml" /><link href="https://www.cjxol.com/" rel="alternate" type="text/html" /><updated>2024-08-19T21:50:18+01:00</updated><id>https://www.cjxol.com/feed.xml</id><title type="html">cjxol.com</title><entry><title type="html">idekCTF Web and OSINT Writeup</title><link href="https://www.cjxol.com/posts/idekctf-2024-writeup/" rel="alternate" type="text/html" title="idekCTF Web and OSINT Writeup" /><published>2024-08-19T00:00:00+01:00</published><updated>2024-08-19T00:00:00+01:00</updated><id>https://www.cjxol.com/posts/idekctf-2024-writeup</id><content type="html" xml:base="https://www.cjxol.com/posts/idekctf-2024-writeup/"><![CDATA[<p>Notes on solving the web challenge and some GeoGuessr-style challenges (had a lot of luck).</p>
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.8.7">Jekyll</generator><link href="https://www.cjxol.com/feed.xml" rel="self" type="application/atom+xml" /><link href="https://www.cjxol.com/" rel="alternate" type="text/html" /><updated>2024-08-19T22:14:44+01:00</updated><id>https://www.cjxol.com/feed.xml</id><title type="html">cjxol.com</title><entry><title type="html">idekCTF Web and OSINT Writeup</title><link href="https://www.cjxol.com/posts/idekctf-2024-writeup/" rel="alternate" type="text/html" title="idekCTF Web and OSINT Writeup" /><published>2024-08-19T00:00:00+01:00</published><updated>2024-08-19T00:00:00+01:00</updated><id>https://www.cjxol.com/posts/idekctf-2024-writeup</id><content type="html" xml:base="https://www.cjxol.com/posts/idekctf-2024-writeup/"><![CDATA[<p>Notes on solving the web challenge and some GeoGuessr-style challenges (had a lot of luck).</p>
 
 <h2 id="webhello">web/Hello</h2>
 
@@ -61,6 +61,38 @@
 <p>This is some notes on my process of solving some of the challenges with the team (also with a lot of luck involved). It may contain some errors due to limited knowledge on different locations, and just write about observations and knowledge gathered during solving the challenge.</p>
 
 <p><em>Image sizes are reduced in the blogpost.</em></p>
+
+<p>Some useful resources for GeoGuessr-style challenges:</p>
+
+<ol>
+  <li>
+    <p><a href="https://geohints.com/">GeoHints</a> Categorised by different meta or features, useful for example to look up which country the Google car in the task could be in.</p>
+  </li>
+  <li>
+    <p><a href="https://www.plonkit.net/guide">Plonk It</a> Text and image guides categorised by countries. Useful to confirm countries or try to region-guess. Google “site:www.plonkit.net stuff” as example in drunk_driving task below</p>
+  </li>
+  <li>
+    <p><a href="https://geotips.net/">GeoTips</a> Similiar to Plonk It</p>
+  </li>
+  <li>
+    <p><a href="https://overpass-turbo.eu/">overpass turbo</a> Powerful to query features</p>
+  </li>
+  <li>
+    <p>Many of the shared docs e.g. for country/region specific details</p>
+  </li>
+</ol>
+
+<h3 id="drunk_driving-medium-rwanda">drunk_driving (medium, Rwanda)</h3>
+
+<p>Saw lamppost with “NR 10 166” painted on it.</p>
+
+<p><img src="/assets/image/idekctf2024/rwanda-lamppost-paint.png" alt="Paint on the lamppost in the challenge" /></p>
+
+<p>We could not decide the country to start with through some meta information.</p>
+
+<p>I Googled <code class="highlighter-rouge">site:www.plonkit.net nr</code>, and it linked to a GeoGuessr guide page on Rwanda. With the road number NR 10, teammate solved the task.</p>
+
+<p><img src="/assets/image/idekctf2024/nr-google-search-result.png" alt="Screenshot of the Google search result" /></p>
 
 <h3 id="beach_property-medium-brazil">beach_property (medium, Brazil)</h3>
 
