@@ -62,6 +62,8 @@
 
 <p>Relatively easy challenge, with 161 solves. I built the payload iteratively to bypass the restrictions.</p>
 
+<p>My teammate solved and submitted the flag about 36 minutes before I did xD.</p>
+
 <p>Challenge goal is to get the flag set by the admin bot in the “HttpOnly” cookie. The <code class="highlighter-rouge">index.php</code> page is XSS-able, and and <code class="highlighter-rouge">info.php</code> page dumps <code class="highlighter-rouge">phpinfo()</code>, which shows the cookies in the request, including HttpOnly cookies.</p>
 
 <div class="language-nginx highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">location</span> <span class="p">=</span> <span class="n">/info.php</span> <span class="p">{</span>

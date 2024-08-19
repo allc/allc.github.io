@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.8.7">Jekyll</generator><link href="https://www.cjxol.com/feed.xml" rel="self" type="application/atom+xml" /><link href="https://www.cjxol.com/" rel="alternate" type="text/html" /><updated>2024-08-19T22:14:44+01:00</updated><id>https://www.cjxol.com/feed.xml</id><title type="html">cjxol.com</title><entry><title type="html">idekCTF Web and OSINT Writeup</title><link href="https://www.cjxol.com/posts/idekctf-2024-writeup/" rel="alternate" type="text/html" title="idekCTF Web and OSINT Writeup" /><published>2024-08-19T00:00:00+01:00</published><updated>2024-08-19T00:00:00+01:00</updated><id>https://www.cjxol.com/posts/idekctf-2024-writeup</id><content type="html" xml:base="https://www.cjxol.com/posts/idekctf-2024-writeup/"><![CDATA[<p>Notes on solving the web challenge and some GeoGuessr-style challenges (had a lot of luck).</p>
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.8.7">Jekyll</generator><link href="https://www.cjxol.com/feed.xml" rel="self" type="application/atom+xml" /><link href="https://www.cjxol.com/" rel="alternate" type="text/html" /><updated>2024-08-19T22:19:47+01:00</updated><id>https://www.cjxol.com/feed.xml</id><title type="html">cjxol.com</title><entry><title type="html">idekCTF Web and OSINT Writeup</title><link href="https://www.cjxol.com/posts/idekctf-2024-writeup/" rel="alternate" type="text/html" title="idekCTF Web and OSINT Writeup" /><published>2024-08-19T00:00:00+01:00</published><updated>2024-08-19T00:00:00+01:00</updated><id>https://www.cjxol.com/posts/idekctf-2024-writeup</id><content type="html" xml:base="https://www.cjxol.com/posts/idekctf-2024-writeup/"><![CDATA[<p>Notes on solving the web challenge and some GeoGuessr-style challenges (had a lot of luck).</p>
 
 <h2 id="webhello">web/Hello</h2>
 
@@ -12,6 +12,8 @@
 <h3 id="challenge-and-solution">Challenge and Solution</h3>
 
 <p>Relatively easy challenge, with 161 solves. I built the payload iteratively to bypass the restrictions.</p>
+
+<p>My teammate solved and submitted the flag about 36 minutes before I did xD.</p>
 
 <p>Challenge goal is to get the flag set by the admin bot in the “HttpOnly” cookie. The <code class="highlighter-rouge">index.php</code> page is XSS-able, and and <code class="highlighter-rouge">info.php</code> page dumps <code class="highlighter-rouge">phpinfo()</code>, which shows the cookies in the request, including HttpOnly cookies.</p>
 
