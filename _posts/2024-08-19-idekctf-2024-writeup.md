@@ -17,6 +17,8 @@ Notes on solving the web challenge and some GeoGuessr-style challenges (had a lo
 
 Relatively easy challenge, with 161 solves. I built the payload iteratively to bypass the restrictions.
 
+My teammate solved and submitted the flag 36 minutes before I did xD.
+
 Challenge goal is to get the flag set by the admin bot in the "HttpOnly" cookie. The `index.php` page is XSS-able, and and `info.php` page dumps `phpinfo()`, which shows the cookies in the request, including HttpOnly cookies.
 
 ```nginx
