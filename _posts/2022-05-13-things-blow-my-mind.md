@@ -1,6 +1,6 @@
 ---
 layout: post
-title: Things Blow Up My Mind
+title: Things Blow My Mind
 tags: [continuously updated]
 ---
 

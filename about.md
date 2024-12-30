@@ -4,7 +4,7 @@ title: About
 permalink: /about/
 ---
 
-I write stuff here as blog posts. I put random things that I come across in the continuously updated post [Things Blow Up My Mind]({% post_url 2022-05-13-things-blow-up-my-mind %}), and a collection of learning resources in [Awesome Collection]({% post_url 2022-06-17-awesome-collection %}).
+I write stuff here as blog posts. I put random things that I come across in the continuously updated post [Things Blow My Mind]({% post_url 2022-05-13-things-blow-my-mind %}), and a collection of learning resources in [Awesome Collection]({% post_url 2022-06-17-awesome-collection %}).
 
 ## About Me
 
