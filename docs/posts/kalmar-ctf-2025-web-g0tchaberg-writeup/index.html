@@ -47,7 +47,7 @@
   </header>
 
   <div class="post-content e-content" itemprop="articleBody">
-    <h1 id="the-challenge">The Challenge</h1>
+    <h2 id="the-challenge">The Challenge</h2>
 
 <p>This challenge involved a bot periodically sending an HTML file containing the flag to a <a href="https://gotenberg.dev/">gotenberg</a> instance, which converts it to a PDF.. The version of gotenberg was the latest at the time of the CTF, 8.17.3.</p>
 
@@ -59,7 +59,7 @@
 <span class="k">done</span>
 </code></pre></div></div>
 
-<h1 id="tracing-down-the-flag">Tracing Down the Flag</h1>
+<h2 id="tracing-down-the-flag">Tracing Down the Flag</h2>
 
 <p>Our goal is to extract the flag by interacting with the gotenberg instance.</p>
 
@@ -74,7 +74,7 @@
 
 <p>Since the flag is stored temporarily, I needed a way to access it before it was deleted.</p>
 
-<h1 id="leaking-directory-paths">Leaking Directory Paths</h1>
+<h2 id="leaking-directory-paths">Leaking Directory Paths</h2>
 
 <p>With iframe, it is possible to leak the content of another file on the server, or list the directory if the directory does not contain an <code class="highlighter-rouge">index.html</code> file. (I had to use relative path, somehow I could not get e.g. <code class="highlighter-rouge">file:///etc/passwd</code> to work, possibly due to browser security restrictions or I did something wrong).</p>
 
@@ -87,7 +87,7 @@
 
 <p>However, the flag files are deleted after the request is processed, I still need to find a way to get around this.</p>
 
-<h1 id="make-the-flag-stay-longer">Make the Flag Stay Longer</h1>
+<h2 id="make-the-flag-stay-longer">Make the Flag Stay Longer</h2>
 
 <p>Reading the <a href="https://gotenberg.dev/docs/configuration#chromium">docs</a> of gotenberg, it runs a <strong>single</strong> Chromium instance, meaning the subsequent requests are queued while one is being processed. If the instance is busy, the subsequent uploaded HTML will be kept on the server until it is processed.</p>
 
@@ -103,11 +103,11 @@
 
 <p>In the example, it listed the directory of <code class="highlighter-rouge">/tmp/dfbe2bb7-e1ca-4cb4-ac55-f84aff6cd7dc/</code>, which contains two subdirectories <code class="highlighter-rouge">3118c7b5-0d4d-4317-afb5-90e216d5c1ce</code> and <code class="highlighter-rouge">5e1a4e83-99c3-4183-9967-842fa3c24fe3</code>. One of them is for the current request, and the other is for the flag queued afterwards. Say <code class="highlighter-rouge">5e1a4e83-99c3-4183-9967-842fa3c24fe3</code> is for the flag, the HTML file containing the flag is in <code class="highlighter-rouge">/tmp/dfbe2bb7-e1ca-4cb4-ac55-f84aff6cd7dc/5e1a4e83-99c3-4183-9967-842fa3c24fe3/index.html</code>.</p>
 
-<h1 id="get-the-flag">Get the Flag</h1>
+<h2 id="get-the-flag">Get the Flag</h2>
 
 <p>Once I knew the flag’s location, I needed a way to read it before deletion. However, simply requesting the path would fail since files are deleted before the next request.</p>
 
-<h2 id="using-javascript-for-dynamic-fetching">Using JavaScript for Dynamic Fetching</h2>
+<h3 id="using-javascript-for-dynamic-fetching">Using JavaScript for Dynamic Fetching</h3>
 
 <p>JavaScript is executed on the Chromium instance, so I created a payload that dynamically fetches the leaked path and loads it into an iframe.</p>
 
@@ -137,7 +137,7 @@
 
 <p>In the payload, I also put a lot of iframes to make the JavaScript to have enough time to run. The server returns all of the directories listed, and it should contain the directory containing the flag, as well as the that request. As that request is processed first, and that directory will no longer exist, having an iframe with that path will make the PDF rendering fail, so I only take one of the UUIDs and hope it is the one containing the flag, thus it takes several attempts to get the flag.</p>
 
-<h1 id="final-payload">Final Payload</h1>
+<h2 id="final-payload">Final Payload</h2>
 
 <p>To time the exploit correctly, I automate the process with a Python script, which also automatically serves the leaked paths through HTTP.</p>
 
@@ -225,7 +225,7 @@
 
 <p><img src="/assets/image/kalmar-ctf-2025-web-g0tchaberg-writeup/flag.png" alt="Screenshot of exported PDF of the flag contained in an iframe" /></p>
 
-<h2 id="solution-summary">Solution summary</h2>
+<h3 id="solution-summary">Solution summary</h3>
 
 <p>Since there is only one chromium instance</p>
 
@@ -235,7 +235,7 @@
 
 <p>I upload another HTML with some iframes to give time for JS to run, with JS to load UUIDs from an endpoint set to UUIDs leaked and take a random of the (hopefully) 4 UUIDs returned from the endpoint and hoping it is the flag one, and append a iframe <code class="highlighter-rouge">../${uuid}/index.html</code></p>
 
-<h1 id="afterthought">Afterthought</h1>
+<h2 id="afterthought">Afterthought</h2>
 
 <p>After the CTF when I was browsing through the CTF Discord chat, I realised that instead of having a lot of iframes to delay the rendering I could have used <a href="https://gotenberg.dev/docs/routes#wait-before-rendering-chromium"><code class="highlighter-rouge">waitDelay</code> and <code class="highlighter-rouge">waitForExpression</code></a> to control the time delay and JavaScript completion which would have been more reliable and a lot easier.</p>
 
