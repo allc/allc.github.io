@@ -23,18 +23,19 @@ github_username:  allc
 
 permalink: /posts/:title/
 
+encoding: utf-8
+
 # Build settings
 markdown: kramdown
 theme: minima
 plugins:
   - jekyll-feed
   - jekyll-sitemap
+  - jekyll-scholar
 
 highlighter: rouge
 kramdown:
   input: GFM
-
-destination: docs/
 
 defaults:
   - 
@@ -49,10 +50,9 @@ defaults:
 exclude:
   - Gemfile
   - Gemfile.lock
-  - vendor/bundle/
-  - vendor/cache/
-  - vendor/gems/
-  - vendor/ruby/
+  - vendor/
+  - .bundle/
+  - .jekyll-cache/
   - "*.sh"
   - "*.ps1"
   - bootstrap-css/
