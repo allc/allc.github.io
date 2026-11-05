@@ -18,5 +18,5 @@ gem "kramdown-parser-gfm"
 gem "webrick", "~> 1.8"
 
 # Windows-specific gems (declared with platforms: so they are safely ignored on macOS and Linux)
-gem "tzinfo-data", platforms: [:mingw, :mswin, :x64_mingw, :jruby, :ucrt]
-gem "wdm", ">= 0.1.0", platforms: [:mingw, :mswin, :x64_mingw, :ucrt]
+gem "tzinfo-data", platforms: [:mingw, :mswin, :x64_mingw, :jruby]
+gem "wdm", ">= 0.1.0", platforms: [:mingw, :mswin, :x64_mingw]
