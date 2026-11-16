@@ -25,6 +25,6 @@ A lot of hills and not hills!
 
 - National parks and not national parks including New Forest, South Downs, Dartmoor, Lake District, Peak District, Yorkshire Dales, Norfolk Coast AONB (England), Brecon Beacons, Snowdonia (Wales), Loch Lomond, Cairngorms (Scotland), Cinque Terre (Italy), Tour du Mont Blanc variant (France, Switzerland, Italy).
 
-- [Munros](https://en.wikipedia.org/wiki/Munro) and other peaks bagged including Ben Macdui (1309 m), Cairn Gorm (1245 m), Aonach Mòr (1221 m), Mayar (928 m) (Scotland), Snowdon (1085 m), Pen y Fan (886 m) (Wales), Scafell Pike (978 m) (England), Toubkal (Morocco).
+- [Munros](https://en.wikipedia.org/wiki/Munro) and other peaks bagged including Ben Macdui (1309 m), Cairn Gorm (1245 m), Aonach Mòr (1221 m), Mayar (928 m) (Scotland), Snowdon (1085 m), Pen y Fan (886 m) (Wales), Scafell Pike (978 m) (England), Toubkal (4167m) (Morocco).
 
 <small>Last updated on 9th November 2026.</small>
